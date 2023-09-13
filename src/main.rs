@@ -13,7 +13,6 @@ fn main() {
     
     let res_string = if let Ok((_, _string)) = parser::parse(&contents) { _string } else { "something failed" };
 
-
     println!("Finished: {}", res_string);
 }
 
