@@ -72,8 +72,8 @@ fn construct_init_state( input: &str) -> IResult<&str, State> {
   let (input, res) = many0( delimited(pair(take_until("("), tag("(")), take_until_unbalanced('(', ')'), tag(")")) )(input)?;
 
   for result in res {
-    (input, res) = separated_list0(tag(' '), take_while(is_alphabetic))(result)?;
-    println!("in init state: {:?}", res);
+    //(input, res) = separated_list0(tag(' '), take_while(is_alphabetic))(result)?;
+    println!("in init state: {:?}", result);
   }
 
   //let (input, res) = many0()(input)?;
