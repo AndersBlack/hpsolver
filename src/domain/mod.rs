@@ -1,42 +1,52 @@
-use std::collections::HashMap;
+use crate::problem::Object;
 
+#[derive(Debug, Clone)]
 pub struct Domain {
-    name: String,
-    tasks: Vec<Task>,
-    methods: Vec<Method>,
-    actions: Vec<Action>,
-    types: Vec<Type>,
-    predicates: Vec<Predicate>,
+    pub name: String,
+    pub tasks: Vec<Task>,
+    pub methods: Vec<Method>,
+    pub actions: Vec<Action>,
+    pub types: Vec<Type>,
+    pub predicates: Vec<Predicate>,
 }
 
+#[derive(Debug, Clone)] 
 pub struct Type {
-    object_types: HashMap<String, String>,
+    pub object_type: (String, String),
 }
 
+#[derive(Debug, Clone)]
 pub struct Predicate {
-    name: String,
-    args: Vec<String>,
-    neg: bool,
+    pub name: String,
+    pub args: Vec<Argument>,
 }
 
+#[derive(Debug, Clone)] 
 pub struct Task {
-    name: String,
-    parameters: Vec<String>,
+    pub name: String,
+    pub parameters: Vec<Argument>,
 }
 
+#[derive(Debug, Clone)] 
+pub struct Argument {
+    pub name: String,
+    pub object_type: Type
+}
+
+#[derive(Debug, Clone)] 
 pub struct Method {
-    name: String,
-    parameters: Vec<String>, 
-    task: Task,
-    precondition: Vec<Predicate>,
-    subtasks: HashMap<String, Action>, 
-    ordering: Vec<String>,
+    pub name: String,
+    pub parameters: Vec<Argument>, 
+    pub task: Task,
+    pub precondition: Vec<(bool,Predicate,Vec<Argument>)>,
+    pub subtasks: Vec<(Action, Vec<Argument>)>,
 }
 
+#[derive(Debug, Clone)] 
 pub struct Action {
-    name: String,
-    parameters: Vec<String>,
-    precondition: Vec<Predicate>,
-    effect: Vec<Predicate>,
+    pub name: String,
+    pub parameters: Vec<Argument>,
+    pub precondition: Vec<(bool,Predicate,Vec<Argument>)>,
+    pub effect: Vec<(bool,Predicate,Vec<Argument>)>,
 }
 

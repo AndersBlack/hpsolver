@@ -1,6 +1,7 @@
-use  crate::problem::Problem;
-use  crate::problem::State;
-use  crate::problem::Htn;
+use crate::problem::Problem;
+use crate::problem::State;
+use crate::problem::Htn;
+use crate::problem::Object;
 use std::collections::HashMap;
 
 use nom::IResult;
@@ -21,7 +22,6 @@ pub fn parse( input: &str ) -> IResult<&str, &str> {
 
 
   IResult::Ok((input, "test"))
-
 }
 
 pub fn fish_parentheses( input: &str ) -> IResult<&str, Problem> {
@@ -31,7 +31,7 @@ pub fn fish_parentheses( input: &str ) -> IResult<&str, Problem> {
   // Initialize problem variables
   let mut initial_state: State = State::default();
   let mut problem_name = "";
-  let mut objectives: HashMap<String, String> = HashMap::new();
+  let mut objectives: Vec<Object> = Vec::new();
   let mut htn: Htn = Htn::default();
   let mut domain = "";
 
@@ -47,6 +47,7 @@ pub fn fish_parentheses( input: &str ) -> IResult<&str, Problem> {
       println!("obj: {}", result);
     } else if result.contains(":htn") {
       //let htn: Htn = construct_htn(result);
+      // TODO: REMOVE ORDERING AND ARRANGE SUBTASK PER ORDERING
       println!("htn: {}", result);
     } else if result.contains(":domain") {
       let (input, domain) = construct_domain(result)?;
