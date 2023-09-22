@@ -115,7 +115,7 @@ pub fn create_problem () -> (Problem, Domain) {
   let method: Method = Method {
     name: "opened_box_method".to_string(),
     parameters: Vec::from([arg1.clone(), arg0.clone()]), 
-    task: task.clone(),
+    task: ("box_opener".to_string(), Vec::from([arg1.name, arg0.name])),
     precondition: Vec::from([(false,predicate1.clone(), Vec::from([arg0.clone()])),(true,predicate2.clone(), Vec::from([arg0.clone()]))]),
     subtasks: Vec::from([(action1.clone(), Vec::from([arg1.clone(), arg0.clone()])), (action2.clone(), Vec::from([arg1.clone(), arg0.clone()]))]), 
   };
