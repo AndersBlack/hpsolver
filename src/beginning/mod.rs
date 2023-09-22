@@ -60,7 +60,7 @@ pub fn create_problem () -> (Problem, Domain) {
 
   // -----------------------------------------------------  
   
-  let state_vector = Vec::from([(predicate2.clone(), Vec::from([object2.clone()])), (predicate2.clone(), Vec::from([object3.clone()])), (predicate2.clone(), Vec::from([object4.clone()]))]);
+  let state_vector = Vec::from([(String::from("closed"), Vec::from([String::from("box0")])), (String::from("closed"), Vec::from([String::from("box0")])), (String::from("closed"), Vec::from([String::from("box0")]))]);
   
   let init_state: State = State {
     state_variables: state_vector,
@@ -70,6 +70,7 @@ pub fn create_problem () -> (Problem, Domain) {
   
   let task: Task = Task {
     name: "opened_box".to_string(),
+    alias: "task0".to_string(),
     parameters: Vec::from([arg1.clone(), arg0.clone()]),
   };
 
@@ -77,7 +78,7 @@ pub fn create_problem () -> (Problem, Domain) {
 
   let htn: Htn = Htn {
     parameters: Vec::from([]),
-    subtasks: Vec::from([(task.clone(), Vec::from([object2.clone()])),(task.clone(), Vec::from([object3.clone()])),(task.clone(), Vec::from([object4.clone()]))]),
+    subtasks: Vec::from([("opened_box".to_string(), "task0".to_string(), Vec::from(["box0".to_string()])),("opened_box".to_string(), "task0".to_string(), Vec::from(["box1".to_string()])),("opened_box".to_string(), "task0".to_string(), Vec::from(["box2".to_string()]))]),
   };
 
   // -----------------------------------------------------

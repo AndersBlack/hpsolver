@@ -25,6 +25,7 @@ pub struct Predicate {
 pub struct Task {
     pub name: String,
     pub parameters: Vec<Argument>,
+    pub alias: String,
 }
 
 #[derive(Debug, Clone)] 

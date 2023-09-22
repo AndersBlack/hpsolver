@@ -1,18 +1,16 @@
 use crate::domain::Predicate;
 use crate::domain::Task;
-use std::collections::HashMap;
-
 
 // Struct that holds the current state
 #[derive(Debug, Default)]  
 pub struct State {
-    pub state_variables: Vec<(Predicate, Vec<Object>)>,
+    pub state_variables: Vec<(String, Vec<String>)>,
 }
 
 #[derive(Debug, Default)]
 pub struct Htn {
   pub parameters: Vec<String>, 
-  pub subtasks: Vec<(Task, Vec<Object>)>,
+  pub subtasks: Vec<(String, String, Vec<String>)>,
 }
 
 #[derive(Debug, Default, Clone)]
