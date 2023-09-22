@@ -24,12 +24,12 @@ pub fn create_problem () -> (Problem, Domain) {
 
   let arg0: Argument = Argument {
     name: "box_arg".to_string(),
-    object_type: type2.clone(),
+    object_type: "box".to_string(),
   };
 
   let arg1: Argument = Argument {
     name: "key_arg".to_string(),
-    object_type: type1.clone(),
+    object_type: "key".to_string(),
   };
 
   // -----------------------------------------------------
@@ -115,9 +115,10 @@ pub fn create_problem () -> (Problem, Domain) {
   let method: Method = Method {
     name: "opened_box_method".to_string(),
     parameters: Vec::from([arg1.clone(), arg0.clone()]), 
-    task: ("box_opener".to_string(), Vec::from([arg1.name, arg0.name])),
-    precondition: Vec::from([(false,predicate1.clone(), Vec::from([arg0.clone()])),(true,predicate2.clone(), Vec::from([arg0.clone()]))]),
+    task: ("box_opener".to_string(), Vec::from([arg1.name.clone(), arg0.name.clone()])),
+    precondition: Vec::from([(false,String::from("open"), Vec::from([arg0.clone()])),(true,String::from("closed"), Vec::from([arg0.clone()]))]),
     subtasks: Vec::from([(action1.clone(), Vec::from([arg1.clone(), arg0.clone()])), (action2.clone(), Vec::from([arg1.clone(), arg0.clone()]))]), 
+    contraints: Vec::<(String, String)>::new()
   };
 
   // ---------------------------------------------------

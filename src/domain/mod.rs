@@ -23,7 +23,7 @@ pub struct Predicate {
 
 #[derive(Debug, Clone)] 
 pub struct Task {
-    pub name: String,
+    pub name: String,   
     pub parameters: Vec<Argument>,
     pub alias: String,
 }
@@ -31,16 +31,17 @@ pub struct Task {
 #[derive(Debug, Clone)] 
 pub struct Argument {
     pub name: String,
-    pub object_type: Type
+    pub object_type: String
 }
 
 #[derive(Debug, Clone)] 
 pub struct Method {
     pub name: String,
     pub parameters: Vec<Argument>, 
-    pub task: (String, Vec<String>)
-    pub precondition: Vec<(bool,Predicate,Vec<Argument>)>,
+    pub task: (String, Vec<String>),
+    pub precondition: Vec<(bool,String,Vec<Argument>)>,
     pub subtasks: Vec<(Action, Vec<Argument>)>,
+    pub contraints: Vec<(String, String)>
 }
 
 #[derive(Debug, Clone)] 
