@@ -38,7 +38,7 @@ pub struct Argument {
 pub struct Method {
     pub name: String,
     pub parameters: Vec<Argument>, 
-    pub task: Task,
+    pub task: (String, Vec<String>)
     pub precondition: Vec<(bool,Predicate,Vec<Argument>)>,
     pub subtasks: Vec<(Action, Vec<Argument>)>,
 }
