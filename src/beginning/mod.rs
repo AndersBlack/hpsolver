@@ -96,15 +96,15 @@ pub fn create_problem () -> (Problem, Domain) {
   let action1 = Action {
     name: String::from("insert_key"),
     parameters: Vec::from([arg1.clone(), arg0.clone()]),
-    precondition: Vec::from([(false, predicate3.clone(), Vec::from([arg1.clone(), arg0.clone()]))]),
-    effect: Vec::from([(true, predicate3.clone(),Vec::from([arg1.clone(),arg0.clone()]))])  
+    precondition: Some(Vec::from([(false, String::from("in"), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])),
+    effect: Vec::from([(true,String::from("in"),Vec::from(["key_arg".to_string(),"box_arg".to_string()]))])  
   };
 
   let action2 = Action {
     name: String::from("open_box"),
     parameters: Vec::from([arg1.clone(), arg0.clone()]),
-    precondition: Vec::from([(true, predicate3.clone(), Vec::from([arg1.clone(), arg0.clone()]))]),
-    effect: Vec::from([(true, predicate1.clone(),Vec::from([arg0.clone()])),(false, predicate2.clone(),Vec::from([arg0.clone()])),(false, predicate3.clone(),Vec::from([arg1.clone(),arg0.clone()]))])  
+    precondition: Some(Vec::from([(true, String::from("in"), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])),
+    effect: Vec::from([(true, String::from("open"),Vec::from(["box_arg".to_string()])),(false, String::from("closed"),Vec::from(["box_arg".to_string()])),(false,String::from("in"),Vec::from(["key_arg".to_string(),"box_arg".to_string()]))])  
   };
 
 
@@ -116,9 +116,9 @@ pub fn create_problem () -> (Problem, Domain) {
     name: "opened_box_method".to_string(),
     parameters: Vec::from([arg1.clone(), arg0.clone()]), 
     task: ("box_opener".to_string(), Vec::from([arg1.name.clone(), arg0.name.clone()])),
-    precondition: Vec::from([(false,String::from("open"), Vec::from([arg0.clone()])),(true,String::from("closed"), Vec::from([arg0.clone()]))]),
-    subtasks: Vec::from([(action1.clone(), Vec::from([arg1.clone(), arg0.clone()])), (action2.clone(), Vec::from([arg1.clone(), arg0.clone()]))]), 
-    contraints: Vec::<(String, String)>::new()
+    precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["box_arg".to_string()])),(true,String::from("closed"), Vec::from(["box_arg".to_string()]))])),
+    subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["key_arg".to_string(), "box_arg".to_string()])), ("open_box".to_string(), "task0".to_string(), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])), 
+    contraints: None
   };
 
   // ---------------------------------------------------

@@ -39,16 +39,16 @@ pub struct Method {
     pub name: String,
     pub parameters: Vec<Argument>, 
     pub task: (String, Vec<String>),
-    pub precondition: Vec<(bool,String,Vec<Argument>)>,
-    pub subtasks: Vec<(Action, Vec<Argument>)>,
-    pub contraints: Vec<(String, String)>
+    pub precondition: Option<Vec<(bool,String,Vec<String>)>>,
+    pub subtasks: Option<Vec<(String, String, Vec<String>)>>,
+    pub contraints: Option<Vec<(bool, String, String)>>
 }
 
 #[derive(Debug, Clone)] 
 pub struct Action {
     pub name: String,
     pub parameters: Vec<Argument>,
-    pub precondition: Vec<(bool,Predicate,Vec<Argument>)>,
-    pub effect: Vec<(bool,Predicate,Vec<Argument>)>,
+    pub precondition: Option<Vec<(bool,String,Vec<String>)>>,
+    pub effect: Vec<(bool,String,Vec<String>)>,
 }
 
