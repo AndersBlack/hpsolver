@@ -1,5 +1,3 @@
-use crate::problem::Object;
-
 #[derive(Debug, Clone)]
 pub struct Domain {
     pub name: String,

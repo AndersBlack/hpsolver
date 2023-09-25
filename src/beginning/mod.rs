@@ -71,7 +71,7 @@ pub fn create_problem () -> (Problem, Domain) {
   let task: Task = Task {
     name: "opened_box".to_string(),
     alias: "task0".to_string(),
-    parameters: Vec::from([arg1.clone(), arg0.clone()]),
+    parameters: Vec::from([arg0.clone()]),
   };
 
   // -----------------------------------------------------
@@ -115,7 +115,7 @@ pub fn create_problem () -> (Problem, Domain) {
   let method: Method = Method {
     name: "opened_box_method".to_string(),
     parameters: Vec::from([arg1.clone(), arg0.clone()]), 
-    task: ("box_opener".to_string(), Vec::from([arg1.name.clone(), arg0.name.clone()])),
+    task: ("opened_box".to_string(), Vec::from([arg0.name.clone()])),
     precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["box_arg".to_string()])),(true,String::from("closed"), Vec::from(["box_arg".to_string()]))])),
     subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["key_arg".to_string(), "box_arg".to_string()])), ("open_box".to_string(), "task0".to_string(), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])), 
     contraints: None

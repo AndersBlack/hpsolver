@@ -1,6 +1,3 @@
-use crate::domain::Predicate;
-use crate::domain::Task;
-
 // Struct that holds the current state
 #[derive(Debug, Default)]  
 pub struct State {

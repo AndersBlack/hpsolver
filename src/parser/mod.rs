@@ -6,19 +6,15 @@ use crate::domain::Task;
 
 use crate::domain::*;
 
-use std::collections::HashMap;
-
 use nom::IResult;
 //use nom::branch::alt;
-use nom::bytes::complete::{tag, is_a, take_while, take_until, take_till, is_not};
-use nom::branch::{permutation, alt};
+use nom::bytes::complete::{tag, take_until};
+use nom::branch::{alt};
 use nom::combinator::{opt};
-use nom::character::{is_alphabetic, is_digit, is_alphanumeric};
-use nom::character::complete::{newline, tab, alphanumeric1, anychar, multispace0};
-use nom::sequence::{terminated, delimited, pair, preceded, tuple};
-use nom::multi::{separated_list0, many1, many0, count};
+use nom::character::complete::{newline, tab, alphanumeric1, multispace0};
+use nom::sequence::{tuple};
+use nom::multi::{many1, many0};
 use nom::error::{context};
-use parse_hyperlinks::take_until_unbalanced;
 
 // ------------------------- PROBLEM PARSER ----------------------------------------
 
@@ -122,7 +118,7 @@ fn get_objects( input: &str ) -> IResult<&str, Vec<Object>> {
 
     for result in obj_list {
 
-      let (_tab1, _tab2, name, underscore0, name_ending, _filler, obj_type, underscore1, obj_type_ending, _newline) = result;
+      let (_tab1, _tab2, name, _underscore0, name_ending, _filler, obj_type, _underscore1, obj_type_ending, _newline) = result;
 
       let obj = Object {
         //object: (name.to_string(), obj_type.to_string())
@@ -206,7 +202,7 @@ fn get_htn_parameters( input: &str) -> IResult<&str, Vec<String>> {
     match parameters {
       Some(parameters) => {
         for param in parameters {
-          let (arg, dash, type_name) = param;
+          let (_arg, _dash, type_name) = param;
           parameters_vec.push(type_name.to_string());
         }
       },
@@ -359,12 +355,12 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: Vec<(S
   let mut degree_list = Vec::<(i32, String, Vec<String>)>::new();
 
   for sub in &subtasks {
-    let mut point_vec = Vec::<String>::new();
+    let point_vec = Vec::<String>::new();
     degree_list.push((0, sub.1.to_string(), point_vec));
   }
 
   // Building the graph 
-  for mut order in ordering {
+  for order in ordering {
     for mut node in &mut degree_list {
 
       if order.0 == "<".to_string() {
@@ -986,7 +982,7 @@ fn get_method_preconditions(input: &str) -> IResult<&str,  Vec<(bool,String,Vec<
       let mut conditional_bool = true;
 
       match precon.1 {
-        Some(inner) => { conditional_bool = false }
+        Some(_inner) => { conditional_bool = false }
         None => { 
           // Nothing 
         } 
@@ -1136,7 +1132,7 @@ fn get_method_constraint(input: &str) -> IResult<&str, Vec<(bool, String, String
       let mut boolean_val = false;
 
       match arg.1 {
-        Some(boolean) => {
+        Some(_boolean) => {
           boolean_val = true;
         },
         None => { 
@@ -1352,7 +1348,7 @@ fn get_action_effects( input: &str ) -> IResult<&str, Vec<(bool,String,Vec<Strin
       };
 
       let boolean = match effect.0 {
-        Some(not) => false,
+        Some(_not) => false,
         None => true
       };
 
@@ -1408,7 +1404,7 @@ fn underscore_stringer( input: &str ) -> IResult<&str, String> {
 
 /// Parses 2 strings in form of a problem.hddl and a domain.hddl and returns a tuple of the datastructures for each
 pub fn parse_hddl( input_problem: &str, input_domain: &str ) -> (Problem, Domain) {
-  let (res_problem, problem) = if let Ok((res_problem, problem)) = problem_parser(input_problem) {
+  let (_res_problem, problem) = if let Ok((res_problem, problem)) = problem_parser(input_problem) {
     (res_problem, problem)
   } else if let Err(error) = problem_parser(input_domain) {
     println!("PROBLEM DIDNT PARSE: {}", error);
@@ -1418,7 +1414,7 @@ pub fn parse_hddl( input_problem: &str, input_domain: &str ) -> (Problem, Domain
     panic!("error, didnt parse problem")
   };
 
-  let (res_problem, domain) = if let Ok((res_problem, domain)) = domain_parser(input_domain) {
+  let (_res_domain, domain) = if let Ok((res_problem, domain)) = domain_parser(input_domain) {
     (res_problem, domain)
   } else if let Err(error) = domain_parser(input_domain) {
     println!("DOMAIN DIDNT PARSE: {}", error);
