@@ -953,7 +953,7 @@ fn get_method_preconditions(input: &str) -> IResult<&str,  Vec<(bool,String,Vec<
       many1(
         tuple((
           tag("("),
-          opt(tag("(not)")),
+          opt(tag("not (")),
           underscore_stringer,
           multispace0,
           many1(
@@ -963,7 +963,8 @@ fn get_method_preconditions(input: &str) -> IResult<&str,  Vec<(bool,String,Vec<
               multispace0
             ))
           ),
-          tag(")"),
+          opt(tag(")")),
+          opt(tag(")")),
           multispace0
         ))
       ),
@@ -1008,9 +1009,10 @@ fn get_method_subtasks(input: &str) -> IResult<&str, Vec<(String, String, Vec<St
 
   context("domain method subtask",
     tuple((
-      tag(":subtasks (and"),
+      tag(":subtasks ("),
+      opt(tag("and")),
       multispace0,
-      many1(
+      many0(
         tuple((
           tag("("),
           underscore_stringer,
@@ -1032,7 +1034,7 @@ fn get_method_subtasks(input: &str) -> IResult<&str, Vec<(String, String, Vec<St
     ))
   )(input)
   .map(|(next_input, res)| {
-    let (_tag0, _ws0, subtask_list, _tag1, _ws1) = res;
+    let (_tag0, _, _ws0, subtask_list, _tag1, _ws1) = res;
 
     let mut subtask_vec = Vec::<(String, String, Vec<String>)>::new();
 
@@ -1150,7 +1152,7 @@ fn get_method_constraint(input: &str) -> IResult<&str, Vec<(bool, String, String
 }
 
 fn get_domain_actions( input: &str ) -> IResult<&str, Vec<Action>> { 
-  //println!("Input for actions: {}", input);
+  //println!("Input for actions:\n{}", input);
 
   context("domain action",
     many1(

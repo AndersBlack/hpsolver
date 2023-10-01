@@ -23,12 +23,12 @@ pub fn create_problem () -> (Problem, Domain) {
   // ----------------------------------------------------
 
   let arg0: Argument = Argument {
-    name: "box_arg".to_string(),
+    name: "?box_arg".to_string(),
     object_type: "box".to_string(),
   };
 
   let arg1: Argument = Argument {
-    name: "key_arg".to_string(),
+    name: "?key_arg".to_string(),
     object_type: "key".to_string(),
   };
 
@@ -51,8 +51,8 @@ pub fn create_problem () -> (Problem, Domain) {
 
   // -----------------------------------------------------
 
-
-  let object1: Object = Object { object: (String::from("key0"), String::from("key")) };
+  let object0: Object = Object { object: (String::from("key0"), String::from("key")) };
+  let object1: Object = Object { object: (String::from("key1"), String::from("key")) };
   let object2: Object = Object { object: (String::from("box0"), String::from("box")) };
   let object3: Object = Object { object: (String::from("box1"), String::from("box")) };
   let object4: Object = Object { object: (String::from("box2"), String::from("box")) };
@@ -86,7 +86,7 @@ pub fn create_problem () -> (Problem, Domain) {
   let problem: Problem = Problem {
     name: "box_opener".to_string(),
     domain: "box_opener_domain".to_string(),
-    objects: Vec::from([object1, object2.clone(), object3.clone(), object4.clone()]),
+    objects: Vec::from([object0, object1, object2, object3, object4]),
     htn: htn,
     state: init_state,
   };
