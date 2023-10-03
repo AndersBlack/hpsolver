@@ -18,7 +18,7 @@ pub fn depth_first(problem: Problem, domain: Domain) {
     }
 }
 
-fn execute_subtasks(task: &(String, String, Vec<String>),  problem: &Problem, domain: &Domain, param_list: &Option<Vec<(String, Vec<String>)>>){
+fn execute_subtasks(task: &(String, String, Vec<String>),  problem: &Problem, domain: &Domain, param_list: &Option<Vec<(String, Vec<String>, String)>>){
 	// Loop through methods and locate task from htn
 		//println!("looping method: {} against {}",method.task.0 , task.0);
 
@@ -63,7 +63,7 @@ fn prep_method( method: &Method, problem: &Problem, domain: &Domain, objects: &V
 
 			// The htn task provided this parameter
 			if task_parameters[i] == method_parameter.name{
-				set_parameters.push(( true, method_parameter.clone() ));
+				set_parameters.push(( true, method_parameter.clone()));
 				found = true; 
 			}
 			
@@ -72,12 +72,12 @@ fn prep_method( method: &Method, problem: &Problem, domain: &Domain, objects: &V
 
 		if !found {
 			// The htn task did not provide this parameter
-			set_parameters.push((false,method_parameter.clone()));
+			set_parameters.push(( false, method_parameter.clone()));
 		}
 	}
 
 
-	let mut param_list = Vec::<(String, Vec<String>)>::new(); // all possible combinations of parameters for the methods
+	let mut param_list = Vec::<(String, Vec<String>, String)>::new(); // all possible combinations of parameters for the methods
 	let mut int = 0;
 	// Look for unprovided parameters
 	for parameter in set_parameters {
@@ -94,23 +94,23 @@ fn prep_method( method: &Method, problem: &Problem, domain: &Domain, objects: &V
 					}
 			}
 
-			param_list.push((param_name, unset_param_object_list));
+			param_list.push((param_name, unset_param_object_list, parameter.1.object_type));
 		} else {
 			let mut set_param_object_list = Vec::<String>::new();
 			
 			set_param_object_list.push(objects[int].clone());
-			param_list.push((method.task.1[int].clone(), set_param_object_list));
+			param_list.push((method.task.1[int].clone(), set_param_object_list, parameter.1.object_type));
 			int = int + 1;
 		}
 	}
 
-	println!("PARAM LIST {:?} \n", param_list);
+	println!("PARAM LIST - Method: {}\nParams: {:?} \n", method.name, param_list);
 
 	resolve_method(&Some(param_list), problem, domain, method);
 } 
 
 // Needs return type
-fn resolve_method(param_list: &Option<Vec<(String, Vec<String>)>>, problem: &Problem, domain: &Domain, method: &Method){
+fn resolve_method(param_list: &Option<Vec<(String, Vec<String>, String)>>, problem: &Problem, domain: &Domain, method: &Method){
   
 	match &method.subtasks {
 		Some(subtasks) => {
@@ -199,11 +199,20 @@ fn resolve_method(param_list: &Option<Vec<(String, Vec<String>)>>, problem: &Pro
 	// }
 }
 
-fn resolve_action(param_list: &Option<Vec<(String, Vec<String>)>>, problem: &Problem, domain: &Domain, action: &Action){
+fn resolve_action(param_list: &Option<Vec<(String, Vec<String>, String)>>, problem: &Problem, domain: &Domain, action: &Action){
+
+	//println!("PARAM LIST - Action: {}\nParams: {:?} \n", action.name, param_list);
+
+	println!("Hit action: {:?}\n", action);
 
 	for precon in action.precondition.iter().flatten() {
-
+		println!("Precon: {:?}", precon);
 	}
+
+	println!("\n");
+}
+
+fn checkPrecondition(precondition: (bool,String,Vec<String>), state: &State, ) {
 
 }
 
