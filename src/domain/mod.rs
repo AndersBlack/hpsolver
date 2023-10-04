@@ -50,3 +50,14 @@ pub struct Action {
     pub effect: Vec<(bool,String,Vec<String>)>,
 }
 
+impl std::fmt::Display for Action {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Action name: {}\nParameters: {:?}\nPrecondition: {:?}\nEffect: {:?}", self.name, self.parameters, self.precondition, self.effect)
+    }
+}
+
+impl std::fmt::Display for Method {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Method name: {}\nParameters: {:?}\nTask: {:?}\nPrecondition: {:?}\nSubtasks: {:?}\nConstraints: {:?}", self.name, self.parameters, self.task, self.precondition, self.subtasks, self.contraints)
+    }
+}

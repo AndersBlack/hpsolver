@@ -1258,9 +1258,10 @@ fn get_action_precondition( input: &str ) -> IResult<&str, Vec<(bool,String,Vec<
     tuple((
       tag(":precondition"),
       multispace0,
-      tag("(and"),
+      tag("("),
+      opt(tag("and")),
       multispace0,
-      many1(
+      many0(
         tuple((
           tag("("),
           underscore_stringer,
@@ -1281,7 +1282,7 @@ fn get_action_precondition( input: &str ) -> IResult<&str, Vec<(bool,String,Vec<
     ))
   )(input)
   .map(|(next_input, res)| {
-    let (_, _, _, _, precon_list, _, _) = res;
+    let (_, _, _, _, _, precon_list, _, _) = res;
 
     let mut precon_vec = Vec::<(bool,String,Vec<String>)>::new();
 
