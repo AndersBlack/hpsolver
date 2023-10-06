@@ -133,7 +133,7 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
   
     context("name", 
       tuple((
-        tab,
+        multispace0,
         tag("(:htn"),
         newline,
         get_htn_parameters,
@@ -144,7 +144,7 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
       ))
     )(input)
     .map(|(next_input, res)| {
-      let (_tab, _header, _newline, parameters, subtasks, ordering, _tag, _ws) = res;
+      let (_, _header, _newline, parameters, subtasks, ordering, _tag, _ws) = res;
   
       let mut sorted_subtasks = Vec::<(String, String, Vec<String>)>::new();
   
