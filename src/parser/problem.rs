@@ -137,7 +137,7 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
       tuple((
         multispace0,
         tag("(:htn"),
-        newline,
+        multispace0,
         get_htn_parameters,
         get_htn_subtasks,
         opt(get_htn_ordering),
@@ -176,19 +176,18 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
   
     context("parameters", 
       tuple((
-        tab,
-        tab,
+        multispace0,
         tag(":parameters "),
         tag("("),
         opt(many0(tuple
           ((alphanumeric1, tag(" - "), alphanumeric1))
         )),
         tag(")"),
-        newline,
+        multispace0,
       ))
     )(input)
     .map(|(next_input, res)| {
-      let (_tab0, _tab1, _header, _tag1, parameters, _tag2, _newline) = res;
+      let (_, _header, _tag1, parameters, _tag2, _) = res;
   
       let mut parameters_vec = Vec::<String>::new();
   
@@ -216,75 +215,42 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
       tuple((
         multispace0,
         tag(":subtasks (and"),
-        newline,
-        many1(
+        multispace0,
+        many0(
           tuple((
-            tab,
-            tab,
+            tag("("),
+            underscore_stringer,
             tag(" ("),
-            alphanumeric1,
-            tag(" ("),
+            underscore_stringer,
+            multispace0,
             many1(tuple((
-              alphanumeric1,
-              many0(tuple((
-                tag("_"),
-                alphanumeric1
-              )))
-            ))),
-            many1(tuple((
-              tag(" "),
-              alphanumeric1,
-              many0(tuple((
-                tag("_"),
-                alphanumeric1
-              )))
+              underscore_stringer,
+              multispace0
             ))),
             tag("))"),
-            newline
+            multispace0
           ))
         ),
-        tab,
-        tab,
         tag(")"),
         multispace0
       ))
     )(input)
     .map(|(next_input, res)| {
-      let(_ws1, _newline1, _tag1, tuple, _tab0, _tab1, _tag0, _ws2) = res;
+      let(_ws1, _tag1, _, tuple, _tag0, _ws2) = res;
   
       let mut subtask_vec: Vec<(String, String, Vec<String>)> = Vec::<(String, String, Vec<String>)>::new();
-      
-      //println!("{:?}", tuple);
   
       // TODO: MOVE 
       for task in tuple {
   
         let mut obj_vec = Vec::<String>::new();
-        let mut task_name = String::new();
-  
-        //Construct task_name
-        for obj in task.5 {
-  
-          task_name = obj.0.to_string();
-          if obj.1.len() != 0 {
-            for name_extension in obj.1 {
-              task_name = underscore_matcher(task_name, name_extension.1);
-            }
-          }
-        }
   
         //Construct obj vector
-        for obj in task.6 {
-          let mut obj_name = obj.1.to_string();
-          if obj.2.len() != 0 {
-            for name_extension in obj.2 {
-              obj_name = underscore_matcher(obj_name, name_extension.1);
-            }
-          }
-          obj_vec.push(obj_name);
+        for obj in task.5 {
+          obj_vec.push(obj.0);
         }
   
-        subtask_vec.push((task_name, task.3.to_string(), obj_vec));
+        subtask_vec.push((task.3, task.1, obj_vec));
       }
   
       (next_input, subtask_vec)

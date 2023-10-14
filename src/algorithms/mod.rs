@@ -1,4 +1,3 @@
-use crate::node;
 use crate::node::Node;
 use crate::node::SubtaskTypes;
 use crate::problem::*;
@@ -24,7 +23,14 @@ pub fn depth_first(problem: &mut Problem, domain: Domain) {
 					subtask_queue_clone.push(SubtaskTypes::Method(method));
 
 					let mut new_relevant_parameters = Vec::<(String, String, Vec<String>)>::new();
-					new_relevant_parameters.push(htn_task.clone());
+
+					for item in htn_task.2.clone() {
+						for object in &problem.objects {
+							if object.object.0 == item {
+								new_relevant_parameters.push(("no name".to_string(), object.object.1.clone(), vec![item.clone()]))
+							}
+						}
+					}
 
 					let new_node = Node {
 						problem: problem.clone(),
@@ -49,10 +55,6 @@ fn next_node(node_queue: &mut Vec::<Node>, domain: &Domain) {
 
 	let current_node = node_queue.pop();
 
-	// Update relevant parameters
-
-	// Check preconditions
-
 	// Handle subtasks
 	match current_node {
 		Some(current_node) => {
@@ -63,10 +65,65 @@ fn next_node(node_queue: &mut Vec::<Node>, domain: &Domain) {
 					println!("htn")
 				},
 				Some(SubtaskTypes::Task(task)) => {
-					println!("task")
+					//println!("task")
+
+					// Expand task and create a new node for every method that task expands to
+					for method in domain.methods.clone() {
+						if method.task.0 == task.name {
+							//println!("task: {:?}", task.name)
+						}
+					}
+
+
 				},
 				Some(SubtaskTypes::Method(method)) => {
-					println!("method")
+					// Update relevant parameters
+					let updated_relevant_variables = update_relevant_variables(&current_node, method);
+					//println!("{:?}", updated_relevant_variables);
+
+					// Check preconditions
+					for precon in method.precondition.iter().flatten() {
+						let precon_clear = check_precondition(precon, &updated_relevant_variables, &current_node.problem.state);
+
+						// Not finished!
+						if !precon_clear {
+							println!("Precon didnt clear, this node is not it!");
+						}
+					}
+
+					// Create node 
+					// Check tasks and actions in order to add them to subtask queue
+					let mut new_subtask_queue = current_node.subtask_queue.clone(); 
+					
+					for subtask in method.subtasks.iter().flatten().rev() {
+
+						for task in domain.tasks.clone() {
+							if task.name == subtask.0 {
+								println!("task: {:?}", task.name);
+								new_subtask_queue.push(SubtaskTypes::Task(task.clone()));
+							}
+						}
+
+						for action in domain.actions.iter().clone() {
+							//println!("{:?}", action);
+							if action.name == subtask.0 {
+								println!("task: {:?}", subtask.0);
+								new_subtask_queue.push(SubtaskTypes::Action(action.clone()));
+							}
+						}
+					}
+
+					// --------- OBS! Der er noget galt med relevant variables. Vi laver kun en node for 3 items på en subtask kø. Derved er relevant variables umulig at oprethold. overvej flyt til tuple i subtask kø
+
+					let new_node = Node {
+						problem: current_node.problem.clone(),
+						subtask_queue: new_subtask_queue,
+						relevant_parameters: updated_relevant_variables 
+					};
+
+					node_queue.push(new_node);
+
+					next_node(&mut node_queue.clone(), domain);
 				},
 				Some(SubtaskTypes::Action(action)) => {
 					println!("action")
@@ -81,6 +138,106 @@ fn next_node(node_queue: &mut Vec::<Node>, domain: &Domain) {
 
 }
 
+fn update_relevant_variables(node: &Node, method: &Method) -> Vec<(String, String, Vec<String>)> {
+
+	let mut updated_relevant_parameters = Vec::<(String, String, Vec<String>)>::new();
+
+	for param in &method.parameters {
+
+		let mut found_in_task = false;
+		let mut looking_count = 0;
+			
+		for task_param in &method.task.1 {
+							
+			if &param.name == task_param {
+				//println!("Found in task param: {:?} {:?} {:?}", param.name.clone(), task_param.clone(), node.relevant_parameters.clone() );
+				updated_relevant_parameters.push((param.name.clone(), node.relevant_parameters[looking_count].1.clone(), node.relevant_parameters[looking_count].2.clone()));
+							
+				found_in_task = true;
+			}
+		
+			looking_count = looking_count + 1;
+		}
+	
+		if !found_in_task {
+					
+			let mut var_list = Vec::<String>::new();
+	
+			for object in &node.problem.objects {
+				if object.object.1 == param.object_type {
+					var_list.push(object.object.0.clone());
+				}
+			}
+		
+			updated_relevant_parameters.push((param.name.clone(), param.object_type.clone(), var_list.clone()));
+		}
+	}
+
+	//println!("{:?}", updated_relevant_parameters);
+
+	updated_relevant_parameters
+
+}
+
+// Takes the boolean prefix, the name, the list of lists of possible values and a ref to the state
+fn check_precondition(precondition: &(bool,String,Vec<String>), param_list: &Vec::<(String, String, Vec<String>)>, state: &State) -> bool {
+
+	let mut precondition_value_list = Vec::<(String, Vec<String>)>::new();
+	let mut param_counter = 0;
+
+	//Find needed values (Explain to Andreas)
+	'outer: for value in &precondition.2 {
+		for param in param_list {
+			if value == &param.0 {
+				precondition_value_list.push((param.0.clone(), param.2.clone()));
+				param_counter = param_counter + 1;
+			}
+
+			if param_counter == precondition.2.len() {
+				break;
+			}
+		}
+	};
+
+	let mut found_one = false;
+	let mut found_count = 0;
+	//println!("Precondition: {:?} with precondition_value_list: {:?}\n", precondition, precondition_value_list);
+	//println!("param list {:?}", precondition_value_list);
+
+	// Find state parameter
+	for value in &state.state_variables {
+		let mut foundCounter = 0;
+
+		if value.0 == precondition.1 {
+			// For every variable in state parameter
+			//println!("bob {:?} - {:?}",value, precondition);
+
+			for n in 0..=(value.1.len()-1) {
+				//println!("hmm {:?} {:?}", value.1, &precondition_value_list);
+				for param in &precondition_value_list[n].1 {
+					if &value.1[n] == param {
+						foundCounter = foundCounter + 1;
+					} 
+				}
+			}
+
+		}
+
+		if foundCounter == value.1.len() && precondition.0 == true {
+			//println!("Found match {:?} & {:?} in {}", value.1, precondition_value_list, precondition.1);
+			found_one = true;
+			break;
+		}
+
+	}
+
+	if (found_one == false && precondition.0 == true) || (found_one == true && precondition.0 == false) {
+		//panic!("Encountered unsatisfiable precondition: {:?} with {:?}", precondition, param_list);
+		return false;
+	}
+
+	true
+}
 
 // ------------------------------------------------- With Node ----------------------------------
 
