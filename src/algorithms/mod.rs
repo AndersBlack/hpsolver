@@ -42,10 +42,9 @@ pub fn depth_first(problem: &mut Problem, domain: Domain) {
 				}
 			}
 		},
-		Task => {},
-		Method => {},
-		Action => {},
-		None => {}
+		_ => {
+			panic!("First option wasn't a htn task (Which it should be :-) )")
+		}
 	}
 
 	next_node(&mut node_queue, &domain)
@@ -62,7 +61,7 @@ fn next_node(node_queue: &mut Vec::<Node>, domain: &Domain) {
 
 			match current_subtask {
 				Some(SubtaskTypes::HtnTask(htn_task))=> {
-					println!("htn")
+					println!("htn match: {:?}", htn_task)
 				},
 				Some(SubtaskTypes::Task(task)) => {
 					//println!("task")
@@ -70,10 +69,9 @@ fn next_node(node_queue: &mut Vec::<Node>, domain: &Domain) {
 					// Expand task and create a new node for every method that task expands to
 					for method in domain.methods.clone() {
 						if method.task.0 == task.name {
-							//println!("task: {:?}", task.name)
+							println!("task: {:?}", task.name)
 						}
 					}
-
 
 				},
 				Some(SubtaskTypes::Method(method)) => {
@@ -87,7 +85,7 @@ fn next_node(node_queue: &mut Vec::<Node>, domain: &Domain) {
 
 						// Not finished!
 						if !precon_clear {
-							println!("Precon didnt clear, this node is not it!");
+							next_node(&mut node_queue.clone(), domain)
 						}
 					}
 
@@ -99,7 +97,7 @@ fn next_node(node_queue: &mut Vec::<Node>, domain: &Domain) {
 
 						for task in domain.tasks.clone() {
 							if task.name == subtask.0 {
-								println!("task: {:?}", task.name);
+								//println!("task: {:?}", task.name);
 								new_subtask_queue.push(SubtaskTypes::Task(task.clone()));
 							}
 						}
@@ -107,10 +105,11 @@ fn next_node(node_queue: &mut Vec::<Node>, domain: &Domain) {
 						for action in domain.actions.iter().clone() {
 							//println!("{:?}", action);
 							if action.name == subtask.0 {
-								println!("task: {:?}", subtask.0);
+								//println!("action: {:?}", subtask.0);
 								new_subtask_queue.push(SubtaskTypes::Action(action.clone()));
 							}
 						}
+						
 					}
 
 					// --------- OBS! Der er noget galt med relevant variables. Vi laver kun en node for 3 items på en subtask kø. Derved er relevant variables umulig at oprethold. overvej flyt til tuple i subtask kø
@@ -126,7 +125,7 @@ fn next_node(node_queue: &mut Vec::<Node>, domain: &Domain) {
 					next_node(&mut node_queue.clone(), domain);
 				},
 				Some(SubtaskTypes::Action(action)) => {
-					println!("action")
+					println!("action match: {:?}", action)
 				},
 				None => {}
 			}
@@ -186,7 +185,7 @@ fn check_precondition(precondition: &(bool,String,Vec<String>), param_list: &Vec
 	let mut param_counter = 0;
 
 	//Find needed values (Explain to Andreas)
-	'outer: for value in &precondition.2 {
+	for value in &precondition.2 {
 		for param in param_list {
 			if value == &param.0 {
 				precondition_value_list.push((param.0.clone(), param.2.clone()));
@@ -200,13 +199,12 @@ fn check_precondition(precondition: &(bool,String,Vec<String>), param_list: &Vec
 	};
 
 	let mut found_one = false;
-	let mut found_count = 0;
 	//println!("Precondition: {:?} with precondition_value_list: {:?}\n", precondition, precondition_value_list);
 	//println!("param list {:?}", precondition_value_list);
 
 	// Find state parameter
 	for value in &state.state_variables {
-		let mut foundCounter = 0;
+		let mut found_counter = 0;
 
 		if value.0 == precondition.1 {
 			// For every variable in state parameter
@@ -216,14 +214,14 @@ fn check_precondition(precondition: &(bool,String,Vec<String>), param_list: &Vec
 				//println!("hmm {:?} {:?}", value.1, &precondition_value_list);
 				for param in &precondition_value_list[n].1 {
 					if &value.1[n] == param {
-						foundCounter = foundCounter + 1;
+						found_counter = found_counter + 1;
 					} 
 				}
 			}
 
 		}
 
-		if foundCounter == value.1.len() && precondition.0 == true {
+		if found_counter == value.1.len() && precondition.0 == true {
 			//println!("Found match {:?} & {:?} in {}", value.1, precondition_value_list, precondition.1);
 			found_one = true;
 			break;

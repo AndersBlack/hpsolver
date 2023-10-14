@@ -7,7 +7,7 @@ use nom::IResult;
 use nom::bytes::complete::{tag};
 use nom::branch::{alt};
 use nom::combinator::{opt};
-use nom::character::complete::{newline, tab, alphanumeric1, multispace0};
+use nom::character::complete::{alphanumeric1, multispace0};
 use nom::sequence::{tuple};
 use nom::multi::{many1, many0};
 use nom::error::{context};
@@ -28,7 +28,7 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
     .map(|(next_input, res)| {
         let (name, domain, objects, htn, state) = res;
 
-        let mut problem = Problem {
+        let problem = Problem {
           name,
           domain,
           objects,
@@ -148,16 +148,9 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
     .map(|(next_input, res)| {
       let (_, _header, _newline, parameters, subtasks, ordering, _tag, _ws) = res;
   
-      let mut sorted_subtasks = Vec::<(String, String, Vec<String>)>::new();
+      let sorted_subtasks = order_subtasks(subtasks, ordering);
   
       //println!("{:?}", ordering);
-  
-      match ordering {
-        Some(ordering) => {
-          sorted_subtasks = order_subtasks(subtasks, ordering);
-        },
-        None => sorted_subtasks = subtasks
-      }
   
       let htn = Htn {
         parameters: parameters,

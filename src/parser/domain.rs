@@ -365,7 +365,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
         //println!("{:?}\n", method);
 
         let ordered_subtasks = match (method.4, method.5) {
-          (Some(inner0), Some(inner1)) => Some(order_subtasks(inner0, inner1)),
+          (Some(inner0), Some(inner1)) => Some(order_subtasks(inner0, Some(inner1))),
           (Some(inner0), None) => { Some(inner0) },
           _ => None
         };

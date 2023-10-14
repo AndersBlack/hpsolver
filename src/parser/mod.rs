@@ -42,15 +42,6 @@ pub fn parse_hddl( input_problem: &str, input_domain: &str ) -> (Problem, Domain
 
 // ------------------------- TOOL FUNCTIONS ----------------------------------------
 
-fn option_underscore_matcher(x: &str, y: Option<&str>) -> String {
-  match y {
-    Some(y) => {
-      format!("{}_{}", x, y)
-    },
-    None => x.to_string()
-  }
-}
-
 fn underscore_matcher(x: String, y: &str) -> String {
   format!("{}_{}", x, y)
 }
@@ -79,54 +70,63 @@ fn underscore_stringer( input: &str ) -> IResult<&str, String> {
   })
 }
 
-fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: Vec<(String, String, String)>) -> Vec<(String, String, Vec<String>)> {  
+fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: Option<Vec<(String, String, String)>>) -> Vec<(String, String, Vec<String>)> {  
   //println!("SUBS: {:?} \n ORDERING: {:?}", subtasks, ordering);
 
-  let mut sorted_subs = Vec::<(String, String, Vec<String>)>::new();
+  match ordering {
+    Some(ordering) => {
+      let mut sorted_subs = Vec::<(String, String, Vec<String>)>::new();
 
-  let mut degree_list = Vec::<(i32, String, Vec<String>)>::new();
-
-  for sub in &subtasks {
-    let point_vec = Vec::<String>::new();
-    degree_list.push((0, sub.1.to_string(), point_vec));
-  }
-
-  // Building the graph 
-  for order in ordering {
-    for mut node in &mut degree_list {
-
-      if order.0 == "<".to_string() {
-        if node.1 == order.1 {
-          node.2.push(order.2.clone());
-        } else if node.1 == order.2 {
-          node.0 = node.0 + 1;
-        }
-      } else {
-        if node.1 == order.1 {
-          node.0 = node.0 + 1;
-        } else if node.1 == order.2 {
-          node.2.push(order.2.clone());
+      let mut degree_list = Vec::<(i32, String, Vec<String>)>::new();
+    
+      for sub in &subtasks {
+        let point_vec = Vec::<String>::new();
+        degree_list.push((0, sub.1.to_string(), point_vec));
+      }
+    
+      // Building the graph 
+      for order in ordering {
+        for mut node in &mut degree_list {
+    
+          if order.0 == "<".to_string() {
+            if node.1 == order.1 {
+              node.2.push(order.2.clone());
+            } else if node.1 == order.2 {
+              node.0 = node.0 + 1;
+            }
+          } else {
+            if node.1 == order.1 {
+              node.0 = node.0 + 1;
+            } else if node.1 == order.2 {
+              node.2.push(order.2.clone());
+            }
+          }
+    
         }
       }
-
-    }
-  }
-
-  let mut degree_counter = 0;
-  let mut push_counter = 0;
-  while push_counter < degree_list.len() {
-    for node in &mut degree_list {
-      if node.0 == degree_counter {
-        for sub in &subtasks {
-          if node.1 == sub.1 {
-            push_counter = push_counter + 1;
-            sorted_subs.push((sub.0.clone(), sub.1.clone(), sub.2.clone()));
+    
+      let mut degree_counter = 0;
+      let mut push_counter = 0;
+      while push_counter < degree_list.len() {
+        for node in &mut degree_list {
+          if node.0 == degree_counter {
+            for sub in &subtasks {
+              if node.1 == sub.1 {
+                push_counter = push_counter + 1;
+                sorted_subs.push((sub.0.clone(), sub.1.clone(), sub.2.clone()));
+              }
+            }
           }
         }
+        degree_counter = degree_counter + 1;
       }
-    }
-    degree_counter = degree_counter + 1;
+    
+      sorted_subs
+    },
+    None => {
+      subtasks
+    }    
   }
 
-  sorted_subs
+  
 }
