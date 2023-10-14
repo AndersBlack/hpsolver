@@ -1,13 +1,13 @@
 // Struct that holds the current state
-#[derive(Debug, Default)]  
+#[derive(Debug, Default, Clone)]  
 pub struct State {
-    pub state_variables: Vec<(String, Vec<String>)>,
+    pub state_variables: Vec<(String, Vec<String>)>
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Htn {
   pub parameters: Vec<String>, 
-  pub subtasks: Vec<(String, String, Vec<String>)>,
+  pub subtasks: Vec<(String, String, Vec<String>)>
 }
 
 #[derive(Debug, Default, Clone)]
@@ -16,12 +16,12 @@ pub struct Object {
 }
 
 // The overarching struct for the entire problem
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Problem {
   pub name: String,
   pub domain: String,
   pub objects: Vec<Object>,
   pub htn: Htn,
-  pub state: State,
+  pub state: State
 }
 

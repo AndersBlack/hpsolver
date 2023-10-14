@@ -9,6 +9,7 @@ mod problem;
 mod parser;
 mod domain;
 mod algorithms;
+mod node;
 
 
 fn main() {
@@ -23,16 +24,16 @@ fn main() {
     let domain_file_path: &String = &args[2];
     let domain_contents = fs::read_to_string(domain_file_path).expect("failed to read domain file");
 
-    let (problem, domain) = parse_hddl( &problem_contents, &domain_contents);
+    let (mut problem, domain) = parse_hddl( &problem_contents, &domain_contents);
 
     println!("\nFinished parsing problem and domain!\n");
 
-    depth_first(problem,  domain);
+    depth_first(&mut problem,  domain);
   } else if args.len() == 1 {
-    let (problem, domain) = create_problem();
+    let (mut problem, domain) = create_problem();
 
     println!("Doing df");
-    depth_first(problem, domain);
+    depth_first(&mut problem, domain);
   } else {
     println!("Please provide a path for both the problem.hddl and the domain.hddl files. Or add nothing and try the test problem :)");
   }

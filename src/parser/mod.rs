@@ -8,12 +8,10 @@ use crate::problem::*;
 use crate::domain::*;
 
 use nom::IResult;
-use nom::bytes::complete::{tag, take_until};
+use nom::bytes::complete::{tag};
 use nom::branch::{alt};
-use nom::combinator::{opt};
-use nom::character::complete::{newline, tab, alphanumeric1, multispace0};
-use nom::sequence::{tuple};
-use nom::multi::{many1, many0};
+use nom::character::complete::{alphanumeric1};
+use nom::multi::{many1};
 use nom::error::{context};
 
 /// Parses 2 strings in form of a problem.hddl and a domain.hddl and returns a tuple of the datastructures for each
@@ -125,8 +123,6 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: Vec<(S
             sorted_subs.push((sub.0.clone(), sub.1.clone(), sub.2.clone()));
           }
         }
-
-
       }
     }
     degree_counter = degree_counter + 1;

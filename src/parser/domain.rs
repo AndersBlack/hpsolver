@@ -1,4 +1,3 @@
-use crate::problem::*;
 use crate::domain::*;
 
 use crate::parser::{underscore_stringer, underscore_matcher, order_subtasks};
@@ -8,7 +7,7 @@ use nom::IResult;
 use nom::bytes::complete::{tag, take_until};
 use nom::branch::{alt};
 use nom::combinator::{opt};
-use nom::character::complete::{newline, tab, alphanumeric1, multispace0};
+use nom::character::complete::{alphanumeric1, multispace0};
 use nom::sequence::{tuple};
 use nom::multi::{many1, many0};
 use nom::error::{context};
@@ -363,10 +362,11 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       let mut method_vec = Vec::<Method>::new();
   
       for method in method_list {
-        //println!("{:?}", method);
-  
+        //println!("{:?}\n", method);
+
         let ordered_subtasks = match (method.4, method.5) {
           (Some(inner0), Some(inner1)) => Some(order_subtasks(inner0, inner1)),
+          (Some(inner0), None) => { Some(inner0) },
           _ => None
         };
   
@@ -378,6 +378,8 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           subtasks: ordered_subtasks,
           contraints: method.6
         };
+
+        //println!("{}", new_method);
   
         method_vec.push(new_method);
       }
@@ -542,7 +544,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   }
   
   fn get_method_subtasks(input: &str) -> IResult<&str, Vec<(String, String, Vec<String>)>> {
-    //println!("Input for get_method_subtasks : {}", input);
+    //println!("Input for get_method_subtasks: {}", input);
   
     context("domain method subtask",
       tuple((
@@ -587,7 +589,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
         subtask_vec.push((subtask.3, subtask.1.to_string(), arg_vec));
       }
   
-      //println!("subs: {:?}", subtask_vec);
+      //println!("subs: {:?}\n", subtask_vec);
   
       (
         next_input, subtask_vec

@@ -1,11 +1,10 @@
 use crate::problem::*;
-use crate::domain::*;
 
 use crate::parser::{underscore_stringer, underscore_matcher, order_subtasks};
 
 use nom::IResult;
 //use nom::branch::alt;
-use nom::bytes::complete::{tag, take_until};
+use nom::bytes::complete::{tag};
 use nom::branch::{alt};
 use nom::combinator::{opt};
 use nom::character::complete::{newline, tab, alphanumeric1, multispace0};
@@ -28,22 +27,25 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
     )(input)
     .map(|(next_input, res)| {
         let (name, domain, objects, htn, state) = res;
+
+        let mut problem = Problem {
+          name,
+          domain,
+          objects,
+          htn,
+          state,
+        };
+
         (
           next_input,
-          Problem {
-            name,
-            domain,
-            objects,
-            htn,
-            state,
-          },
+          problem
         )
       })
   
   }
   
   fn get_name( input: &str ) -> IResult<&str, String> {
-    println!("name input:\n{}", input);
+    //println!("name input:\n{}", input);
   
     context("name", 
       tuple((
@@ -65,7 +67,7 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
   }
   
   fn get_domain( input: &str ) -> IResult<&str, String> {
-    println!("Domain input: {}", input);
+    //println!("Domain input: {}", input);
   
     context("domain", 
       tuple((
@@ -85,7 +87,7 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
   }
   
   fn get_objects( input: &str ) -> IResult<&str, Vec<Object>> {
-    println!("object input:\n{}", input);
+    //println!("object input:\n{}", input);
   
     context("objects",
       tuple((
@@ -129,7 +131,7 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
   }
   
   fn get_htn( input: &str ) -> IResult<&str, Htn> {
-    println!("htn input:\n{}", input);
+    //println!("htn input:\n{}", input);
   
     context("name", 
       tuple((

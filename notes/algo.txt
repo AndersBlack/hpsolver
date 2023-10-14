@@ -1,0 +1,41 @@
+Talk with Luis, the 11th of October:
+
+Introduce a list of states (all values relevant to a given state)
+
+/* ----------- Algorithm description --------------
+
+previous_state_list = []
+
+For htn in problem:
+	for method in htn:
+		label: method
+		generate_mut_ref_lists_of_variables_()
+		check preconditions (Every possible combination)
+		if possible precondition combination found:
+			for subtask in method:
+				action =>
+					check preconditions(every possible combination until valid found) {
+					if precondition not valid { 
+						remove combination
+					
+						if no combinations left {
+							loop shared_action_list {
+								if shared_action effects precondition {
+									apply shared_action
+								}
+							}
+
+							check precondition again 
+						} 
+					}
+
+					
+					else if list of combinations length > 1 {
+						add action to shared_action_list
+					} else {
+						apply_effect(action with combination)
+					} 
+				}
+				method => jump method
+
+*/ 
