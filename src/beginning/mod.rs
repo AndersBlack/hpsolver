@@ -39,10 +39,10 @@ pub fn create_problem () -> (Problem, Domain) {
     args: Vec::from([arg0.clone()]),
   };
   
-  let predicate2: Predicate = Predicate {
-    name: String::from("closed"),
-    args: Vec::from([arg0.clone()]),
-  };
+  // let predicate2: Predicate = Predicate {
+  //   name: String::from("closed"),
+  //   args: Vec::from([arg0.clone()]),
+  // };
   
   let predicate3: Predicate = Predicate {
     name: String::from("in"),
@@ -57,10 +57,9 @@ pub fn create_problem () -> (Problem, Domain) {
   let object3: Object = Object { object: (String::from("box1"), String::from("box")) };
   let object4: Object = Object { object: (String::from("box2"), String::from("box")) };
 
-
   // -----------------------------------------------------  
   
-  let state_vector = Vec::from([(String::from("closed"), Vec::from([String::from("box0")])), (String::from("closed"), Vec::from([String::from("box0")])), (String::from("closed"), Vec::from([String::from("box0")]))]);
+  let state_vector = Vec::from([]);
   
   let init_state: State = State {
     state_variables: state_vector,
@@ -96,15 +95,25 @@ pub fn create_problem () -> (Problem, Domain) {
   let action1 = Action {
     name: String::from("insert_key"),
     parameters: Vec::from([arg1.clone(), arg0.clone()]),
-    precondition: Some(Vec::from([(false, String::from("in"), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])),
-    effect: Vec::from([(true,String::from("in"),Vec::from(["key_arg".to_string(),"box_arg".to_string()]))])  
+    precondition: Some(
+      Vec::from([
+        (false, String::from("in"), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()])),
+        (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
+      ])
+    ),
+    effect: Vec::from([(true,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])  
   };
 
   let action2 = Action {
     name: String::from("open_box"),
     parameters: Vec::from([arg1.clone(), arg0.clone()]),
-    precondition: Some(Vec::from([(true, String::from("in"), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])),
-    effect: Vec::from([(true, String::from("open"),Vec::from(["box_arg".to_string()])),(false, String::from("closed"),Vec::from(["box_arg".to_string()])),(false,String::from("in"),Vec::from(["key_arg".to_string(),"box_arg".to_string()]))])  
+    precondition: Some(
+      Vec::from([
+        (true, String::from("in"), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()])),
+        (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
+      ])
+      ),
+    effect: Vec::from([(true, String::from("open"),Vec::from(["?box_arg".to_string()])),(false,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])  
   };
 
 
@@ -116,8 +125,8 @@ pub fn create_problem () -> (Problem, Domain) {
     name: "opened_box_method".to_string(),
     parameters: Vec::from([arg1.clone(), arg0.clone()]), 
     task: ("opened_box".to_string(), Vec::from([arg0.name.clone()])),
-    precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["box_arg".to_string()])),(true,String::from("closed"), Vec::from(["box_arg".to_string()]))])),
-    subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["key_arg".to_string(), "box_arg".to_string()])), ("open_box".to_string(), "task0".to_string(), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])), 
+    precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["?box_arg".to_string()]))])),
+    subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()])), ("open_box".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]))])), 
     contraints: None
   };
 
@@ -129,7 +138,7 @@ pub fn create_problem () -> (Problem, Domain) {
     methods: Vec::from([method]),
     actions: Vec::from([action1.clone(), action2.clone()]),
     types: Vec::from([type1, type2]),
-    predicates: Vec::from([predicate1.clone(), predicate2.clone(), predicate3.clone()]),
+    predicates: Vec::from([predicate1.clone(), predicate3.clone()]),
   };
 
   (problem, domain)
