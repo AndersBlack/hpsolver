@@ -699,7 +699,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           get_action_name,
           get_action_parameters,
           opt(get_action_precondition),
-          get_action_effects,
+          opt(get_action_effects),
           multispace0,
           tag(")"),
           multispace0
@@ -851,9 +851,10 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       tuple((
         tag(":effect"),
         multispace0,
-        tag("(and"),
+        tag("("),
+        opt(tag("and")),
         multispace0,
-        many1( 
+        many0( 
           tuple((
             opt(tag("(not ")),
             tag("("),
@@ -876,7 +877,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       ))
     )(input)
     .map(|(next_input, res)| {
-      let (_, _, _, _, effect_list, _, _) = res;
+      let (_, _, _, _, _, effect_list, _, _) = res;
   
       let mut effect_vec = Vec::<(bool,String,Vec<String>)>::new();
   

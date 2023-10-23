@@ -1,6 +1,6 @@
 (define
 	(problem pfile01)
-	(:domain  domain_htn)
+	(:domain domain_htn)
 	(:objects
 		package_0 - package
 		package_1 - package

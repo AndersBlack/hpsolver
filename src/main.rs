@@ -17,7 +17,6 @@ fn main() {
   // Read the file path from command line
   let args: Vec<_> = env::args().collect();
 
-
   if args.len() == 3 {
 
     let now = Instant::now();

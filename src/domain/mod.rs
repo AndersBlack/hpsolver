@@ -47,7 +47,7 @@ pub struct Action {
     pub name: String,
     pub parameters: Vec<Argument>,
     pub precondition: Option<Vec<(bool,String,Vec<String>)>>,
-    pub effect: Vec<(bool,String,Vec<String>)>,
+    pub effect: Option<Vec<(bool,String,Vec<String>)>>,
 }
 
 impl std::fmt::Display for Action {
@@ -59,5 +59,26 @@ impl std::fmt::Display for Action {
 impl std::fmt::Display for Method {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "Method name: {}\nParameters: {:?}\nTask: {:?}\nPrecondition: {:?}\nSubtasks: {:?}\nConstraints: {:?}", self.name, self.parameters, self.task, self.precondition, self.subtasks, self.contraints)
+    }
+}
+
+impl std::fmt::Display for Domain {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Domain: {}\n", self.name)?;
+        for t in &self.tasks {
+            println!("| Task: {:?}, Parameters: {:?}", t.name, t.parameters);
+        }
+
+        write!(f, "\nMethods:\n")?;
+        for m in &self.methods {
+            println!("| {}\n", m)
+        }
+
+        write!(f, "Actions:\n")?;
+        for a in &self.actions {
+            println!("| {}\n", a)
+        }
+
+        Ok(())
     }
 }

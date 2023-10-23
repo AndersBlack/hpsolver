@@ -71,14 +71,15 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
   
     context("domain", 
       tuple((
-        tag("(:domain "),
+        tag("(:domain"),
+        multispace0,
         underscore_stringer,
         tag(")"),
         multispace0
       ))
     )(input)
     .map(|(next_input, res)| {
-      let (_domain_keyword, domain, _tag, _newline) = res;
+      let (_domain_keyword, _, domain, _tag, _newline) = res;
   
       (
         next_input, domain.to_string()

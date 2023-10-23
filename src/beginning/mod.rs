@@ -101,7 +101,7 @@ pub fn create_problem () -> (Problem, Domain) {
         (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
       ])
     ),
-    effect: Vec::from([(true,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])  
+    effect: Some(Vec::from([(true,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))]))
   };
 
   let action2 = Action {
@@ -113,7 +113,7 @@ pub fn create_problem () -> (Problem, Domain) {
         (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
       ])
       ),
-    effect: Vec::from([(true, String::from("open"),Vec::from(["?box_arg".to_string()])),(false,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])  
+    effect: Some(Vec::from([(true, String::from("open"),Vec::from(["?box_arg".to_string()])),(false,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])) 
   };
 
 
