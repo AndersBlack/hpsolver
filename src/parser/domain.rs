@@ -101,7 +101,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
             ),
             opt(tuple((
               tag(" - "),
-              alphanumeric1
+              underscore_stringer
             ))),
             multispace0
           ))
@@ -376,7 +376,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           task: method.2,
           precondition: method.3,
           subtasks: ordered_subtasks,
-          contraints: method.6
+          constraints: method.6
         };
 
         //println!("{}", new_method);
@@ -670,11 +670,11 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       for arg in arg_list {
         //println!("{:?}",arg);
   
-        let mut boolean_val = false;
+        let mut boolean_val = true;
   
         match arg.1 {
           Some(_boolean) => {
-            boolean_val = true;
+            boolean_val = false;
           },
           None => { 
             //Nothing
@@ -803,6 +803,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
         many0(
           tuple((
             tag("("),
+            opt(tag("not (")),
             underscore_stringer,
             multispace0,
             many1(
@@ -813,6 +814,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
               ))
             ),
             tag(")"),
+            opt(tag(")")),
             multispace0
           ))
         ),
@@ -827,14 +829,17 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   
       for precon in precon_list {
         //println!("precon: {:?}", precon);
-  
         let mut arg_vec = Vec::<String>::new();
   
-        for arg in precon.3 {
+        for arg in precon.4 {
           arg_vec.push(format!("{}{}","?".to_string(), arg.1));
         }
-  
-        precon_vec.push((true, precon.1.to_string(), arg_vec));
+
+        if precon.1 != None {
+          precon_vec.push((false, precon.2.to_string(), arg_vec));
+        } else {
+          precon_vec.push((true, precon.2.to_string(), arg_vec));
+        }
       }
   
       (

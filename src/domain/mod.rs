@@ -39,7 +39,7 @@ pub struct Method {
     pub task: (String, Vec<String>),
     pub precondition: Option<Vec<(bool,String,Vec<String>)>>,
     pub subtasks: Option<Vec<(String, String, Vec<String>)>>,
-    pub contraints: Option<Vec<(bool, String, String)>>
+    pub constraints: Option<Vec<(bool, String, String)>>
 }
 
 #[derive(Debug, Clone)] 
@@ -58,7 +58,7 @@ impl std::fmt::Display for Action {
 
 impl std::fmt::Display for Method {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Method name: {}\nParameters: {:?}\nTask: {:?}\nPrecondition: {:?}\nSubtasks: {:?}\nConstraints: {:?}", self.name, self.parameters, self.task, self.precondition, self.subtasks, self.contraints)
+        write!(f, "Method name: {}\nParameters: {:?}\nTask: {:?}\nPrecondition: {:?}\nSubtasks: {:?}\nConstraints: {:?}", self.name, self.parameters, self.task, self.precondition, self.subtasks, self.constraints)
     }
 }
 

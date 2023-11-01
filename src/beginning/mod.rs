@@ -1,7 +1,6 @@
 use crate::problem::State;
 use crate::problem::Htn;
 use crate::problem::Problem;
-use crate::problem::Object;
 use crate::domain::Action;
 use crate::domain::Type;
 use crate::domain::Task;
@@ -51,11 +50,11 @@ pub fn create_problem () -> (Problem, Domain) {
 
   // -----------------------------------------------------
 
-  let object0: Object = Object { object: (String::from("key0"), String::from("key")) };
-  let object1: Object = Object { object: (String::from("key1"), String::from("key")) };
-  let object2: Object = Object { object: (String::from("box0"), String::from("box")) };
-  let object3: Object = Object { object: (String::from("box1"), String::from("box")) };
-  let object4: Object = Object { object: (String::from("box2"), String::from("box")) };
+  let object0: (String, String, Vec<String>) = (String::from("key0"), String::from("key"), Vec::<String>::new());
+  let object1: (String, String, Vec<String>) = (String::from("key1"), String::from("key"), Vec::<String>::new());
+  let object2: (String, String, Vec<String>) = (String::from("box0"), String::from("box"), Vec::<String>::new());
+  let object3: (String, String, Vec<String>) = (String::from("box1"), String::from("box"), Vec::<String>::new());
+  let object4: (String, String, Vec<String>) = (String::from("box2"), String::from("box"), Vec::<String>::new());
 
   // -----------------------------------------------------  
   
@@ -88,6 +87,7 @@ pub fn create_problem () -> (Problem, Domain) {
     objects: Vec::from([object0, object1, object2, object3, object4]),
     htn: htn,
     state: init_state,
+    goal: None
   };
 
   // ---------------------------------------------------
@@ -127,7 +127,7 @@ pub fn create_problem () -> (Problem, Domain) {
     task: ("opened_box".to_string(), Vec::from([arg0.name.clone()])),
     precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["?box_arg".to_string()]))])),
     subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()])), ("open_box".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]))])), 
-    contraints: None
+    constraints: None
   };
 
   // ---------------------------------------------------

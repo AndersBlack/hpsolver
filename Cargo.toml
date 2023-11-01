@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 nom = "7"
 parse-hyperlinks = "0.23.4"
+conv = "0.3.3"

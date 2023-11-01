@@ -10,18 +10,14 @@ pub struct Htn {
   pub subtasks: Vec<(String, String, Vec<String>)>
 }
 
-#[derive(Debug, Default, Clone)]
-pub struct Object {
-  pub object: (String, String),
-}
-
 // The overarching struct for the entire problem
 #[derive(Debug, Default, Clone)]
 pub struct Problem {
   pub name: String,
   pub domain: String,
-  pub objects: Vec<Object>,
+  pub objects: Vec<(String, String, Vec<String>)>,
   pub htn: Htn,
-  pub state: State
+  pub state: State,
+  pub goal: Option<Vec<(String, Vec<String>)>>
 }
 
