@@ -1,107 +1,62 @@
-Htn_task: "get_image_data"
-  Method "m_get_image_data_ordering_0"
-    Task: "calibrate_abs"
-    Method "m_calibrate_abs_ordering_0"
-      Task: "navigate_abs"
-      Method "m_navigate_abs_4_ordering_0"
-        Action: "navigate"
-        Action: "visit"
-        Action: "navigate"
-        Action: "unvisit"
-      Action: "calibrate"
-    Task: "navigate_abs"
-    Method "m_navigate_abs_4_ordering_0"
-      Action: "navigate"
-      Action: "visit"
-      Action: "navigate"
-      Action: "unvisit"
-    Action: "take_image"
-    Task: "send_image_data"
-    Method "m_send_image_data_ordering_0"
-      Task: "navigate_abs"
-      Method "m_navigate_abs_4_ordering_0"
-        Action: "navigate"
-        Action: "visit"
-        Action: "navigate"
-        Action: "unvisit"
-    Action: "communicate_image_data"
-Htn_task: "get_soil_data"
-  Method "m_get_soil_data_ordering_0"
-  Task: "navigate_abs"
-  Method "m_navigate_abs_4_ordering_0"
-  Action: "navigate"
-  Action: "visit"
-  Action: "navigate"
-  Action: "unvisit"
-  Task: "empty_store"
-  Method "m_empty_store_2_ordering_0"
-  Action: "drop"
-  Method "m_empty_store_1_ordering_0"
-  Action: "sample_soil"
-  Task: "send_soil_data"
-  Method "m_send_soil_data_ordering_0"
-  Task: "navigate_abs"
-  Method "m_navigate_abs_4_ordering_0"
-  Action: "navigate"
-  Action: "visit"
-  Action: "navigate"
-  Action: "unvisit"
-  Action: "communicate_soil_data"
-Htn_task: "get_rock_data"
-  Method "m_get_rock_data_ordering_0"
-  Task: "navigate_abs"
-  Method "m_navigate_abs_4_ordering_0"
-  Action: "navigate"
-  Action: "visit"
-  Action: "navigate"
-  Action: "unvisit"
-  Task: "empty_store"
-  Method "m_empty_store_2_ordering_0"
-  Action: "drop"
-  Action: "sample_rock"
-  Task: "send_rock_data"
-  Method "m_send_rock_data_ordering_0"
-  Task: "navigate_abs"
-  Method "m_navigate_abs_4_ordering_0"
-  Action: "navigate"
-  Action: "visit"
-  Action: "navigate"
-  Action: "unvisit"
-  Action: "communicate_rock_data"
+m_deliver_ordering_0: 
+  l1: city_loc_1
+  l2: city_loc_0
+  p: package_0
+  v: truck_0
 
-Action name: "navigate", parameters: ["rover0", "waypoint3", "waypoint1"]
-Action name: "visit", parameters: ["waypoint3"]
-Action name: "navigate", parameters: ["rover0", "waypoint1", "waypoint3"]
-Action name: "unvisit", parameters: ["waypoint3"]
-Action name: "calibrate", parameters: ["rover0", "camera0", "objective1", "waypoint3"]
-Action name: "navigate", parameters: ["rover0", "waypoint3", "waypoint1"]
-Action name: "visit", parameters: ["waypoint3"]
-Action name: "navigate", parameters: ["rover0", "waypoint1", "waypoint3"]
-Action name: "unvisit", parameters: ["waypoint3"]
-Action name: "take_image", parameters: ["rover0", "waypoint3", "objective1", "camera0", "high_res"]
-Action name: "navigate", parameters: ["rover0", "waypoint3", "waypoint1"]
-Action name: "visit", parameters: ["waypoint3"]
-Action name: "navigate", parameters: ["rover0", "waypoint1", "waypoint3"]
-Action name: "unvisit", parameters: ["waypoint3"]
-Action name: "communicate_image_data", parameters: ["rover0", "general", "objective1", "high_res", "waypoint3", "waypoint0"]
-Action name: "navigate", parameters: ["rover0", "waypoint3", "waypoint1"]
-Action name: "visit", parameters: ["waypoint3"]
-Action name: "navigate", parameters: ["rover0", "waypoint1", "waypoint2"]
-Action name: "unvisit", parameters: ["waypoint3"]
-Action name: "sample_soil", parameters: ["rover0", "rover0store", "waypoint2"]
-Action name: "navigate", parameters: ["rover0", "waypoint2", "waypoint1"]
-Action name: "visit", parameters: ["waypoint3"]
-Action name: "navigate", parameters: ["rover0", "waypoint1", "waypoint3"]
-Action name: "unvisit", parameters: ["waypoint3"]
-Action name: "communicate_soil_data", parameters: ["rover0", "general", "waypoint2", "waypoint3", "waypoint0"]
-Action name: "navigate", parameters: ["rover0", "waypoint3", "waypoint1"]
-Action name: "visit", parameters: ["waypoint3"]
-Action name: "navigate", parameters: ["rover0", "waypoint1", "waypoint3"]
-Action name: "unvisit", parameters: ["waypoint3"]
-Action name: "drop", parameters: ["rover0", "rover0store"]
-Action name: "sample_rock", parameters: ["rover0", "rover0store", "waypoint3"]
-Action name: "navigate", parameters: ["rover0", "waypoint3", "waypoint1"]
-Action name: "visit", parameters: ["waypoint3"]
-Action name: "navigate", parameters: ["rover0", "waypoint1", "waypoint3"]
-Action name: "unvisit", parameters: ["waypoint3"]
-Action name: "communicate_rock_data", parameters: ["rover0", "general", "waypoint3", "waypoint3", "waypoint0"]
+1: get_to:
+  m_drive_to_ordering_0:
+    v: truck_0
+    l1: city_loc_0, city_loc_1, city_loc_2
+    l2: city_loc_0, city_loc_1, city_loc_2
+
+    drive:
+      v: truck_0
+      l1: city_loc_2
+      l2: city_loc_1
+  
+1: load:
+  m_load_ordering_0:
+    l: city_loc_1
+    p: package_0
+    s1: capacity_0, capacity_1
+    s2: capacity_0, capacity_1
+    v: truck_0
+
+    pick_up:
+      l: city_loc_1
+      p: package_0
+      s1: capacity_0
+      s2: capacity_1
+      v: truck_0
+
+1: get_to
+  m_drive_to_ordering_0:
+    v: truck_0
+    l1: city_loc_0, city_loc_1, city_loc_2
+    l2: city_loc_0
+
+    drive:
+      v: truck_0
+      l1: city_loc_1
+      l2: city_loc_0
+
+1: unload
+  m_unload_ordering_0:
+    v: truck_0
+    l: city_loc_0
+    p: package_0
+    s1: capacity_0, capacity_1
+    s2: capacity_0, capacity_1
+
+    drop: 
+      v: truck_0
+      l: city_loc_0
+      p: package_0
+      s1: capacity_0
+      s2: capacity_1      
+
+
+STATE: (at truck_0 city_loc_0), (in package_0 truck_0), (capacity truck_0 capacity_0)
+
+  

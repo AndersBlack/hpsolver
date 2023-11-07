@@ -4,8 +4,8 @@ mod domain;
 use problem::problem_parser;
 use domain::domain_parser;
 
-use crate::problem::*;
-use crate::domain::*;
+
+use crate::datastructures::{domain::*, problem::*};
 
 use nom::IResult;
 use nom::bytes::complete::{tag};
@@ -70,12 +70,12 @@ fn underscore_stringer( input: &str ) -> IResult<&str, String> {
   })
 }
 
-fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: Option<Vec<(String, String, String)>>) -> Vec<(String, String, Vec<String>)> {  
+fn order_subtasks(subtasks: Vec<(String, String, Vec<String>, bool)>, ordering: Option<Vec<(String, String, String)>>) -> Vec<(String, String, Vec<String>, bool)> {  
   //println!("SUBS: {:?} \n ORDERING: {:?}", subtasks, ordering);
 
   match ordering {
     Some(ordering) => {
-      let mut sorted_subs = Vec::<(String, String, Vec<String>)>::new();
+      let mut sorted_subs = Vec::<(String, String, Vec<String>, bool)>::new();
 
       let mut degree_list = Vec::<(i32, String, Vec<String>)>::new();
     
@@ -113,7 +113,7 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: Option
             for sub in &subtasks {
               if node.1 == sub.1 {
                 push_counter = push_counter + 1;
-                sorted_subs.push((sub.0.clone(), sub.1.clone(), sub.2.clone()));
+                sorted_subs.push((sub.0.clone(), sub.1.clone(), sub.2.clone(), false));
               }
             }
           }

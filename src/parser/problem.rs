@@ -1,5 +1,4 @@
-use crate::problem::*;
-
+use crate::datastructures::{problem::*};
 use crate::parser::{underscore_stringer, underscore_matcher, order_subtasks};
 
 use nom::IResult;
@@ -202,7 +201,7 @@ fn get_htn_parameters( input: &str) -> IResult<&str, Vec<String>> {
   })
 }
 
-fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<String>)>> {
+fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<String>, bool)>> {
   //println!("htn_subtasks input:\n{}", input);
 
   context("subtasks",
@@ -232,7 +231,7 @@ fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<Stri
   .map(|(next_input, res)| {
     let(_ws1, _tag1, _, tuple, _tag0, _ws2) = res;
 
-    let mut subtask_vec: Vec<(String, String, Vec<String>)> = Vec::<(String, String, Vec<String>)>::new();
+    let mut subtask_vec: Vec<(String, String, Vec<String>, bool)> = Vec::<(String, String, Vec<String>, bool)>::new();
 
     // TODO: MOVE 
     for task in tuple {
@@ -244,7 +243,7 @@ fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<Stri
         obj_vec.push(obj.0);
       }
 
-      subtask_vec.push((task.3, task.1, obj_vec));
+      subtask_vec.push((task.3, task.1, obj_vec, false));
     }
 
     (next_input, subtask_vec)

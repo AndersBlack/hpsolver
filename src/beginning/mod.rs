@@ -1,13 +1,4 @@
-use crate::problem::State;
-use crate::problem::Htn;
-use crate::problem::Problem;
-use crate::domain::Action;
-use crate::domain::Type;
-use crate::domain::Task;
-use crate::domain::Domain;
-use crate::domain::Predicate;
-use crate::domain::Method;
-use crate::domain::Argument;
+use crate::datastructures::{domain::*, problem::*};
 
 pub fn create_problem () -> (Problem, Domain) {
 
@@ -76,7 +67,7 @@ pub fn create_problem () -> (Problem, Domain) {
 
   let htn: Htn = Htn {
     parameters: Vec::from([]),
-    subtasks: Vec::from([("opened_box".to_string(), "task0".to_string(), Vec::from(["box0".to_string()])),("opened_box".to_string(), "task0".to_string(), Vec::from(["box1".to_string()])),("opened_box".to_string(), "task0".to_string(), Vec::from(["box2".to_string()]))]),
+    subtasks: Vec::from([("opened_box".to_string(), "task0".to_string(), Vec::from(["box0".to_string()]), false),("opened_box".to_string(), "task0".to_string(), Vec::from(["box1".to_string()]), false),("opened_box".to_string(), "task0".to_string(), Vec::from(["box2".to_string()]), false)]),
   };
 
   // -----------------------------------------------------
@@ -126,7 +117,7 @@ pub fn create_problem () -> (Problem, Domain) {
     parameters: Vec::from([arg1.clone(), arg0.clone()]), 
     task: ("opened_box".to_string(), Vec::from([arg0.name.clone()])),
     precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["?box_arg".to_string()]))])),
-    subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()])), ("open_box".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]))])), 
+    subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false), ("open_box".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false)])), 
     constraints: None
   };
 

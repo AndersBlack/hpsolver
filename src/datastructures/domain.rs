@@ -1,4 +1,4 @@
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct Domain {
     pub name: String,
     pub tasks: Vec<Task>,
@@ -8,41 +8,41 @@ pub struct Domain {
     pub predicates: Vec<Predicate>,
 }
 
-#[derive(Debug, Clone)] 
+#[derive(Debug, Clone, Hash)] 
 pub struct Type {
     pub object_type: (String, String),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct Predicate {
     pub name: String,
     pub args: Vec<Argument>,
 }
 
-#[derive(Debug, Clone)] 
+#[derive(Debug, Clone, Hash)] 
 pub struct Task {
     pub name: String,   
     pub parameters: Vec<Argument>,
     pub alias: String,
 }
 
-#[derive(Debug, Clone)] 
+#[derive(Debug, Clone, Hash)] 
 pub struct Argument {
     pub name: String,
     pub object_type: String
 }
 
-#[derive(Debug, Clone)] 
+#[derive(Debug, Clone, Hash)] 
 pub struct Method {
     pub name: String,
     pub parameters: Vec<Argument>, 
     pub task: (String, Vec<String>),
     pub precondition: Option<Vec<(bool,String,Vec<String>)>>,
-    pub subtasks: Option<Vec<(String, String, Vec<String>)>>,
+    pub subtasks: Option<Vec<(String, String, Vec<String>, bool)>>,
     pub constraints: Option<Vec<(bool, String, String)>>
 }
 
-#[derive(Debug, Clone)] 
+#[derive(Debug, Clone, Hash)] 
 pub struct Action {
     pub name: String,
     pub parameters: Vec<Argument>,

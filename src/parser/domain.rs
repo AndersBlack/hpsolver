@@ -1,9 +1,7 @@
-use crate::domain::*;
 
+use crate::datastructures::{domain::*};
 use crate::parser::{underscore_stringer, underscore_matcher, order_subtasks};
-
 use nom::IResult;
-//use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::branch::{alt};
 use nom::combinator::{opt};
@@ -543,7 +541,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
     })
   }
   
-  fn get_method_subtasks(input: &str) -> IResult<&str, Vec<(String, String, Vec<String>)>> {
+  fn get_method_subtasks(input: &str) -> IResult<&str, Vec<(String, String, Vec<String>, bool)>> {
     //println!("Input for get_method_subtasks: {}", input);
   
     context("domain method subtask",
@@ -575,7 +573,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
     .map(|(next_input, res)| {
       let (_tag0, _, _ws0, subtask_list, _tag1, _ws1) = res;
   
-      let mut subtask_vec = Vec::<(String, String, Vec<String>)>::new();
+      let mut subtask_vec = Vec::<(String, String, Vec<String>, bool)>::new();
   
       for subtask in subtask_list {
         let mut arg_vec = Vec::<String>::new();
@@ -586,7 +584,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   
         //println!("{:?}",subtask);
   
-        subtask_vec.push((subtask.3, subtask.1.to_string(), arg_vec));
+        subtask_vec.push((subtask.3, subtask.1.to_string(), arg_vec, false));
       }
   
       //println!("subs: {:?}\n", subtask_vec);

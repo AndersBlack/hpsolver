@@ -6,11 +6,9 @@ use crate::parser::parse_hddl;
 use crate::algorithms::depth_first;
 
 mod beginning;
-mod problem;
+mod datastructures;
 mod parser;
-mod domain;
 mod algorithms;
-mod node;
 
 
 fn main() {
