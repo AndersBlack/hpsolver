@@ -1,9 +1,7 @@
-use crate::domain::*;
 
+use crate::datastructures::{domain::*};
 use crate::parser::{underscore_stringer, underscore_matcher, order_subtasks};
-
 use nom::IResult;
-//use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::branch::{alt};
 use nom::combinator::{opt};
@@ -101,7 +99,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
             ),
             opt(tuple((
               tag(" - "),
-              alphanumeric1
+              underscore_stringer
             ))),
             multispace0
           ))
@@ -376,7 +374,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           task: method.2,
           precondition: method.3,
           subtasks: ordered_subtasks,
-          contraints: method.6
+          constraints: method.6
         };
 
         //println!("{}", new_method);
@@ -543,7 +541,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
     })
   }
   
-  fn get_method_subtasks(input: &str) -> IResult<&str, Vec<(String, String, Vec<String>)>> {
+  fn get_method_subtasks(input: &str) -> IResult<&str, Vec<(String, String, Vec<String>, bool)>> {
     //println!("Input for get_method_subtasks: {}", input);
   
     context("domain method subtask",
@@ -575,7 +573,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
     .map(|(next_input, res)| {
       let (_tag0, _, _ws0, subtask_list, _tag1, _ws1) = res;
   
-      let mut subtask_vec = Vec::<(String, String, Vec<String>)>::new();
+      let mut subtask_vec = Vec::<(String, String, Vec<String>, bool)>::new();
   
       for subtask in subtask_list {
         let mut arg_vec = Vec::<String>::new();
@@ -586,7 +584,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   
         //println!("{:?}",subtask);
   
-        subtask_vec.push((subtask.3, subtask.1.to_string(), arg_vec));
+        subtask_vec.push((subtask.3, subtask.1.to_string(), arg_vec, false));
       }
   
       //println!("subs: {:?}\n", subtask_vec);
@@ -670,11 +668,11 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       for arg in arg_list {
         //println!("{:?}",arg);
   
-        let mut boolean_val = false;
+        let mut boolean_val = true;
   
         match arg.1 {
           Some(_boolean) => {
-            boolean_val = true;
+            boolean_val = false;
           },
           None => { 
             //Nothing
@@ -699,7 +697,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           get_action_name,
           get_action_parameters,
           opt(get_action_precondition),
-          get_action_effects,
+          opt(get_action_effects),
           multispace0,
           tag(")"),
           multispace0
@@ -803,6 +801,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
         many0(
           tuple((
             tag("("),
+            opt(tag("not (")),
             underscore_stringer,
             multispace0,
             many1(
@@ -813,6 +812,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
               ))
             ),
             tag(")"),
+            opt(tag(")")),
             multispace0
           ))
         ),
@@ -827,14 +827,17 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   
       for precon in precon_list {
         //println!("precon: {:?}", precon);
-  
         let mut arg_vec = Vec::<String>::new();
   
-        for arg in precon.3 {
+        for arg in precon.4 {
           arg_vec.push(format!("{}{}","?".to_string(), arg.1));
         }
-  
-        precon_vec.push((true, precon.1.to_string(), arg_vec));
+
+        if precon.1 != None {
+          precon_vec.push((false, precon.2.to_string(), arg_vec));
+        } else {
+          precon_vec.push((true, precon.2.to_string(), arg_vec));
+        }
       }
   
       (
@@ -851,9 +854,10 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       tuple((
         tag(":effect"),
         multispace0,
-        tag("(and"),
+        tag("("),
+        opt(tag("and")),
         multispace0,
-        many1( 
+        many0( 
           tuple((
             opt(tag("(not ")),
             tag("("),
@@ -876,7 +880,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       ))
     )(input)
     .map(|(next_input, res)| {
-      let (_, _, _, _, effect_list, _, _) = res;
+      let (_, _, _, _, _, effect_list, _, _) = res;
   
       let mut effect_vec = Vec::<(bool,String,Vec<String>)>::new();
   

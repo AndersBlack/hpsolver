@@ -1,14 +1,4 @@
-use crate::problem::State;
-use crate::problem::Htn;
-use crate::problem::Problem;
-use crate::problem::Object;
-use crate::domain::Action;
-use crate::domain::Type;
-use crate::domain::Task;
-use crate::domain::Domain;
-use crate::domain::Predicate;
-use crate::domain::Method;
-use crate::domain::Argument;
+use crate::datastructures::{domain::*, problem::*};
 
 pub fn create_problem () -> (Problem, Domain) {
 
@@ -39,10 +29,10 @@ pub fn create_problem () -> (Problem, Domain) {
     args: Vec::from([arg0.clone()]),
   };
   
-  let predicate2: Predicate = Predicate {
-    name: String::from("closed"),
-    args: Vec::from([arg0.clone()]),
-  };
+  // let predicate2: Predicate = Predicate {
+  //   name: String::from("closed"),
+  //   args: Vec::from([arg0.clone()]),
+  // };
   
   let predicate3: Predicate = Predicate {
     name: String::from("in"),
@@ -51,16 +41,15 @@ pub fn create_problem () -> (Problem, Domain) {
 
   // -----------------------------------------------------
 
-  let object0: Object = Object { object: (String::from("key0"), String::from("key")) };
-  let object1: Object = Object { object: (String::from("key1"), String::from("key")) };
-  let object2: Object = Object { object: (String::from("box0"), String::from("box")) };
-  let object3: Object = Object { object: (String::from("box1"), String::from("box")) };
-  let object4: Object = Object { object: (String::from("box2"), String::from("box")) };
-
+  let object0: (String, String, Vec<String>) = (String::from("key0"), String::from("key"), Vec::<String>::new());
+  let object1: (String, String, Vec<String>) = (String::from("key1"), String::from("key"), Vec::<String>::new());
+  let object2: (String, String, Vec<String>) = (String::from("box0"), String::from("box"), Vec::<String>::new());
+  let object3: (String, String, Vec<String>) = (String::from("box1"), String::from("box"), Vec::<String>::new());
+  let object4: (String, String, Vec<String>) = (String::from("box2"), String::from("box"), Vec::<String>::new());
 
   // -----------------------------------------------------  
   
-  let state_vector = Vec::from([(String::from("closed"), Vec::from([String::from("box0")])), (String::from("closed"), Vec::from([String::from("box0")])), (String::from("closed"), Vec::from([String::from("box0")]))]);
+  let state_vector = Vec::from([]);
   
   let init_state: State = State {
     state_variables: state_vector,
@@ -78,7 +67,7 @@ pub fn create_problem () -> (Problem, Domain) {
 
   let htn: Htn = Htn {
     parameters: Vec::from([]),
-    subtasks: Vec::from([("opened_box".to_string(), "task0".to_string(), Vec::from(["box0".to_string()])),("opened_box".to_string(), "task0".to_string(), Vec::from(["box1".to_string()])),("opened_box".to_string(), "task0".to_string(), Vec::from(["box2".to_string()]))]),
+    subtasks: Vec::from([("opened_box".to_string(), "task0".to_string(), Vec::from(["box0".to_string()]), false),("opened_box".to_string(), "task0".to_string(), Vec::from(["box1".to_string()]), false),("opened_box".to_string(), "task0".to_string(), Vec::from(["box2".to_string()]), false)]),
   };
 
   // -----------------------------------------------------
@@ -89,6 +78,7 @@ pub fn create_problem () -> (Problem, Domain) {
     objects: Vec::from([object0, object1, object2, object3, object4]),
     htn: htn,
     state: init_state,
+    goal: None
   };
 
   // ---------------------------------------------------
@@ -96,15 +86,25 @@ pub fn create_problem () -> (Problem, Domain) {
   let action1 = Action {
     name: String::from("insert_key"),
     parameters: Vec::from([arg1.clone(), arg0.clone()]),
-    precondition: Some(Vec::from([(false, String::from("in"), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])),
-    effect: Vec::from([(true,String::from("in"),Vec::from(["key_arg".to_string(),"box_arg".to_string()]))])  
+    precondition: Some(
+      Vec::from([
+        (false, String::from("in"), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()])),
+        (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
+      ])
+    ),
+    effect: Some(Vec::from([(true,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))]))
   };
 
   let action2 = Action {
     name: String::from("open_box"),
     parameters: Vec::from([arg1.clone(), arg0.clone()]),
-    precondition: Some(Vec::from([(true, String::from("in"), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])),
-    effect: Vec::from([(true, String::from("open"),Vec::from(["box_arg".to_string()])),(false, String::from("closed"),Vec::from(["box_arg".to_string()])),(false,String::from("in"),Vec::from(["key_arg".to_string(),"box_arg".to_string()]))])  
+    precondition: Some(
+      Vec::from([
+        (true, String::from("in"), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()])),
+        (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
+      ])
+      ),
+    effect: Some(Vec::from([(true, String::from("open"),Vec::from(["?box_arg".to_string()])),(false,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])) 
   };
 
 
@@ -116,9 +116,9 @@ pub fn create_problem () -> (Problem, Domain) {
     name: "opened_box_method".to_string(),
     parameters: Vec::from([arg1.clone(), arg0.clone()]), 
     task: ("opened_box".to_string(), Vec::from([arg0.name.clone()])),
-    precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["box_arg".to_string()])),(true,String::from("closed"), Vec::from(["box_arg".to_string()]))])),
-    subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["key_arg".to_string(), "box_arg".to_string()])), ("open_box".to_string(), "task0".to_string(), Vec::from(["key_arg".to_string(), "box_arg".to_string()]))])), 
-    contraints: None
+    precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["?box_arg".to_string()]))])),
+    subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false), ("open_box".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false)])), 
+    constraints: None
   };
 
   // ---------------------------------------------------
@@ -129,7 +129,7 @@ pub fn create_problem () -> (Problem, Domain) {
     methods: Vec::from([method]),
     actions: Vec::from([action1.clone(), action2.clone()]),
     types: Vec::from([type1, type2]),
-    predicates: Vec::from([predicate1.clone(), predicate2.clone(), predicate3.clone()]),
+    predicates: Vec::from([predicate1.clone(), predicate3.clone()]),
   };
 
   (problem, domain)
