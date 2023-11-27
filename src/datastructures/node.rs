@@ -15,6 +15,6 @@ pub struct Node {
   /// Tuple of (name, object_type & possible values)
   pub subtask_queue: Vec<(SubtaskTypes, Vec<(String, String, Vec<String>)>)>,
   pub called: (Vec<bool>, Vec<(Method, Vec<(String, String, Vec<String>)>)>, Vec<usize>),
-  pub applied_action_list: Vec<(String, Vec<String>)>,
+  pub applied_action_list: (Vec<(String, i32, Vec<String>)>,Vec<(String, i32, Vec<String>)>),
   pub hash_table: HashSet<u64>
 }

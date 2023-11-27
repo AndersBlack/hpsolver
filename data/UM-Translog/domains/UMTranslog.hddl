@@ -195,7 +195,6 @@
 		(Trough_Full ?arg0 - Livestock)
 		(Valve_Open ?arg0 - Tanker)
 		(Warning_Signs_Affixed ?arg0 - Vehicle)
-	
 		(ValuableOrHazardous ?p - Package)
 		(IsHazardous ?p - Package)
 		(IsAirplain ?v - Vehicle)

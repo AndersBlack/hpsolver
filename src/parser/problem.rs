@@ -7,14 +7,16 @@ use nom::bytes::complete::{tag};
 use nom::branch::{alt};
 use nom::combinator::{opt};
 use nom::character::complete::{alphanumeric1, multispace0};
-use nom::sequence::{tuple};
+use nom::sequence::{tuple, pair};
 use nom::multi::{many1, many0};
 use nom::error::{context};
 
 // ------------------------- PROBLEM PARSER ----------------------------------------
 
 pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
-  
+
+  let _fg = ::flame::start_guard("parse problem");
+
     context("problem", 
       tuple((
         get_name,
@@ -97,29 +99,35 @@ fn get_objects( input: &str ) -> IResult<&str, Vec<(String, String, Vec<String>)
       many1(
         tuple((
           multispace0,
-          underscore_stringer, 
-          tag(" - "),
-          underscore_stringer,
-          multispace0
+          many1(
+            tuple((
+              underscore_stringer,
+              multispace0
+            ))
+          ),
+          tag("- "),
+          underscore_stringer
         ))
       ),
+      multispace0,
       tag(")"),
       multispace0
     ))
   )(input)
   .map(|(next_input, res)| {
 
-    let (_object_tag, object_list, _tag1, _newline2) = res;
+    let (_object_tag, object_list, _, _tag1, _newline2) = res;
 
     let mut obj_vec = Vec::<(String, String, Vec<String>)>::new();
 
     for result in object_list {
 
-      let (_, name, _filler, obj_type, _newline) = result;
+      let (_, name_list, _, obj_type) = result;
 
-      let obj = (name, obj_type, Vec::<String>::new());
-
-      obj_vec.push(obj);
+      for name in name_list {
+        let obj = (name.0, obj_type.clone(), Vec::<String>::new());
+        obj_vec.push(obj);
+      }
     };
     
     //println!("{:?}", obj_vec);      
@@ -138,22 +146,23 @@ fn get_htn( input: &str ) -> IResult<&str, Htn> {
       multispace0,
       tag("(:htn"),
       multispace0,
-      get_htn_parameters,
+      opt(get_htn_parameters),
       get_htn_subtasks,
       opt(get_htn_ordering),
+      opt(tag(":constraints ( )")),
       tag(")"),
       multispace0
     ))
   )(input)
   .map(|(next_input, res)| {
-    let (_, _header, _newline, parameters, subtasks, ordering, _tag, _ws) = res;
+    let (_, _header, _newline, _parameters, subtasks, ordering, _, _tag, _ws) = res;
 
     let sorted_subtasks = order_subtasks(subtasks, ordering);
 
     //println!("{:?}", ordering);
 
     let htn = Htn {
-      parameters: parameters,
+      parameters: Vec::<String>::new(),
       subtasks: sorted_subtasks
     };
 
@@ -207,20 +216,20 @@ fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<Stri
   context("subtasks",
     tuple((
       multispace0,
-      tag(":subtasks (and"),
+      alt((tag(":subtasks (and"), tag(":tasks (and"))),
       multispace0,
       many0(
         tuple((
           tag("("),
           underscore_stringer,
-          tag(" ("),
-          underscore_stringer,
+          opt(pair(tag(" ("), underscore_stringer)),
           multispace0,
           many1(tuple((
             underscore_stringer,
             multispace0
           ))),
-          tag("))"),
+          tag(")"),
+          opt(tag(")")),
           multispace0
         ))
       ),
@@ -239,12 +248,17 @@ fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<Stri
       let mut obj_vec = Vec::<String>::new();
 
       //Construct obj vector
-      for obj in task.5 {
+      for obj in task.4 {
         obj_vec.push(obj.0);
       }
 
-      subtask_vec.push((task.3, task.1, obj_vec, false));
+      match task.2 {
+        Some(task2) => { subtask_vec.push((task2.1.to_string(), task.1, obj_vec, false)); },
+        None => { subtask_vec.push((task.1.to_string(), "No alias".to_string(), obj_vec, false)); }
+      }
     }
+
+    println!("{:?}", subtask_vec);
 
     (next_input, subtask_vec)
   })
@@ -255,9 +269,9 @@ fn get_htn_ordering( input: &str) -> IResult<&str, Vec<(String, String, String)>
 
   context("ordering", 
     tuple((
-      tag(":ordering (and"),
+      alt((tag(":ordering (and"), tag(":ordering ( )"))),
       multispace0,
-      many1(
+      many0(
         alt((
           tuple((
             tag("("),
@@ -281,7 +295,7 @@ fn get_htn_ordering( input: &str) -> IResult<&str, Vec<(String, String, String)>
           ))
         ))
       ),
-      tag(")"),
+      opt(tag(")")),
       multispace0
     ))
   )(input)
@@ -300,7 +314,7 @@ fn get_htn_ordering( input: &str) -> IResult<&str, Vec<(String, String, String)>
   })
 }
 
-fn get_init( input: &str ) -> IResult<&str, State> {
+fn get_init( input: &str ) -> IResult<&str, Vec<(String, Vec<String>)>> {
   //println!("htn_init input:\n{}", input);
 
   context("init", 
@@ -315,7 +329,7 @@ fn get_init( input: &str ) -> IResult<&str, State> {
               alphanumeric1,
               many0(
                 tuple((
-                  tag("_"),
+                  alt((tag("_"), tag("-"))),
                   alphanumeric1
                 ))
               ),
@@ -363,12 +377,9 @@ fn get_init( input: &str ) -> IResult<&str, State> {
 
     //println!("State_vector: {:?}", state_vector);
 
-    let init_state = State {
-      state_variables: state_vector
-    };
 
     (
-      next_input, init_state
+      next_input, state_vector
     )
   })
 }

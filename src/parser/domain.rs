@@ -6,7 +6,7 @@ use nom::bytes::complete::{tag, take_until};
 use nom::branch::{alt};
 use nom::combinator::{opt};
 use nom::character::complete::{alphanumeric1, multispace0};
-use nom::sequence::{tuple};
+use nom::sequence::{tuple, pair};
 use nom::multi::{many1, many0};
 use nom::error::{context};
 
@@ -14,74 +14,76 @@ use nom::error::{context};
 
 pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
 
-    context("domain", 
-      tuple((
-        get_domain_name,
-        get_domain_types,
-        get_domain_predicates,
-        get_domain_tasks,
-        get_domain_methods,
-        get_domain_actions
-      ))
-    )(input)
-    .map(|(next_input, res)| {
-        let (domain_name, types, predicates, tasks, methods, actions) = res;
-  
-        (
-          next_input,
-          Domain {
-            name: domain_name,
-            tasks: tasks,
-            methods: methods,
-            actions: actions,
-            types: types,
-            predicates: predicates
-          }
-        )
-      })
-  
-  }
-  
-  fn get_domain_name( input: &str ) -> IResult<&str, String> { 
-    //println!("Input for domain name:{}", input);
-  
-    context("domain name", 
-      tuple((
-        tag("(define"),
-        multispace0,
-        tag("(domain "),
-        alphanumeric1,
-        many0(tuple((
-          tag("_"),
-          alphanumeric1
-        ))),
-        tag(")"),
-        multispace0,
-        take_until(")"),
-        tag(")"),
-        multispace0
-      ))
-    )(input)
-    .map(|(next_input, res)| {
-      let (_tag0, _ws0, _tag1, start_of_name, end_of_name, _tag2, _ws1, _take, _tag3, _ws2) = res;
-  
-      //println!("NAME: {} {:?}", start_of_name, end_of_name);
-  
-      let mut name = start_of_name.to_string();
-  
-      if end_of_name.len() != 0 {
-        for ending in end_of_name {
-           name = underscore_matcher(name, ending.1);
-        }
-      }
-  
+  let _fg = ::flame::start_guard("parse domain");
+
+  context("domain", 
+    tuple((
+      get_domain_name,
+      get_domain_types,
+      get_domain_predicates,
+      get_domain_tasks,
+      get_domain_methods,
+      get_domain_actions
+    ))
+  )(input)
+  .map(|(next_input, res)| {
+      let (domain_name, types, predicates, tasks, methods, actions) = res;
+
       (
-        next_input, name
+        next_input,
+        Domain {
+          name: domain_name,
+          tasks: tasks,
+          methods: methods,
+          actions: actions,
+          types: types,
+          predicates: predicates
+        }
       )
     })
-  }
+
+}
   
-  fn get_domain_types( input: &str ) -> IResult<&str, Vec<Type>> { 
+fn get_domain_name( input: &str ) -> IResult<&str, String> { 
+  //println!("Input for domain name:{}", input);
+
+  context("domain name", 
+    tuple((
+      tag("(define"),
+      multispace0,
+      tag("(domain "),
+      alphanumeric1,
+      many0(tuple((
+        tag("_"),
+        alphanumeric1
+      ))),
+      tag(")"),
+      multispace0,
+      take_until(")"),
+      tag(")"),
+      multispace0
+    ))
+  )(input)
+  .map(|(next_input, res)| {
+    let (_tag0, _ws0, _tag1, start_of_name, end_of_name, _tag2, _ws1, _take, _tag3, _ws2) = res;
+
+    //println!("NAME: {} {:?}", start_of_name, end_of_name);
+
+    let mut name = start_of_name.to_string();
+
+    if end_of_name.len() != 0 {
+      for ending in end_of_name {
+          name = underscore_matcher(name, ending.1);
+      }
+    }
+
+    (
+      next_input, name
+    )
+  })
+}
+  
+  fn get_domain_types( input: &str ) -> IResult<&str, Vec<(String,String)>> { 
     //println!("Input for domain types:{}", input);
   
     context("domain name", 
@@ -93,7 +95,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
             alphanumeric1,
             many0(
               tuple((
-                tag("_"),
+                alt((tag("_"),tag("-"))),
                 alphanumeric1
               ))
             ),
@@ -111,7 +113,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
     .map(|(next_input, res)| {
       let (_tag0, _ws0, types, _tag1, _ws1) = res;
   
-      let mut type_vec = Vec::<Type>::new();
+      let mut type_vec = Vec::<(String,String)>::new();
   
       for type_vars in types {
         let mut name = type_vars.0.to_string();
@@ -132,11 +134,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           }
         };
   
-        let new_type = Type {
-          object_type: (name, type_type.to_string())
-        };
-  
-        type_vec.push(new_type);
+        type_vec.push((name, type_type.to_string()));
       }
   
       (
@@ -155,29 +153,20 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
         many1(
           tuple((
             tag("("),
-            alphanumeric1,
-            many0(
-              tuple((
-                tag("_"),
-                alphanumeric1
-              ))
-            ),
+            underscore_stringer,
             tag(" "),
-            many1(
-              tuple((
-                tag("?"),
-                alphanumeric1,
-                tag(" - "),
-                alphanumeric1,
-                many0(
-                  tuple((
-                    tag("_"),
-                    alphanumeric1
-                  ))
-                ),
-                multispace0
-              ))
-            ),
+            many1(tuple((
+              many1(
+                tuple((
+                  tag("?"),
+                  underscore_stringer,
+                  multispace0
+                ))
+              ), 
+              tag("- "),
+              underscore_stringer,
+              multispace0,
+            ))),
             tag(")"),
             multispace0
           ))
@@ -195,28 +184,18 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
         //println!("predicates:{:?}", predicate);
   
         let mut arg_vec = Vec::<Argument>::new();
-        let mut predicate_name = predicate.1.to_string();
+        let predicate_name = predicate.1.to_string();
   
-        for pred_name_extension in predicate.2 {
-          predicate_name = underscore_matcher(predicate_name, pred_name_extension.1);
-        }
-  
-        for arg in predicate.4 {
-  
-          //println!("{:?}", arg);
-  
-          let mut object_type_name = arg.3.to_string();
-  
-          for obj_name_extension in arg.4 {
-            object_type_name = underscore_matcher(object_type_name, obj_name_extension.1);
+        for arg in predicate.3 {
+
+          for arg_name in arg.0 {
+            let new_argument = Argument {
+              name: "?".to_string() + &arg_name.1,
+              object_type: arg.2.to_string()
+            };
+    
+            arg_vec.push(new_argument);
           }
-  
-          let new_argument = Argument {
-            name: arg.1.to_string(),
-            object_type: object_type_name
-          };
-  
-          arg_vec.push(new_argument);
         }
   
         let new_predicate = Predicate {
@@ -226,8 +205,6 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   
         predicates_vec.push(new_predicate);
       }
-  
-      //println!("predicates:{:?}", predicates_vec);
   
       (
         next_input, predicates_vec
@@ -242,13 +219,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       many1(
         tuple((
           tag("(:task "),
-          alphanumeric1,
-          many0(
-            tuple((
-              tag("_"),
-              alphanumeric1
-            ))
-          ),
+          underscore_stringer,
           multispace0,
           tag(":parameters"),
           multispace0,
@@ -256,21 +227,9 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           many1(
             tuple((
               tag("?"),
-              alphanumeric1,
-              many0(
-                tuple((
-                  tag("_"),
-                  alphanumeric1
-                ))
-              ),
+              underscore_stringer,
               tag(" - "),
-              alphanumeric1,
-              many0(
-                tuple((
-                  tag("_"),
-                  alphanumeric1
-                ))
-              ),
+              underscore_stringer,
               multispace0
             ))
           ),
@@ -286,29 +245,20 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       let task_list = res;
   
       let mut task_vec = Vec::<Task>::new();
+      let mut id_counter = 1000;
   
       for task in &task_list {
   
         // Task name
-        let mut task_name = task.1.to_string();
-        for task_name_extension in &task.2 {
-          task_name = underscore_matcher(task_name, task_name_extension.1);
-        }
+        let task_name = task.1.to_string();
   
         // Task arguments
         let mut arg_list = Vec::<Argument>::new();
   
-        for task_args in &task.7 {
-          let mut arg_name = "?".to_string() + task_args.1;
-          let mut arg_type = task_args.4.to_string();
-  
-          for arg_name_extension in &task_args.2 {
-            arg_name = underscore_matcher(arg_name, arg_name_extension.1);
-          }
-  
-          for arg_type_extension in &task_args.5 {
-            arg_type = underscore_matcher(arg_type, arg_type_extension.1);
-          }
+        for task_args in &task.6 {
+          let arg_name = "?".to_string() + &task_args.1;
+          let arg_type = task_args.3.to_string();
+
   
           let new_arg = Argument {
             name: arg_name,
@@ -321,11 +271,16 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
         let new_task = Task {
           name: task_name,
           parameters: arg_list,
-          alias: "alias".to_string()
+          alias: "alias".to_string(),
+          id: id_counter
         };
   
         task_vec.push(new_task);
+
+        id_counter = id_counter + 1;
       }
+
+
   
       //println!("{:?}", task_vec);
   
@@ -349,7 +304,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           opt(get_method_subtasks),
           opt(get_method_ordering),
           opt(get_method_constraint),
-          tag(")"),
+          opt(tag(")")),
           multispace0
         ))
       )
@@ -358,14 +313,15 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       let method_list = res;
   
       let mut method_vec = Vec::<Method>::new();
+      let mut id_counter = 100;
   
       for method in method_list {
         //println!("{:?}\n", method);
 
         let ordered_subtasks = match (method.4, method.5) {
-          (Some(inner0), Some(inner1)) => Some(order_subtasks(inner0, Some(inner1))),
-          (Some(inner0), None) => { Some(inner0) },
-          _ => None
+          (Some(inner0), Some(inner1)) => order_subtasks(inner0, Some(inner1)),
+          (Some(inner0), None) => { inner0 },
+          _ => Vec::<(String, String, Vec<String>, bool)>::new()
         };
   
         let new_method = Method {
@@ -374,10 +330,11 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           task: method.2,
           precondition: method.3,
           subtasks: ordered_subtasks,
-          constraints: method.6
+          constraints: method.6,
+          id: id_counter
         };
 
-        //println!("{}", new_method);
+        id_counter = id_counter + 1;
   
         method_vec.push(new_method);
       }
@@ -415,9 +372,12 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
         tag(":parameters ("),
         many1(
           tuple((
-            tag("?"),
-            underscore_stringer,
-            tag(" - "),
+            many1(tuple((
+              tag("?"),
+              underscore_stringer,
+              multispace0
+            ))),
+            tag("- "),
             underscore_stringer,
             multispace0
           ))
@@ -432,11 +392,16 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       let mut final_param_list = Vec::<Argument>::new();
   
       for param in param_list {
-        let new_arg = Argument {
-          name: format!("{}{}","?".to_string(), param.1),
-          object_type: param.3
-        };
-        final_param_list.push(new_arg);
+
+        for arg in param.0 {
+
+          let new_arg = Argument {
+            name: format!("{}{}","?".to_string(), arg.1),
+            object_type: param.2.clone()
+          };
+
+          final_param_list.push(new_arg);
+        }
       }
   
       (
@@ -446,7 +411,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   }
   
   fn get_method_task(input: &str) -> IResult<&str, (String, Vec<String>)> {
-    //println!("Input for get_method_task : {}", input);
+    //println!("Input for get_method_task: {}", input);
   
     context("method task",
       tuple((
@@ -485,7 +450,8 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   
     context("domain method precondition",
       tuple((
-        tag(":precondition (and"),
+        tag(":precondition"),
+        opt(tag(" (and")),
         multispace0,
         many1(
           tuple((
@@ -501,16 +467,17 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
               ))
             ),
             opt(tag(")")),
+            multispace0,
             opt(tag(")")),
             multispace0
           ))
         ),
-        tag(")"),
+        opt(tag(")")),
         multispace0
       ))
     )(input)
     .map(|(next_input, res)| {
-      let (_tag0, _ws0, precondition_list, _tag1, _ws1) = res;
+      let (_tag0, _, _ws0, precondition_list, _tag1, _ws1) = res;
   
       let mut precon_vec = Vec::<(bool,String,Vec<String>)>::new();
   
@@ -546,15 +513,18 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   
     context("domain method subtask",
       tuple((
-        tag(":subtasks ("),
-        opt(tag("and")),
+        alt((tag(":subtasks"), tag(":ordered-subtasks"))),
+        multispace0,
+        opt(tag("(and")),
         multispace0,
         many0(
           tuple((
+            multispace0,
             tag("("),
             underscore_stringer,
-            tag(" ("),
-            underscore_stringer,
+            multispace0,
+            opt(pair(tag("("),
+            underscore_stringer)),
             many1(
               tuple((
                 multispace0,
@@ -562,29 +532,34 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
                 underscore_stringer
               ))
             ),
-            tag("))"),
-            multispace0
+            opt(alt((tag("))"),tag(")")))),
+            multispace0,
+            opt(tag(")"))
           ))
         ),
-        tag(")"),
+        opt(tag(")")),
         multispace0
       ))
     )(input)
     .map(|(next_input, res)| {
-      let (_tag0, _, _ws0, subtask_list, _tag1, _ws1) = res;
+      let (_tag0, _, _, _ws0, subtask_list, _, _ws1) = res;
   
       let mut subtask_vec = Vec::<(String, String, Vec<String>, bool)>::new();
   
       for subtask in subtask_list {
         let mut arg_vec = Vec::<String>::new();
         
-        for arg in &subtask.4 {
+        for arg in &subtask.5 {
           arg_vec.push(format!("{}{}","?".to_string(), arg.2));
         }
   
         //println!("{:?}",subtask);
+        match subtask.4 {
+          Some(subtask3) => { subtask_vec.push((subtask3.1, subtask.2.to_string(), arg_vec, false)); },
+          None => { subtask_vec.push(("No alias".to_string(), subtask.2.to_string(), arg_vec, false)); }
+        }
   
-        subtask_vec.push((subtask.3, subtask.1.to_string(), arg_vec, false));
+        
       }
   
       //println!("subs: {:?}\n", subtask_vec);
@@ -699,7 +674,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           opt(get_action_precondition),
           opt(get_action_effects),
           multispace0,
-          tag(")"),
+          opt(tag(")")),
           multispace0
         ))
       )
@@ -708,6 +683,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       let action_list = res;
   
       let mut action_vec = Vec::<Action>::new();
+      let mut id_counter = 0;
   
       for action in action_list {
         //println!("action: {:?}", action);
@@ -716,8 +692,11 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           name: action.0.to_string(),
           parameters: action.1,
           precondition: action.2,
-          effect: action.3
+          effect: action.3,
+          id: id_counter
         };
+
+        id_counter = id_counter + 1;
   
         action_vec.push(new_action);
       }
@@ -756,9 +735,12 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
         tag(":parameters ("),
         many1(
           tuple((
-            tag("?"),
-            underscore_stringer,
-            tag(" - "),
+            many1( tuple ((
+              tag("?"),
+              underscore_stringer,
+              multispace0
+            ))),
+            tag("- "),
             underscore_stringer,
             multispace0
           ))
@@ -773,13 +755,15 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       let mut arg_vec = Vec::<Argument>::new();
   
       for parameter in parameter_list {
-  
-        let new_arg = Argument {
-          name: format!("{}{}","?".to_string(), parameter.1),
-          object_type: parameter.3.to_string() 
-        };
-  
-        arg_vec.push(new_arg);
+        
+        for arg in parameter.0 {
+          let new_arg = Argument {
+            name: format!("{}{}","?".to_string(), arg.1),
+            object_type: parameter.3.to_string() 
+          };
+
+          arg_vec.push(new_arg);
+        }
       }
   
       (
@@ -816,7 +800,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
             multispace0
           ))
         ),
-        tag(")"),
+        opt(tag(")")),
         multispace0
       ))
     )(input)

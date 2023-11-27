@@ -1,20 +1,19 @@
 use core::panic;
 use std::{collections::HashSet};
-use crate::{datastructures::{node::*, domain::*, problem::{*, self}}, toolbox::reduce_domain};
+use crate::datastructures::{node::*, domain::*, problem::{*, self}};
 use crate::toolbox::{self};
-pub mod iterative_df;
 
 // Relevant Variables datatype
 type RelVars = Vec<(String, String, Vec<String>)>;
 
-pub fn depth_first(problem: Problem, domain: &Domain) {
+pub fn iterative_depth_first(problem: Problem, domain: &Domain) {
 
-	let _fg = ::flame::start_guard("Depth first init");
+	let _fg = ::flame::start_guard("Iterative Depth first init");
 
 	//println!("SANITY CHECK: \nMethod count: {}\nAction count: {}\n", domain.methods.len(), domain.actions.len());
 	//println!("Domain: {:?}\n", domain);
 
-	let mut node_queue = Vec::<Node>::new();
+	let mut node_queue = Vec::<(Node,i32)>::new();
 	let mut htn_subtask_queue = Vec::<(SubtaskTypes, RelVars)>::new();
 
 	for subtask in &problem.htn.subtasks {
@@ -33,46 +32,49 @@ pub fn depth_first(problem: Problem, domain: &Domain) {
 	}
 
 	let new_problem: Problem = update_objects(problem.clone(), domain);
-
-	let new_domain = reduce_domain(domain, &new_problem);
-
 	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars)>::new(), Vec::<usize>::new());
 	let new_node = make_node(new_problem.clone(), htn_subtask_queue, called, (Vec::<(String, i32, Vec<String>)>::new(),Vec::<(String, i32, Vec<String>)>::new()), HashSet::<u64>::new());
 	
-	node_queue.push(new_node);
+	node_queue.push((new_node, 0));
 
-	run_df(&mut node_queue, domain);
+  let mut try_deeper = true;
+	let mut depth = 800;
+
+  while try_deeper {
+    let result_text = run_iterative_df(&mut node_queue.clone(), &domain, depth);
+
+		if result_text.contains("Succes!") {
+			try_deeper = false;
+		} else {
+			depth = depth * 2;
+		}
+
+    // Print result
+    println!("Result: {} Depth: {}", result_text, depth);
+  }
+
 }
 
-fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain) {
+fn run_iterative_df(node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, depth_limit: i32) -> String {
 
-	let _fg = ::flame::start_guard("run depth first");
-
-	let stop_early = 100000;
-	let mut counter = 0;
+	let _fg = ::flame::start_guard("run iterative depth first");
 
 	let mut finished: bool = false;
 
-	while !finished {
-
-		// if stop_early == counter {
-		// 	finished = true;
-		// } else {
-		// 	counter = counter + 1;
-		// }
+	'outer: while !finished {
 
 		let _fg = ::flame::start_guard("while loop");
+		let que_obj = node_queue.pop();
 
-		let current_node = node_queue.pop();
 
 		// Handle subtasks
-		match current_node {
-			Some(mut current_node) => {
+		match que_obj {
+			Some((mut current_node, current_depth)) => {
 
-				let state_exists = toolbox::hash_state(&mut current_node);
-
-				if state_exists {
-					continue;
+				println!("Current depth: {}", current_depth);
+				if depth_limit < current_depth {
+					println!("continuing");
+					continue 'outer;
 				}
 
 				let current_subtask = current_node.subtask_queue.pop(); 
@@ -81,19 +83,19 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain) {
 
 					Some((SubtaskTypes::HtnTask(htn_task), relevant_variables))=> {
 						//println!("Htn_task: {:?}", htn_task.0);
-						perform_htn_task(node_queue, domain, current_node, htn_task, relevant_variables);
+						perform_htn_task(node_queue, domain, current_node, htn_task, relevant_variables, current_depth);
 					},
 					Some((SubtaskTypes::Task(task), relevant_variables)) => {
 						//println!("Task: {:?}", task.name);
-						perform_task(node_queue, domain, current_node, task, relevant_variables);
+						perform_task(node_queue, domain, current_node, task, relevant_variables, current_depth);
 					},
 					Some((SubtaskTypes::Method(method), relevant_variables)) => {
 						//println!("Method {:?}, RELVARS: {:?}\n", method.name, relevant_variables);					
-						perform_method(node_queue, domain, current_node, method, relevant_variables);
+						perform_method(node_queue, domain, current_node, method, relevant_variables, current_depth);
 					},
 					Some((SubtaskTypes::Action(action), relevant_variables)) => {
 						//println!("\n Action: {:?} Relevant_variables: {:?}", action.name, relevant_variables);
-						perform_action(node_queue, current_node, action, relevant_variables);
+						perform_action(node_queue, current_node, action, relevant_variables, current_depth);
 					},
 					None => { 
 
@@ -102,17 +104,21 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain) {
 						if finished_state {
 							finished = true;
 							toolbox::print_result(current_node);
+              return "\nSucces!\n".to_string();
 						} else {
-							println!("FAILED TO FIND SOLUTION!");
+              return "\nFailure: Subtask queue empty\n".to_string();
 						}
+
 					}
 				}
 			},
 			None => { 
-				panic!("Node queue found empty!")
+				return "\nFailure: Node queue empty\n".to_string();
 			}
 		}
-	}	
+	}
+
+	"finished not in while loop".to_string()
 }
 
 fn update_relevant_variables(node: &Node, method: &Method, old_relevant_variables: &RelVars) -> RelVars {
@@ -325,7 +331,7 @@ fn make_node( new_problem: Problem, sq: Vec::<(SubtaskTypes, RelVars)>, called: 
 		new_node
 }
 
-fn perform_htn_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_node: Node, htn_task: (String, String, Vec<String>, bool), relevant_variables: RelVars) {
+fn perform_htn_task ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, mut current_node: Node, htn_task: (String, String, Vec<String>, bool), relevant_variables: RelVars, mut current_depth: i32) {
 
 	let _fg = ::flame::start_guard("perform htn_task");
 
@@ -353,11 +359,11 @@ fn perform_htn_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current
 		
 		let new_node = make_node(current_node.problem.clone(), subtask_queue_clone, (current_node.called.0.clone(), current_node.called.1.clone(), current_node.called.2.clone()), current_node.applied_action_list.clone(), current_node.hash_table.clone());
 
-		node_queue.push(new_node);
+		node_queue.push((new_node, current_depth + 1));
 	}
 }
 
-fn perform_task ( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: Node, task: Task, relevant_variables: RelVars ) {
+fn perform_task ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, current_node: Node, task: Task, relevant_variables: RelVars, mut current_depth: i32) {
 
 	let _fg = ::flame::start_guard("perform task");
 
@@ -394,13 +400,13 @@ fn perform_task ( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: N
 			let new_node = make_node(current_node.problem.clone(), new_subtask_queue, new_called, current_node.applied_action_list.clone(), current_node.hash_table.clone());
 
 			//println!("Pushing node");
-			node_queue.push(new_node)
+			node_queue.push((new_node, current_depth + 1))
 		}
 	
 	}
 }
 
-fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_node: Node, method: Method, mut relevant_variables: RelVars ) {
+fn perform_method ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, mut current_node: Node, method: Method, mut relevant_variables: RelVars, mut current_depth: i32) {
 
 	let _fg = ::flame::start_guard("perform method");
 
@@ -467,7 +473,7 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 
 					let new_node = make_node(current_node.problem.clone(), new_sq, new_called, current_node.applied_action_list.clone(), current_node.hash_table.clone());
 
-					node_queue.push(new_node);
+					node_queue.push((new_node, current_depth + 1));
 				}
 			},
 			None => {}
@@ -485,9 +491,9 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 
 				let new_node = update_vars_for_called_method(current_node, &method, &relevant_variables);
 
-				node_queue.push(new_node);
+				node_queue.push((new_node, current_depth + 1));
 			} else {
-				node_queue.push(current_node.clone());
+				node_queue.push((current_node.clone(), current_depth));
 			}
 
 		} else {
@@ -543,17 +549,17 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 
 			let new_node = make_node(current_node.problem.clone(), new_subtask_queue.clone(), new_called.clone(), current_node.applied_action_list.clone(), current_node.hash_table.clone());
 
-			node_queue.push(new_node);
+			node_queue.push((new_node, current_depth + 1));
 		}
 
 	} else {
 
 		if !current_node.called.0.pop().unwrap() {
-			node_queue.push(current_node.clone());
+			node_queue.push((current_node.clone(), current_depth));
 		} else {				
 			let new_node = update_vars_for_called_method(current_node, &method, &relevant_variables);
 
-			node_queue.push(new_node);
+			node_queue.push((new_node, current_depth + 1));
 		}
 
 	}
@@ -561,7 +567,7 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 	//next_node(node_queue, domain);
 }
 
-fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action: Action, relevant_variables: RelVars) {
+fn perform_action ( node_queue: &mut Vec::<(Node, i32)>, mut current_node: Node, action: Action, relevant_variables: RelVars, mut current_depth: i32) {
 
 	let _fg = ::flame::start_guard("perform action");
 
@@ -574,7 +580,7 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 
 	//println!("Perm list: {:?}", permutation_list);
 
-	for permutation in permutation_list {
+	for permutation in permutation_list { 
 
 		let mut new_relevant_variables = RelVars::new();
 
@@ -638,7 +644,7 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 
 		let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_action_list.clone(), current_node.hash_table.clone());
 
-		node_queue.push(new_node);
+		node_queue.push((new_node, current_depth + 1));
 
 	}
 
