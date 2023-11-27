@@ -4,7 +4,6 @@ mod domain;
 use problem::problem_parser;
 use domain::domain_parser;
 
-
 use crate::datastructures::{domain::*, problem::*};
 
 use nom::IResult;
@@ -12,10 +11,14 @@ use nom::bytes::complete::{tag};
 use nom::branch::{alt};
 use nom::character::complete::{alphanumeric1};
 use nom::multi::{many1};
+use nom::combinator::{opt};
+use nom::sequence::{tuple};
 use nom::error::{context};
 
 /// Parses 2 strings in form of a problem.hddl and a domain.hddl and returns a tuple of the datastructures for each
 pub fn parse_hddl( input_problem: &str, input_domain: &str ) -> (Problem, Domain) {
+
+  let _fg = ::flame::start_guard("parse_hddl");
 
   let (_res_problem, problem) = if let Ok((res_problem, problem)) = problem_parser(input_problem) {
     (res_problem, problem)
@@ -49,10 +52,17 @@ fn underscore_matcher(x: String, y: &str) -> String {
 fn underscore_stringer( input: &str ) -> IResult<&str, String> {
   context("underscore stringer",
     many1(
-      alt((
+      tuple((
+      alphanumeric1,
+      opt(alt((
         alphanumeric1,
-        tag("_")
-      ))
+        alt((
+          tag("_"),
+          tag("-")
+        ))
+      )))
+      
+    ))
     )
   )(input)
   .map(|(next_input, res)| {
@@ -61,8 +71,18 @@ fn underscore_stringer( input: &str ) -> IResult<&str, String> {
     let mut final_string = String::new();
 
     for part in string_list {
-      final_string = format!("{}{}", final_string, part);
+      match part {
+        (part0, Some(part1)) => {
+          final_string = format!("{}{}{}", final_string, part0, part1);
+        },
+        (part0, None) => {
+          final_string = format!("{}{}", final_string, part0);
+        }
+      }
+      
     }
+
+    //println!("TEST: {}", final_string);
 
     (
       next_input, final_string

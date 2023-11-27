@@ -2,13 +2,9 @@ use crate::datastructures::{domain::*, problem::*};
 
 pub fn create_problem () -> (Problem, Domain) {
 
-  let type1: Type = Type {
-    object_type: (String::from("key"), String::from("object")),
-  };
+  let type1 = (String::from("key"), String::from("object"));
 
-  let type2: Type = Type {
-    object_type: (String::from("box"), String::from("object")),
-  };
+  let type2 = (String::from("box"), String::from("object"));
 
   // ----------------------------------------------------
 
@@ -51,9 +47,7 @@ pub fn create_problem () -> (Problem, Domain) {
   
   let state_vector = Vec::from([]);
   
-  let init_state: State = State {
-    state_variables: state_vector,
-  };
+  let init_state = state_vector;
 
   // -----------------------------------------------------
   
@@ -61,6 +55,7 @@ pub fn create_problem () -> (Problem, Domain) {
     name: "opened_box".to_string(),
     alias: "task0".to_string(),
     parameters: Vec::from([arg0.clone()]),
+    id: 1000
   };
 
   // -----------------------------------------------------
@@ -92,7 +87,8 @@ pub fn create_problem () -> (Problem, Domain) {
         (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
       ])
     ),
-    effect: Some(Vec::from([(true,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))]))
+    effect: Some(Vec::from([(true,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])),
+    id: 1
   };
 
   let action2 = Action {
@@ -104,7 +100,8 @@ pub fn create_problem () -> (Problem, Domain) {
         (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
       ])
       ),
-    effect: Some(Vec::from([(true, String::from("open"),Vec::from(["?box_arg".to_string()])),(false,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])) 
+    effect: Some(Vec::from([(true, String::from("open"),Vec::from(["?box_arg".to_string()])),(false,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])),
+    id: 2
   };
 
 
@@ -117,8 +114,9 @@ pub fn create_problem () -> (Problem, Domain) {
     parameters: Vec::from([arg1.clone(), arg0.clone()]), 
     task: ("opened_box".to_string(), Vec::from([arg0.name.clone()])),
     precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["?box_arg".to_string()]))])),
-    subtasks: Some(Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false), ("open_box".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false)])), 
-    constraints: None
+    subtasks: Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false), ("open_box".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false)]), 
+    constraints: None,
+    id: 10
   };
 
   // ---------------------------------------------------

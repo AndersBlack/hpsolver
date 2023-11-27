@@ -85,8 +85,6 @@
 		:precondition (and
 			(empty ?s)
 		)
-		:subtasks (
-		)
 	)
 
 	(:method m_empty_store_2_ordering_0
@@ -122,8 +120,6 @@
 		:task (navigate_abs ?rover ?to)
 		:precondition (and
 			(at ?rover ?to)
-		)
-		:subtasks (
 		)
 	)
 

@@ -4,13 +4,8 @@ pub struct Domain {
     pub tasks: Vec<Task>,
     pub methods: Vec<Method>,
     pub actions: Vec<Action>,
-    pub types: Vec<Type>,
+    pub types: Vec<(String, String)>,
     pub predicates: Vec<Predicate>,
-}
-
-#[derive(Debug, Clone, Hash)] 
-pub struct Type {
-    pub object_type: (String, String),
 }
 
 #[derive(Debug, Clone, Hash)]
@@ -24,8 +19,10 @@ pub struct Task {
     pub name: String,   
     pub parameters: Vec<Argument>,
     pub alias: String,
+    pub id: i32
 }
 
+// make into tuple?
 #[derive(Debug, Clone, Hash)] 
 pub struct Argument {
     pub name: String,
@@ -38,8 +35,9 @@ pub struct Method {
     pub parameters: Vec<Argument>, 
     pub task: (String, Vec<String>),
     pub precondition: Option<Vec<(bool,String,Vec<String>)>>,
-    pub subtasks: Option<Vec<(String, String, Vec<String>, bool)>>,
-    pub constraints: Option<Vec<(bool, String, String)>>
+    pub subtasks: Vec<(String, String, Vec<String>, bool)>,
+    pub constraints: Option<Vec<(bool, String, String)>>,
+    pub id: i32
 }
 
 #[derive(Debug, Clone, Hash)] 
@@ -48,6 +46,7 @@ pub struct Action {
     pub parameters: Vec<Argument>,
     pub precondition: Option<Vec<(bool,String,Vec<String>)>>,
     pub effect: Option<Vec<(bool,String,Vec<String>)>>,
+    pub id: i32
 }
 
 impl std::fmt::Display for Action {
