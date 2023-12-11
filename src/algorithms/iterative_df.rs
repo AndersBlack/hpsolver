@@ -1,6 +1,5 @@
-use core::panic;
-use std::{collections::HashSet};
-use crate::datastructures::{node::*, domain::*, problem::{*, self}};
+use std::collections::HashSet;
+use crate::datastructures::{node::*, domain::*, problem::{*}};
 use crate::toolbox::{self};
 
 // Relevant Variables datatype
@@ -59,7 +58,7 @@ fn run_iterative_df(node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, depth_
 
 	let _fg = ::flame::start_guard("run iterative depth first");
 
-	let mut finished: bool = false;
+	let finished: bool = false;
 
 	'outer: while !finished {
 
@@ -102,7 +101,6 @@ fn run_iterative_df(node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, depth_
 						let finished_state = toolbox::check_goal_condition( &current_node.problem.state, &current_node.problem.goal );
 
 						if finished_state {
-							finished = true;
 							toolbox::print_result(current_node);
               return "\nSucces!\n".to_string();
 						} else {
@@ -161,7 +159,7 @@ fn update_relevant_variables(node: &Node, method: &Method, old_relevant_variable
 }
 
 // Takes the boolean prefix, the name, the list of lists of possible values and a ref to the state
-fn check_precondition(precondition: &(bool,String,Vec<String>), param_list: &RelVars, state: &Vec<(String, Vec<String>)>) -> bool {
+fn check_precondition(precondition: &(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>), param_list: &RelVars, state: &Vec<(String, Vec<String>)>) -> bool {
 
 	let mut precondition_value_list = Vec::<(String, Vec<String>)>::new();
 	let mut param_counter = 0;
@@ -198,20 +196,20 @@ fn check_precondition(precondition: &(bool,String,Vec<String>), param_list: &Rel
 			}
 		}
 
-		if found_counter == value.1.len() && precondition.0 == true {
+		if found_counter == value.1.len() && precondition.0 == 1 {
 			found_one = true;
 			break;
 		}
 	}
 
-	if (found_one == false && precondition.0 == true) || (found_one == true && precondition.0 == false) {
+	if (found_one == false && precondition.0 == 1) || (found_one == true && precondition.0 == 0) {
 		return false;
 	}
 
 	true
 }
 
-fn permutation_tool( value_list: RelVars , precondition_list: Vec<(bool,String,Vec<String>)>, state: &Vec<(String, Vec<String>)>) ->   Vec::<Vec::<usize>> {
+fn permutation_tool( value_list: RelVars , precondition_list: Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>, state: &Vec<(String, Vec<String>)>) ->   Vec::<Vec::<usize>> {
 
 	let mut size_ref_list = Vec::<usize>::new();
 	let mut permutation_holder = Vec::<usize>::new();
@@ -262,7 +260,7 @@ fn permutation_tool( value_list: RelVars , precondition_list: Vec<(bool,String,V
 
 }
 
-fn precon_cleared (permutation: &Vec::<usize>, value_list: &RelVars, precondition_list: &Vec<(bool,String,Vec<String>)>, state: &Vec<(String, Vec<String>)>) -> bool {
+fn precon_cleared (permutation: &Vec::<usize>, value_list: &RelVars, precondition_list: &Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>, state: &Vec<(String, Vec<String>)>) -> bool {
 
 	let _fg = ::flame::start_guard("precon cleared");
 
@@ -331,7 +329,7 @@ fn make_node( new_problem: Problem, sq: Vec::<(SubtaskTypes, RelVars)>, called: 
 		new_node
 }
 
-fn perform_htn_task ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, mut current_node: Node, htn_task: (String, String, Vec<String>, bool), relevant_variables: RelVars, mut current_depth: i32) {
+fn perform_htn_task ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, mut current_node: Node, htn_task: (String, String, Vec<String>, bool), relevant_variables: RelVars, current_depth: i32) {
 
 	let _fg = ::flame::start_guard("perform htn_task");
 
@@ -363,7 +361,7 @@ fn perform_htn_task ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, mut 
 	}
 }
 
-fn perform_task ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, current_node: Node, task: Task, relevant_variables: RelVars, mut current_depth: i32) {
+fn perform_task ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, current_node: Node, task: Task, relevant_variables: RelVars, current_depth: i32) {
 
 	let _fg = ::flame::start_guard("perform task");
 
@@ -406,7 +404,7 @@ fn perform_task ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, current_
 	}
 }
 
-fn perform_method ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, mut current_node: Node, method: Method, mut relevant_variables: RelVars, mut current_depth: i32) {
+fn perform_method ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, mut current_node: Node, method: Method, mut relevant_variables: RelVars, current_depth: i32) {
 
 	let _fg = ::flame::start_guard("perform method");
 
@@ -567,7 +565,7 @@ fn perform_method ( node_queue: &mut Vec::<(Node, i32)>, domain: &Domain, mut cu
 	//next_node(node_queue, domain);
 }
 
-fn perform_action ( node_queue: &mut Vec::<(Node, i32)>, mut current_node: Node, action: Action, relevant_variables: RelVars, mut current_depth: i32) {
+fn perform_action ( node_queue: &mut Vec::<(Node, i32)>, mut current_node: Node, action: Action, relevant_variables: RelVars, current_depth: i32) {
 
 	let _fg = ::flame::start_guard("perform action");
 

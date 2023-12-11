@@ -1,25 +1,25 @@
 
-use crate::datastructures::{domain::*};
+use crate::datastructures::domain::*;
 use crate::parser::{underscore_stringer, underscore_matcher, order_subtasks};
 use nom::IResult;
 use nom::bytes::complete::{tag, take_until};
-use nom::branch::{alt};
-use nom::combinator::{opt};
-use nom::character::complete::{alphanumeric1, multispace0};
+use nom::branch::alt;
+use nom::character::streaming::multispace0;
+use nom::combinator::{opt, not};
+use nom::character::complete::alphanumeric1;
 use nom::sequence::{tuple, pair};
 use nom::multi::{many1, many0};
-use nom::error::{context};
+use nom::error::context;
 
 // ------------------------- DOMAIN PARSER ----------------------------------------
 
 pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
 
-  let _fg = ::flame::start_guard("parse domain");
-
   context("domain", 
     tuple((
       get_domain_name,
       get_domain_types,
+      opt(get_domain_constants),
       get_domain_predicates,
       get_domain_tasks,
       get_domain_methods,
@@ -27,7 +27,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
     ))
   )(input)
   .map(|(next_input, res)| {
-      let (domain_name, types, predicates, tasks, methods, actions) = res;
+      let (domain_name, types, constants, predicates, tasks, methods, actions) = res;
 
       (
         next_input,
@@ -37,6 +37,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
           methods: methods,
           actions: actions,
           types: types,
+          constants: constants,
           predicates: predicates
         }
       )
@@ -143,6 +144,40 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
     })
   }
   
+fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> {
+
+  context("domain constants", 
+    tuple((
+      tag("(:constants"),
+      multispace0,
+      many1(
+        tuple((
+          underscore_stringer,
+          tag(" - "),
+          underscore_stringer,
+          multispace0,
+        ))
+      ),
+      tag(")"),
+      multispace0
+    ))
+  )(input)
+  .map(|(next_input, res)| {
+    let (_tag, _ms, const_list, _tag1, _ms1) = res;
+
+    let mut const_vec = Vec::<(String, String)>::new();
+
+    for constant in const_list {
+      const_vec.push((constant.0, constant.2))
+    }
+
+    (
+      next_input, const_vec
+    )
+  })
+
+ }
+
   fn get_domain_predicates( input: &str ) -> IResult<&str, Vec<Predicate>> { 
     //println!("Input for domain predicates: {}", input);
   
@@ -154,19 +189,15 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
           tuple((
             tag("("),
             underscore_stringer,
-            tag(" "),
-            many1(tuple((
-              many1(
-                tuple((
-                  tag("?"),
-                  underscore_stringer,
-                  multispace0
-                ))
-              ), 
-              tag("- "),
-              underscore_stringer,
-              multispace0,
-            ))),
+            multispace0,
+            many0(
+              tuple((
+                underscore_stringer,
+                tag(" - "),
+                underscore_stringer,
+                multispace0
+              ))
+            ), 
             tag(")"),
             multispace0
           ))
@@ -177,7 +208,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
     )(input)
     .map(|(next_input, res)| {
       let (_tag0, _ws0, predicates, _tag1, _ws1) = res;
-  
+
       let mut predicates_vec = Vec::<Predicate>::new();
   
       for predicate in predicates {
@@ -188,14 +219,13 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
   
         for arg in predicate.3 {
 
-          for arg_name in arg.0 {
             let new_argument = Argument {
-              name: "?".to_string() + &arg_name.1,
+              name: arg.0.to_string(),
               object_type: arg.2.to_string()
             };
     
             arg_vec.push(new_argument);
-          }
+          
         }
   
         let new_predicate = Predicate {
@@ -224,9 +254,8 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
           tag(":parameters"),
           multispace0,
           tag("("),
-          many1(
+          many0(
             tuple((
-              tag("?"),
               underscore_stringer,
               tag(" - "),
               underscore_stringer,
@@ -256,8 +285,8 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
         let mut arg_list = Vec::<Argument>::new();
   
         for task_args in &task.6 {
-          let arg_name = "?".to_string() + &task_args.1;
-          let arg_type = task_args.3.to_string();
+          let arg_name = task_args.0.to_string();
+          let arg_type = task_args.2.to_string();
 
   
           let new_arg = Argument {
@@ -279,10 +308,6 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
 
         id_counter = id_counter + 1;
       }
-
-
-  
-      //println!("{:?}", task_vec);
   
       (
         next_input, task_vec
@@ -370,10 +395,10 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
     context("domain method parameters",
       tuple((
         tag(":parameters ("),
-        many1(
+        many0(
           tuple((
             many1(tuple((
-              tag("?"),
+              not(tag("-")),
               underscore_stringer,
               multispace0
             ))),
@@ -396,7 +421,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
         for arg in param.0 {
 
           let new_arg = Argument {
-            name: format!("{}{}","?".to_string(), arg.1),
+            name: arg.1.to_string(),
             object_type: param.2.clone()
           };
 
@@ -419,9 +444,8 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
         tag("("),
         underscore_stringer,
         multispace0,
-        many1(
+        many0(
           tuple((
-            tag("?"),
             underscore_stringer,
             multispace0
           ))
@@ -436,7 +460,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
       let mut arg_vec = Vec::<String>::new();
   
       for arg in arg_list {
-        arg_vec.push(format!("{}{}","?".to_string(), arg.1));
+        arg_vec.push(arg.0.to_string());
       }
   
       (
@@ -445,7 +469,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
     })
   }
   
-  fn get_method_preconditions(input: &str) -> IResult<&str,  Vec<(bool,String,Vec<String>)>> {
+  fn get_method_preconditions(input: &str) -> IResult<&str,  Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>> {
     //println!("Input for get_method_preconditions : {}", input);
   
     context("domain method precondition",
@@ -456,12 +480,13 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
         many1(
           tuple((
             tag("("),
+            opt(get_forall),
             opt(tag("not (")),
-            underscore_stringer,
+            opt(tag("= ")),
+            opt(underscore_stringer),
             multispace0,
-            many1(
+            many0(
               tuple((
-                tag("?"),
                 underscore_stringer,
                 multispace0
               ))
@@ -479,27 +504,56 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
     .map(|(next_input, res)| {
       let (_tag0, _, _ws0, precondition_list, _tag1, _ws1) = res;
   
-      let mut precon_vec = Vec::<(bool,String,Vec<String>)>::new();
+      let mut precon_vec = Vec::<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>::new();
   
       for precon in precondition_list {
         //println!("{:?}", precon);
   
-        let mut conditional_bool = true;
-  
-        match precon.1 {
-          Some(_inner) => { conditional_bool = false }
-          None => { 
-            // Nothing 
-          } 
-        }
-  
+        let mut conditional_int = 0;
         let mut arg_vec = Vec::<String>::new();
   
-        for arg in precon.4 {
-          arg_vec.push(format!("{}{}","?".to_string(), arg.1));
+        match (precon.2, precon.3, precon.1) {
+          (_, _, Some(forall_item)) => { 
+            conditional_int = 4;
+            
+            precon_vec.push((conditional_int, "forall".to_string(), arg_vec, Some(forall_item) ));
+          },
+          (None, Some(_equal), _) => { 
+
+            conditional_int = 2;
+
+            for arg in &precon.6 {
+              arg_vec.push(arg.0.clone());
+              precon_vec.push((conditional_int, precon.4.clone().unwrap().to_string(), arg_vec.clone(), None));
+            }
+
+          },
+          (Some(_not), Some(_equal), None) => {
+            conditional_int = 3;
+
+            for arg in precon.6 {
+              arg_vec.push(arg.0.to_string());
+            }
+
+            precon_vec.push((conditional_int, precon.4.unwrap(), arg_vec, None));
+          },
+          (Some(_not), None, None) => {
+            conditional_int = 1;
+
+            for arg in precon.6 {
+              arg_vec.push(arg.0.to_string());
+            }
+
+            precon_vec.push((conditional_int, precon.4.unwrap(), arg_vec, None));
+          },
+          (None, None, None) => { 
+            for arg in precon.6 {
+              arg_vec.push(arg.0.to_string());
+            }
+
+            precon_vec.push((conditional_int, precon.4.unwrap(), arg_vec, None));
+          }
         }
-  
-        precon_vec.push((conditional_bool, precon.2, arg_vec));
       }
   
       (
@@ -508,6 +562,68 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
     })
   }
   
+fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String, Vec<String>)>)> {
+  //println!("Forall input: {}", input);
+
+  context("forall", 
+    tuple((
+      tag("forall"),
+      multispace0,
+      tag("("),
+      underscore_stringer,
+      tag(" - "),
+      underscore_stringer,
+      tag(")"),
+      multispace0,
+      many1(
+        tuple((
+          opt(tag("(not ")),
+          tag("("),
+          underscore_stringer,
+          multispace0,
+          many1(
+            tuple((
+              underscore_stringer,
+              multispace0
+            ))
+          ),
+          tag(")"),
+          opt(tag(")")),
+          multispace0
+        ))
+      ),
+      tag(")"),
+      multispace0
+    ))
+  )(input)
+  .map(|(next_input, res)| {
+    let (_tag0, _ms0, _tag1, forall_arg, _tag2, forall_arg_type, _tag3, _ms1, con_list, _tag4, _ms2) = res;
+
+    let mut forall_constraint_list = Vec::<(bool, String, Vec<String>)>::new();
+
+    for con in con_list {
+        let mut condition_bool = true;
+
+        if let Some(_condition_boolean) = con.0 {
+          condition_bool = false;
+        }
+
+        let mut arg_vec = Vec::<String>::new();
+
+        for arg in con.4 {
+          arg_vec.push(arg.0.to_string())
+        }
+
+        forall_constraint_list.push((condition_bool, con.2, arg_vec));
+    }
+
+    (
+      next_input, ((forall_arg.to_string(), forall_arg_type), forall_constraint_list)
+    )
+  })
+
+} 
+
   fn get_method_subtasks(input: &str) -> IResult<&str, Vec<(String, String, Vec<String>, bool)>> {
     //println!("Input for get_method_subtasks: {}", input);
   
@@ -515,7 +631,8 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
       tuple((
         alt((tag(":subtasks"), tag(":ordered-subtasks"))),
         multispace0,
-        opt(tag("(and")),
+        tag("("),
+        opt(tag("and")),
         multispace0,
         many0(
           tuple((
@@ -525,10 +642,9 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
             multispace0,
             opt(pair(tag("("),
             underscore_stringer)),
-            many1(
+            many0(
               tuple((
                 multispace0,
-                tag("?"),
                 underscore_stringer
               ))
             ),
@@ -542,7 +658,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
       ))
     )(input)
     .map(|(next_input, res)| {
-      let (_tag0, _, _, _ws0, subtask_list, _, _ws1) = res;
+      let (_tag0, _, _, _, _ws0, subtask_list, _, _ws1) = res;
   
       let mut subtask_vec = Vec::<(String, String, Vec<String>, bool)>::new();
   
@@ -550,7 +666,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
         let mut arg_vec = Vec::<String>::new();
         
         for arg in &subtask.5 {
-          arg_vec.push(format!("{}{}","?".to_string(), arg.2));
+          arg_vec.push(arg.1.to_string());
         }
   
         //println!("{:?}",subtask);
@@ -622,7 +738,6 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
             tag("(= "),
             many1(
               tuple((
-                tag("?"),
                 underscore_stringer,
                 multispace0
               ))
@@ -654,7 +769,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
           }
         }
   
-        constraint_vec.push((boolean_val, format!("{}{}","?".to_string(), arg.3[0].1), format!("{}{}","?".to_string(), arg.3[1].1)));
+        constraint_vec.push((boolean_val, arg.3[0].0.to_string(), arg.3[1].0.to_string()));
       }
   
       (
@@ -736,7 +851,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
         many1(
           tuple((
             many1( tuple ((
-              tag("?"),
+              not(tag("-")),
               underscore_stringer,
               multispace0
             ))),
@@ -758,8 +873,8 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
         
         for arg in parameter.0 {
           let new_arg = Argument {
-            name: format!("{}{}","?".to_string(), arg.1),
-            object_type: parameter.3.to_string() 
+            name: arg.1.to_string(),
+            object_type: parameter.2.to_string() 
           };
 
           arg_vec.push(new_arg);
@@ -772,7 +887,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
     })
   }
   
-  fn get_action_precondition( input: &str ) -> IResult<&str, Vec<(bool,String,Vec<String>)>> {
+  fn get_action_precondition( input: &str ) -> IResult<&str, Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>> {
     //println!("Input for action precondition: {}", input);
   
     context("action precondition", 
@@ -790,7 +905,6 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
             multispace0,
             many1(
               tuple((
-                tag("?"),
                 underscore_stringer,
                 multispace0
               ))
@@ -807,20 +921,20 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
     .map(|(next_input, res)| {
       let (_, _, _, _, _, precon_list, _, _) = res;
   
-      let mut precon_vec = Vec::<(bool,String,Vec<String>)>::new();
+      let mut precon_vec = Vec::<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>::new();
   
       for precon in precon_list {
         //println!("precon: {:?}", precon);
         let mut arg_vec = Vec::<String>::new();
   
         for arg in precon.4 {
-          arg_vec.push(format!("{}{}","?".to_string(), arg.1));
+          arg_vec.push(arg.0);
         }
 
         if precon.1 != None {
-          precon_vec.push((false, precon.2.to_string(), arg_vec));
+          precon_vec.push((1, precon.2.to_string(), arg_vec, None));
         } else {
-          precon_vec.push((true, precon.2.to_string(), arg_vec));
+          precon_vec.push((0, precon.2.to_string(), arg_vec, None));
         }
       }
   
@@ -849,7 +963,6 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
             multispace0,
             many1( 
               tuple ((
-                tag("?"),
                 underscore_stringer,
                 multispace0
               ))
@@ -874,7 +987,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
         let mut arg_vec = Vec::<String>::new();
   
         for arg in effect.4 {
-          arg_vec.push(format!("{}{}","?".to_string(), arg.1));
+          arg_vec.push(arg.0);
         };
   
         let boolean = match effect.0 {
