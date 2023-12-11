@@ -5,6 +5,7 @@ pub struct Domain {
     pub methods: Vec<Method>,
     pub actions: Vec<Action>,
     pub types: Vec<(String, String)>,
+    pub constants: Option<Vec<(String, String)>>,
     pub predicates: Vec<Predicate>,
 }
 
@@ -29,12 +30,13 @@ pub struct Argument {
     pub object_type: String
 }
 
+// NEW PRECONDITIONS: 0 = True, 1 = False, 2 = True Equal, 3 = False Equal, 4 = forall
 #[derive(Debug, Clone, Hash)] 
 pub struct Method {
     pub name: String,
     pub parameters: Vec<Argument>, 
     pub task: (String, Vec<String>),
-    pub precondition: Option<Vec<(bool,String,Vec<String>)>>,
+    pub precondition: Option<Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>>,
     pub subtasks: Vec<(String, String, Vec<String>, bool)>,
     pub constraints: Option<Vec<(bool, String, String)>>,
     pub id: i32
@@ -44,7 +46,7 @@ pub struct Method {
 pub struct Action {
     pub name: String,
     pub parameters: Vec<Argument>,
-    pub precondition: Option<Vec<(bool,String,Vec<String>)>>,
+    pub precondition: Option<Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>>,
     pub effect: Option<Vec<(bool,String,Vec<String>)>>,
     pub id: i32
 }

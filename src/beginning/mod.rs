@@ -83,8 +83,8 @@ pub fn create_problem () -> (Problem, Domain) {
     parameters: Vec::from([arg1.clone(), arg0.clone()]),
     precondition: Some(
       Vec::from([
-        (false, String::from("in"), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()])),
-        (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
+        (1, String::from("in"), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), None),
+        (1, String::from("open"), Vec::from(["?box_arg".to_string()]), None)
       ])
     ),
     effect: Some(Vec::from([(true,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])),
@@ -96,8 +96,8 @@ pub fn create_problem () -> (Problem, Domain) {
     parameters: Vec::from([arg1.clone(), arg0.clone()]),
     precondition: Some(
       Vec::from([
-        (true, String::from("in"), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()])),
-        (false, String::from("open"), Vec::from(["?box_arg".to_string()]))
+        (0, String::from("in"), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), None),
+        (1, String::from("open"), Vec::from(["?box_arg".to_string()]), None)
       ])
       ),
     effect: Some(Vec::from([(true, String::from("open"),Vec::from(["?box_arg".to_string()])),(false,String::from("in"),Vec::from(["?key_arg".to_string(),"?box_arg".to_string()]))])),
@@ -113,7 +113,7 @@ pub fn create_problem () -> (Problem, Domain) {
     name: "opened_box_method".to_string(),
     parameters: Vec::from([arg1.clone(), arg0.clone()]), 
     task: ("opened_box".to_string(), Vec::from([arg0.name.clone()])),
-    precondition: Some(Vec::from([(false,String::from("open"), Vec::from(["?box_arg".to_string()]))])),
+    precondition: Some(Vec::from([(1,String::from("open"), Vec::from(["?box_arg".to_string()]), None)])),
     subtasks: Vec::from([("insert_key".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false), ("open_box".to_string(), "task0".to_string(), Vec::from(["?key_arg".to_string(), "?box_arg".to_string()]), false)]), 
     constraints: None,
     id: 10
@@ -127,6 +127,7 @@ pub fn create_problem () -> (Problem, Domain) {
     methods: Vec::from([method]),
     actions: Vec::from([action1.clone(), action2.clone()]),
     types: Vec::from([type1, type2]),
+    constants: None,
     predicates: Vec::from([predicate1.clone(), predicate3.clone()]),
   };
 

@@ -1,67 +1,75 @@
-use core::panic;
-use std::{collections::HashSet};
-use crate::{datastructures::{node::*, domain::*, problem::{*, self}}, toolbox::reduce_domain};
+use std::collections::HashSet;
+use crate::{datastructures::{node::*, domain::{*, self}, problem::{*}}, toolbox::reduce_domain};
 use crate::toolbox::{self};
 pub mod iterative_df;
+pub mod stoppable_df;
 
 // Relevant Variables datatype
 type RelVars = Vec<(String, String, Vec<String>)>;
 
 pub fn depth_first(problem: Problem, domain: &Domain) {
 
-	let _fg = ::flame::start_guard("Depth first init");
-
-	//println!("SANITY CHECK: \nMethod count: {}\nAction count: {}\n", domain.methods.len(), domain.actions.len());
-	//println!("Domain: {:?}\n", domain);
-
 	let mut node_queue = Vec::<Node>::new();
 	let mut htn_subtask_queue = Vec::<(SubtaskTypes, RelVars)>::new();
 
-	for subtask in &problem.htn.subtasks {
+	let mut new_problem: Problem = update_objects(problem.clone(), domain);
+
+	println!("HTN: {:?}\n ", new_problem.htn);
+	println!("Actions len: {}, Method len: {}\n", domain.actions.len(), domain.methods.len());
+
+	new_problem.htn.subtasks.reverse();
+
+	for subtask in &new_problem.htn.subtasks {
 
 		let mut new_relevant_parameters = RelVars::new();
 
 		for item in &subtask.2 {
-			for object in &problem.objects {
-				if &object.0 == item {
-					new_relevant_parameters.push(("no name".to_string(), object.1.clone(), vec![item.clone()].clone()))
+			if item.contains("?") {
+				
+				for parameter in &new_problem.htn.parameters {
+					if item == &parameter.0 {
+
+						let mut var_vec = Vec::<String>::new();
+
+						for object in &new_problem.objects {
+							if object.1 == parameter.1 {
+								var_vec.push(object.0.clone());
+							} else if object.2.contains(&parameter.1) {
+								var_vec.push(object.0.clone());
+							}
+						}
+
+						new_relevant_parameters.push((parameter.0.clone(), parameter.1.clone(), var_vec));
+					}
+				}
+			} else {
+				for object in &new_problem.objects {
+					if &object.0 == item {
+						new_relevant_parameters.push(("no name".to_string(), object.1.clone(), vec![item.clone()]))
+					}
 				}
 			}
 		}
 
+		//println!("REL_VAR: {:?}", new_relevant_parameters);
+
 		htn_subtask_queue.push((SubtaskTypes::HtnTask(subtask.clone()), new_relevant_parameters));	
 	}
 
-	let new_problem: Problem = update_objects(problem.clone(), domain);
-
 	let new_domain = reduce_domain(domain, &new_problem);
-
 	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars)>::new(), Vec::<usize>::new());
 	let new_node = make_node(new_problem.clone(), htn_subtask_queue, called, (Vec::<(String, i32, Vec<String>)>::new(),Vec::<(String, i32, Vec<String>)>::new()), HashSet::<u64>::new());
 	
 	node_queue.push(new_node);
 
-	run_df(&mut node_queue, domain);
+	run_df(&mut node_queue, &new_domain);
 }
 
 fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain) {
 
-	let _fg = ::flame::start_guard("run depth first");
-
-	let stop_early = 100000;
-	let mut counter = 0;
-
 	let mut finished: bool = false;
 
 	while !finished {
-
-		// if stop_early == counter {
-		// 	finished = true;
-		// } else {
-		// 	counter = counter + 1;
-		// }
-
-		let _fg = ::flame::start_guard("while loop");
 
 		let current_node = node_queue.pop();
 
@@ -80,19 +88,35 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain) {
 				match current_subtask {
 
 					Some((SubtaskTypes::HtnTask(htn_task), relevant_variables))=> {
-						//println!("Htn_task: {:?}", htn_task.0);
+						println!("Htn_task: {:?}, Rel_Vars: {:?}\n", htn_task.0, relevant_variables);
+
+   					let mut line = String::new();
+						let b1 = std::io::stdin().read_line(&mut line).unwrap();
+
 						perform_htn_task(node_queue, domain, current_node, htn_task, relevant_variables);
 					},
 					Some((SubtaskTypes::Task(task), relevant_variables)) => {
-						//println!("Task: {:?}", task.name);
+						println!("Task: {:?}\n", task.name);
+
+						let mut line = String::new();
+						let b1 = std::io::stdin().read_line(&mut line).unwrap();
+
 						perform_task(node_queue, domain, current_node, task, relevant_variables);
 					},
 					Some((SubtaskTypes::Method(method), relevant_variables)) => {
-						//println!("Method {:?}, RELVARS: {:?}\n", method.name, relevant_variables);					
+						println!("Method {:?}, RELVARS: {:?}\n", method.name, relevant_variables);
+						
+						let mut line = String::new();
+						let b1 = std::io::stdin().read_line(&mut line).unwrap();
+
 						perform_method(node_queue, domain, current_node, method, relevant_variables);
 					},
 					Some((SubtaskTypes::Action(action), relevant_variables)) => {
-						//println!("\n Action: {:?} Relevant_variables: {:?}", action.name, relevant_variables);
+						println!("\n Action: {:?} Relevant_variables: {:?}\n", action.name, relevant_variables);
+
+						let mut line = String::new();
+						let b1 = std::io::stdin().read_line(&mut line).unwrap();
+
 						perform_action(node_queue, current_node, action, relevant_variables);
 					},
 					None => { 
@@ -103,7 +127,7 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain) {
 							finished = true;
 							toolbox::print_result(current_node);
 						} else {
-							println!("FAILED TO FIND SOLUTION!");
+							println!("Tested wrong goal state");
 						}
 					}
 				}
@@ -117,9 +141,9 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain) {
 
 fn update_relevant_variables(node: &Node, method: &Method, old_relevant_variables: &RelVars) -> RelVars {
 
-	let _fg = ::flame::start_guard("update relevant variables");
-
 	let mut updated_relevant_parameters = RelVars::new();
+
+	//println!("\n OLD VARS: {:?}\n", old_relevant_variables);
 
 	for param in &method.parameters {
 
@@ -155,57 +179,163 @@ fn update_relevant_variables(node: &Node, method: &Method, old_relevant_variable
 }
 
 // Takes the boolean prefix, the name, the list of lists of possible values and a ref to the state
-fn check_precondition(precondition: &(bool,String,Vec<String>), param_list: &RelVars, state: &Vec<(String, Vec<String>)>) -> bool {
+fn check_precondition(precondition: &(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>), param_list: &RelVars, state: &Vec<(String, Vec<String>)>, problem: &Problem) -> bool {
 
-	let mut precondition_value_list = Vec::<(String, Vec<String>)>::new();
-	let mut param_counter = 0;
+	//println!("\nPRECON: {:?}\nPARAMS: {:?}\n", precondition, param_list);
 
-	//Find needed values
-	for value in &precondition.2 {
-		for param in param_list {
-			if value == &param.0 {
-				precondition_value_list.push((param.0.clone(), param.2.clone()));
-				param_counter = param_counter + 1;
-			}
-
-			if param_counter == precondition.2.len() {
-				break;
-			}
-		}
-	};
-
-	let mut found_one = false;
-
-	// Find state parameter
-	for value in state {
-		let mut found_counter = 0;
-
-		if value.0 == precondition.1 {
-			// For every variable in state parameter
-
-			for n in 0..value.1.len() {
-				for param in &precondition_value_list[n].1 {
-					if &value.1[n] == param {
-						found_counter = found_counter + 1;
-					} 
+	match precondition.0 {
+		0 | 1 => {
+			let mut precondition_value_list = Vec::<(String, Vec<String>)>::new();
+			let mut param_counter = 0;
+		
+			//Find needed values
+			for value in &precondition.2 {
+				for param in param_list {
+					if value == &param.0 {
+						precondition_value_list.push((param.0.clone(), param.2.clone()));
+						param_counter = param_counter + 1;
+					}
+		
+					if param_counter == precondition.2.len() {
+						break;
+					}
+				}
+			};
+		
+			let mut found_one = false;
+		
+			// Find state parameter
+			for value in state {
+				let mut found_counter = 0;
+		
+				if value.0 == precondition.1 {
+					// For every variable in state parameter
+		
+					for n in 0..value.1.len() {
+						for param in &precondition_value_list[n].1 {
+							if &value.1[n] == param {
+								found_counter = found_counter + 1;
+							} 
+						}
+					}
+				}
+		
+				if found_counter == value.1.len() && precondition.0 == 0 {
+					found_one = true;
+					break;
 				}
 			}
-		}
+		
+			if (found_one == false && precondition.0 == 0) || (found_one == true && precondition.0 == 1) {
+				return false;
+			}
+		
+			return true
+		},
+		2 | 3 => { 
+			
+			let mut bool_to_return = false;
 
-		if found_counter == value.1.len() && precondition.0 == true {
-			found_one = true;
-			break;
-		}
+			//Find needed values
+			for param in param_list {
+
+				if &precondition.1 == &param.0 {
+					for param_val in &param.2 {
+						if precondition.2.contains(param_val) {
+							bool_to_return = true;
+						}
+					}
+				}
+			}
+
+			bool_to_return
+		},
+		4 => { 
+
+			let forall = precondition.3.clone().unwrap();
+
+			let mut overall_bool = true;
+
+			let mut forall_param = (forall.0.0, Vec::<String>::new());
+
+			// Get all for all objects
+			for object in &problem.objects {
+				if forall.0.1 == object.1 {
+					forall_param.1.push(object.0.clone());
+				}
+			}
+
+			let precondition_inner = forall.1[0].clone();
+
+			'outer: for value in forall_param.1 {
+
+				for state_var in state {
+
+					if state_var.0 == precondition_inner.1 {
+
+						let mut found_vars = 0;
+						let mut var_index = 0;
+
+						for val in &precondition_inner.2 {
+
+							//println!("VAL: {}", val);
+
+							if val == &forall_param.0 {
+
+								// Found forall arguement in precondition inner
+								//println!("Checking {} against {} forall param", value, state_var.1[var_index]);
+								if value == state_var.1[var_index] {
+									// Value var equal to found state var value
+									found_vars = found_vars + 1;
+								}
+
+							} else {
+
+								// val is a general parameter
+								for general_param in param_list {
+
+									if &general_param.0 == val {
+										//println!("Checking {:?} against {} general param", general_param.2, state_var.1[var_index]);
+										if general_param.2.contains(&state_var.1[var_index]) {
+											// Value var equal to found state var value
+											found_vars = found_vars + 1;
+										}
+									}
+								}
+
+							}
+
+							var_index = var_index + 1;
+
+						}
+
+						if found_vars == state_var.1.len() {
+							//println!("Found one! \n");
+							if !precondition_inner.0 {
+								overall_bool = false;
+								break 'outer;
+							}
+
+						}
+					}
+				}
+			}
+
+			if overall_bool {
+				println!("A precondition: {:?}, params: {:?} \n", precondition, param_list);
+			}
+
+			//let mut answer = String::new();
+			//io::stdin().read_line(&mut answer).ok();
+
+			return overall_bool
+		},
+		_ => { panic!{"preconditions integer that does not exist"} }
 	}
 
-	if (found_one == false && precondition.0 == true) || (found_one == true && precondition.0 == false) {
-		return false;
-	}
-
-	true
 }
 
-fn permutation_tool( value_list: RelVars , precondition_list: Vec<(bool,String,Vec<String>)>, state: &Vec<(String, Vec<String>)>) ->   Vec::<Vec::<usize>> {
+fn permutation_tool( value_list: RelVars , precondition_list: Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>, state: &Vec<(String, Vec<String>)>, problem: &Problem) ->   Vec::<Vec::<usize>> {
 
 	let mut size_ref_list = Vec::<usize>::new();
 	let mut permutation_holder = Vec::<usize>::new();
@@ -228,7 +358,7 @@ fn permutation_tool( value_list: RelVars , precondition_list: Vec<(bool,String,V
 		n = 0;
 		
 		// Check precondition
-		if precon_cleared(&permutation_holder, &value_list, &precondition_list, state) {
+		if precon_cleared(&permutation_holder, &value_list, &precondition_list, state, problem) {
 			permutation_list_list.push(permutation_holder.clone());		
 		} 
 
@@ -256,13 +386,13 @@ fn permutation_tool( value_list: RelVars , precondition_list: Vec<(bool,String,V
 
 }
 
-fn precon_cleared (permutation: &Vec::<usize>, value_list: &RelVars, precondition_list: &Vec<(bool,String,Vec<String>)>, state: &Vec<(String, Vec<String>)>) -> bool {
-
-	let _fg = ::flame::start_guard("precon cleared");
+fn precon_cleared (permutation: &Vec::<usize>, value_list: &RelVars, precondition_list: &Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>, state: &Vec<(String, Vec<String>)>, problem: &Problem) -> bool {
 
 	let mut clear = true;
 	let mut new_value_list = RelVars::new();
 	let mut perm_index = 0;
+
+	//println!("{:?} - {:?}", permutation, value_list);
 
 	for val in value_list {
 		new_value_list.push((val.0.clone(), val.1.clone(), vec![val.2[permutation[perm_index]].clone()]));
@@ -270,7 +400,7 @@ fn precon_cleared (permutation: &Vec::<usize>, value_list: &RelVars, preconditio
 	}
 
 	for precon in precondition_list {
-		if !check_precondition(precon, &new_value_list, state) {
+		if !check_precondition(precon, &new_value_list, state, problem) {
 			clear = false;
 		}
 	}
@@ -327,7 +457,7 @@ fn make_node( new_problem: Problem, sq: Vec::<(SubtaskTypes, RelVars)>, called: 
 
 fn perform_htn_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_node: Node, htn_task: (String, String, Vec<String>, bool), relevant_variables: RelVars) {
 
-	let _fg = ::flame::start_guard("perform htn_task");
+	//println!("htn_task: {} - VAR: {:?}", htn_task.0, relevant_variables);
 
 	let mut method_list = Vec::<Method>::new(); 
 
@@ -359,7 +489,7 @@ fn perform_htn_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current
 
 fn perform_task ( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: Node, task: Task, relevant_variables: RelVars ) {
 
-	let _fg = ::flame::start_guard("perform task");
+	//println!("Task: {} - VAR: {:?}", task.name, relevant_variables);
 
 	let mut method_list = Vec::<Method>::new(); 
 
@@ -402,8 +532,6 @@ fn perform_task ( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: N
 
 fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_node: Node, method: Method, mut relevant_variables: RelVars ) {
 
-	let _fg = ::flame::start_guard("perform method");
-
 	// What is the index of this method in the subtask queue of the method that called it?
 	let current_subtask_index = current_node.called.2.pop().unwrap();
 
@@ -415,7 +543,7 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 		match &method.precondition {
 			Some(precondition) => {
 
-				let permutation_list = permutation_tool(relevant_variables.clone(), precondition.clone(), &current_node.problem.state);
+				let permutation_list = permutation_tool(relevant_variables.clone(), precondition.clone(), &current_node.problem.state, &current_node.problem);
 
 				if permutation_list.len() == 0 {
 					return
@@ -500,10 +628,20 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 
 					let mut updated_variables = RelVars::new();
 
+					//println!("Found task: {:?}", method.subtasks[current_subtask_index]);
+
 					for task_arg in method.subtasks[current_subtask_index].2.clone() {
-						for var in &relevant_variables {
-							if var.0 == task_arg {
-								updated_variables.push(var.clone());
+						if task_arg.contains("?") {
+							for var in &relevant_variables {
+								if var.0 == task_arg {
+									updated_variables.push(var.clone());
+								}
+							}
+						} else {
+							for obj in &current_node.problem.objects {
+								if obj.0 == task_arg {
+									updated_variables.push(("no name".to_string(), obj.1.clone(), vec![task_arg.clone()]));
+								} 
 							}
 						}
 					}
@@ -521,11 +659,24 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 						let mut updated_variables = RelVars::new();
 						
 						for n in 0..method.subtasks[current_subtask_index].2.len() {
-							for var in &relevant_variables {
-								if var.0 == method.subtasks[current_subtask_index].2[n] {
-									
-									updated_variables.push((action.parameters[n].name.clone(), var.1.clone(), var.2.clone()));
+
+							if method.subtasks[current_subtask_index].2[n].contains("?"){
+								for var in &relevant_variables {
+									if var.0 == method.subtasks[current_subtask_index].2[n] {
+										
+										updated_variables.push((action.parameters[n].name.clone(), var.1.clone(), var.2.clone()));
+									}
 								}
+							} else {
+
+								// Found constant in action subtask
+								for obj in &current_node.problem.objects{
+									if obj.0 == method.subtasks[current_subtask_index].2[n] {
+										updated_variables.push((action.parameters[n].name.clone(), obj.1.clone(), vec![obj.0.clone()]));
+									}
+								}
+								
+
 							}
 						}
 
@@ -563,11 +714,9 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 
 fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action: Action, relevant_variables: RelVars) {
 
-	let _fg = ::flame::start_guard("perform action");
-
 	//println!("Reached action {}, Relvars: {:?}\n", action.name, relevant_variables);
 
-	let permutation_list = permutation_tool(relevant_variables.clone(), action.precondition.unwrap(), &current_node.problem.state);
+	let permutation_list = permutation_tool(relevant_variables.clone(), action.precondition.unwrap(), &current_node.problem.state, &current_node.problem);
 
 	let (calling_method, calling_relevant_vars) = current_node.called.1.pop().unwrap();
 	current_node.called.0.pop();
@@ -647,8 +796,6 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 
 fn construct_perm_map ( permutation_list: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
 
-	let _fg = ::flame::start_guard("construct permutations");
-
 	let mut perm_map = Vec::<Vec<usize>>::new();
 
 	for _n in 0..permutation_list[0].len() {
@@ -671,8 +818,6 @@ fn construct_perm_map ( permutation_list: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
 }
 
 fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool, String, String)>) -> Vec<Vec<(String, String, Vec<String>)>> {
-
-	let _fg = ::flame::start_guard("check constraint");
 
 	let mut relevant_variables_list = Vec::<Vec<(String, String, Vec<String>)>>::new();
 	let mut intermediate_var_list = Vec::<Vec<(String, String, Vec<String>)>>::new();
@@ -830,10 +975,16 @@ fn constraint_unequal(mut current_rel_vars: Vec<(String, String, Vec<String>)>, 
 
 fn update_objects( mut problem: Problem, domain: &Domain ) -> Problem{
 
-	let _fg = ::flame::start_guard("update objects");
-
 	let mut new_object_list = Vec::<(String, String, Vec<String>)>::new();
 
+	match &domain.constants {
+		Some(constants) => {
+			for constant in constants {
+				problem.objects.push((constant.0.clone(), constant.1.clone(), vec![]));
+			}
+		},
+		None => {}
+	}
 
 	for object in &problem.objects {
 		let mut final_subtype_list = Vec::<String>::new();

@@ -1,12 +1,10 @@
 use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
-use crate::datastructures::{node::*, problem::{*, self}, domain::{*, self}};
+use crate::datastructures::{node::*, problem::{*}, domain::{*}};
 use std::fs::OpenOptions;
 use std::io::Write;
 
 pub fn hash_state(current_node: &mut Node) -> bool {
-
-	let _fg = ::flame::start_guard("hash state");
 
 	//Hash and check if hashset contains
 	let mut hasher: DefaultHasher = DefaultHasher::new();
@@ -25,23 +23,90 @@ pub fn hash_state(current_node: &mut Node) -> bool {
 
 pub fn reduce_domain( domain: &Domain, problem: &Problem ) -> Domain {
 
-	let new_domain = domain.clone();
-
-	let new_types = Vec::<(String, String)>::new();
+	let mut new_domain = domain.clone();
+	let mut new_types = Vec::<(String, String)>::new();
 
 	// Can we remove objects of a certain type?
-	println!("{:?}", problem.objects);
+	'outer: for type_obj in &domain.types {
+
+		for obj in &problem.objects {
+			if obj.2.contains(&type_obj.0) {
+				new_types.push(type_obj.clone());
+				continue 'outer;
+			}
+		}
+
+	}
+
+	//println!("TYPES: Old length: {}, New length: {}", domain.types.len(), new_types.len());
+
+	let mut new_actions = Vec::<Action>::new();
 
 	// Can we remove any actions since we dont have the parameters types?
+	'outer: for action in &domain.actions {
 
-	// Can we remove methods because we dont have the parameters types or because we dont have the actions in the subtask? 
+		for parameter in &action.parameters {
+			if !type_contain_param(&new_types, &parameter.object_type) {
+				continue 'outer;
+			}
+		}
 
-	todo!("Finish reduce_domain")
+		new_actions.push(action.clone())
+	}
+
+	//println!("ACTIONS: Old length: {}, New length: {}", domain.actions.len(), new_actions.len());
+
+	let mut new_methods = Vec::<Method>::new();
+
+	// Can we remove methods because we dont have the parameters types or because we dont have the actions in the subtask?
+	'outer: for method in &domain.methods {
+
+		for parameter in &method.parameters {
+			if !type_contain_param(&new_types, &parameter.object_type) {
+				continue 'outer;
+			}
+		}
+
+		new_methods.push(method.clone())
+	}
+
+	//println!("METHODS: Old length: {}, New length: {}", domain.methods.len(), new_methods.len());
+
+	let mut new_tasks = Vec::<Task>::new();
+
+	'outer: for task in &domain.tasks {
+
+		for parameter in &task.parameters {
+			if !type_contain_param(&new_types, &parameter.object_type) {
+				continue 'outer;
+			}
+		}
+
+		new_tasks.push(task.clone())
+	}
+
+	//println!("TASKS: Old length: {}, New length: {}", domain.tasks.len(), new_tasks.len());
+
+	new_domain.methods = new_methods;
+	new_domain.actions = new_actions;
+	new_domain.types = new_types;
+	new_domain.tasks = new_tasks;
+
+	new_domain
+}
+
+fn type_contain_param(types: &Vec<(String,String)>, check_type: &String) -> bool {
+
+	for type_obj in types {
+		if &type_obj.0 == check_type || &type_obj.1 == check_type {
+			return true;
+		}
+	}
+
+	false
 }
 
 pub fn print_result(current_node: Node) {
-
-	let _fg = ::flame::start_guard("print result");
 
 	let data_struct = OpenOptions::new()
 	.append(true)
@@ -52,7 +117,7 @@ pub fn print_result(current_node: Node) {
 
 		data_file.set_len(0).ok();
 
-		println!("\nFINISHED PROBLEM!\n");
+		//println!("\nFINISHED PROBLEM!\n");
 
 		// OUTPUT IN COMPETITION FORMAT
 		let intro_string = "Solution for problem: {".to_string() + &current_node.problem.name + "} by Ajess19 & Andla19\n==>\n";
@@ -82,7 +147,7 @@ pub fn print_result(current_node: Node) {
 			let mut data_file = data_struct.expect("cannot open file");
 			data_file.set_len(0).ok();
 
-			println!("\nFINISHED PROBLEM!\n");
+			//println!("\nFINISHED PROBLEM!\n");
 		
 			// OUTPUT IN COMPETITION FORMAT
 			let intro_string = "Solution for problem: {".to_string() + &current_node.problem.name + "} by Ajess19 & Andla19\n==>\n";
@@ -111,6 +176,8 @@ pub fn print_result(current_node: Node) {
 
 }
 
+
+
 pub fn compare_lists(list1: Vec<String>, list2: Vec<String>) -> bool {
 
 	if list1.len() == list2.len() {
@@ -123,8 +190,6 @@ pub fn compare_lists(list1: Vec<String>, list2: Vec<String>) -> bool {
 }
 
 pub fn check_goal_condition( state: &Vec<(String, Vec<String>)>, goal: &Option<Vec<(String, Vec<String>)>>) -> bool {
-
-	let _fg = ::flame::start_guard("check goal condition");
 
 	let mut res = true;
 
