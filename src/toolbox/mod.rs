@@ -176,7 +176,18 @@ pub fn print_result(current_node: Node) {
 
 }
 
+pub fn method_calls_method(method_list: &Vec<Method>) -> bool {
 
+	for method in method_list {
+		for sub in &method.subtasks {
+			if method.task.0 == sub.0 {
+				return true
+			}
+		}
+	}
+
+	false
+}
 
 pub fn compare_lists(list1: Vec<String>, list2: Vec<String>) -> bool {
 
@@ -186,6 +197,7 @@ pub fn compare_lists(list1: Vec<String>, list2: Vec<String>) -> bool {
 		}
 	} else { return false; }
 
+	//println!("return true from comp list");
 	true
 }
 

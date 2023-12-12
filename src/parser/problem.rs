@@ -323,13 +323,7 @@ fn get_init( input: &str ) -> IResult<&str, Vec<(String, Vec<String>)>> {
           tag("("),
           many1(
             tuple((
-              alphanumeric1,
-              many0(
-                tuple((
-                  alt((tag("_"), tag("-"))),
-                  alphanumeric1
-                ))
-              ),
+              underscore_stringer,
               opt(tag(" "))
             ))
           ),
@@ -347,33 +341,24 @@ fn get_init( input: &str ) -> IResult<&str, Vec<(String, Vec<String>)>> {
     let mut state_vector = Vec::<(String, Vec<String>)>::new();
 
     for state_var in list {
-      let mut main_name_found = false;
-      let mut main_name = String::new();  
-      let mut var_list = Vec::<String>::new();
-      
-      for state_details in &state_var.1 {
+      let mut name = String::new();
+      let mut found_name = false;
+      let mut arg_vec = Vec::<String>::new();
 
-        // Make the name
-        let mut state_var_name = state_details.0.to_string();
-        if state_var.1.len() != 0 {
-          for name_extension in &state_details.1 {
-            state_var_name = underscore_matcher(state_var_name, name_extension.1);
-          }
-        }
+      for state_attribute in state_var.1 {
 
-        if main_name_found == false {
-          main_name = state_var_name;
-          main_name_found = true;
+        if found_name {
+          arg_vec.push(state_attribute.0);
         } else {
-          var_list.push(state_var_name);
+          name = state_attribute.0;
+          found_name = true;
         }
       }
 
-      state_vector.push((main_name, var_list));
+      state_vector.push((name, arg_vec));
     }
 
     //println!("State_vector: {:?}", state_vector);
-
 
     (
       next_input, state_vector
