@@ -1,5 +1,5 @@
 use core::panic;
-use std::collections::HashSet;
+use std::{collections::HashSet, thread::current};
 use crate::{datastructures::{node::*, domain::{*, self}, problem::{*}}, toolbox::{reduce_domain, method_calls_method}};
 use crate::toolbox::{self};
 pub mod iterative_df;
@@ -19,6 +19,10 @@ pub fn depth_first(problem: Problem, domain: &Domain) {
 	println!("Pre trim - Actions len: {}, Method len: {}\n", domain.actions.len(), domain.methods.len());
 
 	new_problem.htn.subtasks.reverse();
+
+	let mut applied_actions = (Vec::<(String, i32, Vec<String>)>::new(),Vec::<(String, i32, Vec<String>)>::new());
+	let zero: i32 = 0;
+	let mut root_action = ("Root".to_string(), zero,  Vec::<String>::new());
 
 	for subtask in &new_problem.htn.subtasks {
 
@@ -54,12 +58,16 @@ pub fn depth_first(problem: Problem, domain: &Domain) {
 
 		//println!("REL_VAR: {:?}", new_relevant_parameters);
 
+		root_action.2.push(subtask.0.clone());
+
 		htn_subtask_queue.push((SubtaskTypes::HtnTask(subtask.clone()), new_relevant_parameters));	
 	}
 
+	applied_actions.1.push(root_action.clone());
+
 	let new_domain = reduce_domain(domain, &new_problem);
 	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars)>::new(), Vec::<usize>::new());
-	let new_node = make_node(new_problem.clone(), htn_subtask_queue, called, (Vec::<(String, i32, Vec<String>)>::new(),Vec::<(String, i32, Vec<String>)>::new()), HashSet::<u64>::new());
+	let new_node = make_node(new_problem.clone(), htn_subtask_queue, called, applied_actions, HashSet::<u64>::new());
 	
 	println!("Post trim - Actions len: {}, Method len: {}\n", new_domain.actions.len(), new_domain.methods.len());
 
@@ -89,39 +97,39 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain) {
 					}
 				}
 
-				let current_subtask = current_node.subtask_queue.pop(); 
+				let current_subtask = current_node.subtask_queue.pop(); 	
 
 				match current_subtask {
 
 					Some((SubtaskTypes::HtnTask(htn_task), relevant_variables))=> {
 						println!("Htn_task: {:?}, Rel_Vars: {:?}\n", htn_task.0, relevant_variables);
 
-   					let mut line = String::new();
-						let b1 = std::io::stdin().read_line(&mut line).unwrap();
+   					// let mut line = String::new();
+						// let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						perform_htn_task(node_queue, domain, current_node, htn_task, relevant_variables);
 					},
 					Some((SubtaskTypes::Task(task), relevant_variables)) => {
 						println!("Task: {:?}\n", task.name);
 
-						let mut line = String::new();
-						let b1 = std::io::stdin().read_line(&mut line).unwrap();
+						// let mut line = String::new();
+						// let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						perform_task(node_queue, domain, current_node, task, relevant_variables);
 					},
 					Some((SubtaskTypes::Method(method), relevant_variables)) => {
 						println!("Method {:?}, RELVARS: {:?}\n", method.name, relevant_variables);
 						
-						let mut line = String::new();
-						let b1 = std::io::stdin().read_line(&mut line).unwrap();
+						// let mut line = String::new();
+						// let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						perform_method(node_queue, domain, current_node, method, relevant_variables);
 					},
 					Some((SubtaskTypes::Action(action), relevant_variables)) => {
 						println!("\n Action: {:?} Relevant_variables: {:?}\n", action.name, relevant_variables);
 
-						let mut line = String::new();
-						let b1 = std::io::stdin().read_line(&mut line).unwrap();
+						// let mut line = String::new();
+						// let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						perform_action(node_queue, current_node, action, relevant_variables);
 					},
@@ -1135,6 +1143,11 @@ fn update_vars_for_called_method(mut current_node: Node, method: &Method, releva
 
 	let calling_method_subtask = calling_method.subtasks.clone()[current_node.called.2.last().unwrap() - 1].clone();
 
+	println!("UPDATING BACKWARDS");
+	println!("CALLING RELVARS: {:?}", calling_relevant_vars);
+	println!("CURRENT RELVARS: {:?}", relevant_variables);
+
+
 	// let method_task = method.task.clone();
 	let mut i = 0;
 
@@ -1172,6 +1185,8 @@ fn update_vars_for_called_method(mut current_node: Node, method: &Method, releva
 	let mut subts = calling_meth.subtasks;
 	subts[current_node.called.2.last().unwrap() - 1].3 = true;
 	calling_meth.subtasks = subts;
+
+	println!("NEW RELVARS: {:?}", new_new_relevant_variables);
 
 	// Push to subtask_q
 	let mut new_sq = current_node.subtask_queue.clone();
