@@ -110,7 +110,7 @@ pub fn print_result(current_node: Node) {
 
 	let data_struct = OpenOptions::new()
 	.append(true)
-	.open("../../notes/solution.txt");
+	.open("notes/solution.txt");
 
 	if data_struct.is_ok() {
 		let mut data_file = data_struct.expect("cannot open file");
@@ -123,7 +123,7 @@ pub fn print_result(current_node: Node) {
 		let intro_string = "Solution for problem: {".to_string() + &current_node.problem.name + "} by Ajess19 & Andla19\n==>\n";
 		data_file.write(intro_string.as_bytes()).expect("write failed");
 
-		for applied_action in current_node.applied_action_list.0 {
+		for applied_action in &current_node.applied_action_list.0 {
 
 			let mut string_collect = applied_action.1.to_string() + " " + &applied_action.0 + " ";
 
@@ -136,12 +136,26 @@ pub fn print_result(current_node: Node) {
 			data_file.write(string_collect.as_str().as_bytes()).expect("write failed");
 		}
 
+		for applied_method in &current_node.applied_action_list.1 {
+
+			let mut string_collect = applied_method.1.to_string() + " " + &applied_method.0 + " ";
+
+			for param in &applied_method.2 {
+				string_collect = string_collect + param + " "
+			}
+
+			string_collect = string_collect + "\n";
+
+			data_file.write(string_collect.as_str().as_bytes()).expect("write failed");
+
+		}
+
 		data_file.write("<==".as_bytes()).expect("write failed");
 	} else {
 
 		let data_struct = OpenOptions::new()
 		.append(true)
-		.open("notes/solution.txt");
+		.open("../../notes/solution.txt");
 
 		if data_struct.is_ok() {
 			let mut data_file = data_struct.expect("cannot open file");
@@ -165,6 +179,20 @@ pub fn print_result(current_node: Node) {
 		
 				data_file.write(string_collect.as_str().as_bytes()).expect("write failed");
 			}
+
+			for applied_method in &current_node.applied_action_list.1 {
+
+				let mut string_collect = applied_method.1.to_string() + " " + &applied_method.0 + " ";
+	
+				for param in &applied_method.2 {
+					string_collect = string_collect + param + " "
+				}
+	
+				string_collect = string_collect + "\n";
+	
+				data_file.write(string_collect.as_str().as_bytes()).expect("write failed");
+	
+			}
 		
 		
 			data_file.write("<==".as_bytes()).expect("write failed");
@@ -172,7 +200,6 @@ pub fn print_result(current_node: Node) {
 
 
 	}
-
 
 }
 
