@@ -577,7 +577,11 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 		match &method.precondition {
 			Some(precondition) => {
 
-				let permutation_list = permutation_tool(relevant_variables.clone(), precondition.clone(), &current_node.problem.state, &current_node.problem);
+				let mut permutation_list = permutation_tool(relevant_variables.clone(), precondition.clone(), &current_node.problem.state, &current_node.problem);
+
+				if method.parameters.len() == 0{
+					permutation_list.push(Vec::<usize>::new());
+				}
 
 				if permutation_list.len() == 0 {
 					//println!("Failed precon");
@@ -755,7 +759,11 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 
 	//println!("State: {:?}\n", current_node.problem.state);
 
-	let permutation_list = permutation_tool(relevant_variables.clone(), action.precondition.unwrap(), &current_node.problem.state, &current_node.problem);
+	let mut permutation_list = permutation_tool(relevant_variables.clone(), action.precondition.unwrap(), &current_node.problem.state, &current_node.problem);
+
+	if action.parameters.len() == 0 {
+		permutation_list.push(Vec::<usize>::new());
+	}
 
 	if current_node.called.1.len() != 0 {
 

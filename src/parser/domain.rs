@@ -192,8 +192,12 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
             multispace0,
             many0(
               tuple((
-                underscore_stringer,
-                tag(" - "),
+                many1(tuple((
+                  not(tag("-")),
+                  underscore_stringer,
+                  multispace0
+                ))),
+                tag("- "),
                 underscore_stringer,
                 multispace0
               ))
@@ -219,13 +223,14 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
   
         for arg in predicate.3 {
 
-            let new_argument = Argument {
-              name: arg.0.to_string(),
-              object_type: arg.2.to_string()
-            };
-    
-            arg_vec.push(new_argument);
-          
+            for arg_count in arg.0 {
+              let new_argument = Argument {
+                name: arg_count.1.to_string(),
+                object_type: arg.2.to_string()
+              };
+      
+              arg_vec.push(new_argument);
+            }
         }
   
         let new_predicate = Predicate {
@@ -480,6 +485,7 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
         many1(
           tuple((
             tag("("),
+            not(tag(":")),
             opt(get_forall),
             opt(tag("not (")),
             opt(tag("= ")),
@@ -505,14 +511,14 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
       let (_tag0, _, _ws0, precondition_list, _tag1, _ws1) = res;
   
       let mut precon_vec = Vec::<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>::new();
-  
+      
       for precon in precondition_list {
         //println!("{:?}", precon);
   
         let mut conditional_int = 0;
         let mut arg_vec = Vec::<String>::new();
   
-        match (precon.2, precon.3, precon.1) {
+        match (precon.3, precon.4, precon.2) {
           (_, _, Some(forall_item)) => { 
             conditional_int = 4;
             
@@ -522,36 +528,36 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
 
             conditional_int = 2;
 
-            for arg in &precon.6 {
+            for arg in &precon.7 {
               arg_vec.push(arg.0.clone());
-              precon_vec.push((conditional_int, precon.4.clone().unwrap().to_string(), arg_vec.clone(), None));
+              precon_vec.push((conditional_int, precon.5.clone().unwrap().to_string(), arg_vec.clone(), None));
             }
 
           },
           (Some(_not), Some(_equal), None) => {
             conditional_int = 3;
 
-            for arg in precon.6 {
+            for arg in precon.7 {
               arg_vec.push(arg.0.to_string());
             }
 
-            precon_vec.push((conditional_int, precon.4.unwrap(), arg_vec, None));
+            precon_vec.push((conditional_int, precon.5.unwrap(), arg_vec, None));
           },
           (Some(_not), None, None) => {
             conditional_int = 1;
 
-            for arg in precon.6 {
+            for arg in precon.7 {
               arg_vec.push(arg.0.to_string());
             }
 
-            precon_vec.push((conditional_int, precon.4.unwrap(), arg_vec, None));
+            precon_vec.push((conditional_int, precon.5.unwrap(), arg_vec, None));
           },
           (None, None, None) => { 
-            for arg in precon.6 {
+            for arg in precon.7 {
               arg_vec.push(arg.0.to_string());
             }
 
-            precon_vec.push((conditional_int, precon.4.unwrap(), arg_vec, None));
+            precon_vec.push((conditional_int, precon.5.unwrap(), arg_vec, None));
           }
         }
       }
@@ -637,7 +643,7 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
         many0(
           tuple((
             multispace0,
-            tag("("),
+            opt(tag("(")),
             underscore_stringer,
             multispace0,
             opt(pair(tag("("),
@@ -848,7 +854,7 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
     context("action parameters", 
       tuple((
         tag(":parameters ("),
-        many1(
+        many0(
           tuple((
             many1( tuple ((
               not(tag("-")),
@@ -903,7 +909,7 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
             opt(tag("not (")),
             underscore_stringer,
             multispace0,
-            many1(
+            many0(
               tuple((
                 underscore_stringer,
                 multispace0
@@ -961,7 +967,7 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
             tag("("),
             underscore_stringer,
             multispace0,
-            many1( 
+            many0( 
               tuple ((
                 underscore_stringer,
                 multispace0

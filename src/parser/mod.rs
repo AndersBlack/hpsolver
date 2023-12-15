@@ -75,6 +75,9 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>, bool)>, ordering: 
 
   match ordering {
     Some(ordering) => {
+
+      if ordering.len() == 0 { return subtasks }
+
       let mut sorted_subs = Vec::<(String, String, Vec<String>, bool)>::new();
 
       let mut degree_list = Vec::<(i32, String, Vec<String>)>::new();

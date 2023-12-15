@@ -1,3 +1,4 @@
+use core::panic;
 use std::collections::HashSet;
 use crate::{datastructures::{node::*, domain::{*, self}, problem::{*}}, toolbox::{reduce_domain, method_calls_method}};
 use crate::toolbox::{self};
@@ -15,7 +16,7 @@ pub fn depth_first(problem: Problem, domain: &Domain) {
 	let mut new_problem: Problem = update_objects(problem.clone(), domain);
 
 	println!("HTN: {:?}\n ", new_problem.htn);
-	println!("Actions len: {}, Method len: {}\n", domain.actions.len(), domain.methods.len());
+	println!("Pre trim - Actions len: {}, Method len: {}\n", domain.actions.len(), domain.methods.len());
 
 	new_problem.htn.subtasks.reverse();
 
@@ -60,6 +61,8 @@ pub fn depth_first(problem: Problem, domain: &Domain) {
 	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars)>::new(), Vec::<usize>::new());
 	let new_node = make_node(new_problem.clone(), htn_subtask_queue, called, (Vec::<(String, i32, Vec<String>)>::new(),Vec::<(String, i32, Vec<String>)>::new()), HashSet::<u64>::new());
 	
+	println!("Post trim - Actions len: {}, Method len: {}\n", new_domain.actions.len(), new_domain.methods.len());
+
 	node_queue.push(new_node);
 
 	run_df(&mut node_queue, &new_domain);
@@ -93,32 +96,32 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain) {
 					Some((SubtaskTypes::HtnTask(htn_task), relevant_variables))=> {
 						println!("Htn_task: {:?}, Rel_Vars: {:?}\n", htn_task.0, relevant_variables);
 
-   					//let mut line = String::new();
-						//let b1 = std::io::stdin().read_line(&mut line).unwrap();
+   					let mut line = String::new();
+						let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						perform_htn_task(node_queue, domain, current_node, htn_task, relevant_variables);
 					},
 					Some((SubtaskTypes::Task(task), relevant_variables)) => {
 						println!("Task: {:?}\n", task.name);
 
-						//let mut line = String::new();
-						//let b1 = std::io::stdin().read_line(&mut line).unwrap();
+						let mut line = String::new();
+						let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						perform_task(node_queue, domain, current_node, task, relevant_variables);
 					},
 					Some((SubtaskTypes::Method(method), relevant_variables)) => {
 						println!("Method {:?}, RELVARS: {:?}\n", method.name, relevant_variables);
 						
-						//let mut line = String::new();
-						//let b1 = std::io::stdin().read_line(&mut line).unwrap();
+						let mut line = String::new();
+						let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						perform_method(node_queue, domain, current_node, method, relevant_variables);
 					},
 					Some((SubtaskTypes::Action(action), relevant_variables)) => {
 						println!("\n Action: {:?} Relevant_variables: {:?}\n", action.name, relevant_variables);
 
-						//let mut line = String::new();
-						//let b1 = std::io::stdin().read_line(&mut line).unwrap();
+						let mut line = String::new();
+						let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						perform_action(node_queue, current_node, action, relevant_variables);
 					},
@@ -330,7 +333,7 @@ fn check_precondition(precondition: &(i32,String,Vec<String>, Option<((String, S
 			}
 
 			if overall_bool {
-				println!("A precondition: {:?}, params: {:?} \n", precondition, param_list);
+				//println!("A precondition: {:?}, params: {:?} \n", precondition, param_list);
 			}
 
 			//let mut answer = String::new();
@@ -553,7 +556,7 @@ fn perform_task ( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: N
 		}
 	}
 
-	println!("method list length: {}", method_list.len());
+	//println!("method list length: {}", method_list.len());
 
 	method_list.sort_by(|a,b| b.subtasks.len().cmp(&a.subtasks.len()));
 
@@ -600,7 +603,11 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 		match &method.precondition {
 			Some(precondition) => {
 
-				let permutation_list = permutation_tool(relevant_variables.clone(), precondition.clone(), &current_node.problem.state, &current_node.problem);
+				let mut permutation_list = permutation_tool(relevant_variables.clone(), precondition.clone(), &current_node.problem.state, &current_node.problem);
+
+				if method.parameters.len() == 0{
+					permutation_list.push(Vec::<usize>::new());
+				}
 
 				if permutation_list.len() == 0 {
 					println!("Failed precon");
@@ -778,7 +785,11 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 
 	//println!("State: {:?}\n", current_node.problem.state);
 
-	let permutation_list = permutation_tool(relevant_variables.clone(), action.precondition.unwrap(), &current_node.problem.state, &current_node.problem);
+	let mut permutation_list = permutation_tool(relevant_variables.clone(), action.precondition.unwrap(), &current_node.problem.state, &current_node.problem);
+
+	if action.parameters.len() == 0 {
+		permutation_list.push(Vec::<usize>::new());
+	}
 
 	if current_node.called.1.len() != 0 {
 
@@ -896,6 +907,8 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 		}
 
 	}
+
+
 }
 
 fn construct_perm_map ( permutation_list: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
