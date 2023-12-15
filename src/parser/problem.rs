@@ -5,7 +5,7 @@ use nom::IResult;
 //use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::branch::alt;
-use nom::combinator::opt;
+use nom::combinator::{opt, not};
 use nom::character::complete::{alphanumeric1, multispace0};
 use nom::sequence::{tuple, pair};
 use nom::multi::{many1, many0};
@@ -97,10 +97,16 @@ fn get_objects( input: &str ) -> IResult<&str, Vec<(String, String, Vec<String>)
       multispace0,
       many1(
         tuple((
-            underscore_stringer,
-            tag(" - "),
-            underscore_stringer,
-            multispace0
+          many1(
+            tuple((
+              not(tag("-")),
+              underscore_stringer,
+              multispace0
+          ))
+          ),
+          tag("- "),
+          underscore_stringer,
+          multispace0
         ))
       ),
       tag(")"),
@@ -114,8 +120,10 @@ fn get_objects( input: &str ) -> IResult<&str, Vec<(String, String, Vec<String>)
     let mut obj_vec = Vec::<(String, String, Vec<String>)>::new();
 
     for result in object_list {
-      let obj = (result.0, result.2, Vec::<String>::new());
-      obj_vec.push(obj);
+      for value in result.0 {
+        let obj = (value.1, result.2.clone(), Vec::<String>::new());
+        obj_vec.push(obj);
+      }
     };
     
     //println!("{:?}", obj_vec);      

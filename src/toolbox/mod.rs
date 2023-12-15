@@ -189,7 +189,7 @@ pub fn method_calls_method(method_list: &Vec<Method>) -> bool {
 	false
 }
 
-pub fn compare_lists(list1: Vec<String>, list2: Vec<String>) -> bool {
+pub fn compare_lists(list1: Vec<String>, list2: Vec<String>) -> bool { 
 
 	if list1.len() == list2.len() {
 		for x in 0..list1.len() {
