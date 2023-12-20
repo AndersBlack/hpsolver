@@ -167,8 +167,21 @@ fn update_relevant_variables(node: &Node, method: &Method, old_relevant_variable
 		for task_param in &method.task.1 {
 							
 			if &param.name == task_param {
-				updated_relevant_parameters.push((param.name.clone(), old_relevant_variables[looking_count].1.clone(), old_relevant_variables[looking_count].2.clone()));
-							
+
+				if old_relevant_variables[looking_count].1 != param.object_type{
+					let mut new_var_value_list = Vec::<String>::new();
+					for var in &old_relevant_variables[looking_count].2{
+						for object in &node.problem.objects {
+							if var == &object.0 && object.2.contains(&param.object_type) {
+								new_var_value_list.push(var.clone());
+							}
+						}
+					}
+					updated_relevant_parameters.push((param.name.clone(), param.object_type.clone(),new_var_value_list));
+				}
+				else{
+					updated_relevant_parameters.push((param.name.clone(), param.object_type.clone(), old_relevant_variables[looking_count].2.clone()));
+				}						
 				found_in_task = true;
 			}
 		
@@ -946,13 +959,12 @@ fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool, Str
 
 	let mut relevant_variables_list = Vec::<Vec<(String, String, Vec<String>)>>::new();
 	let mut intermediate_var_list = Vec::<Vec<(String, String, Vec<String>)>>::new();
-
+	let mut result = Vec::<Vec<(String, String, Vec<String>)>>::new();
 	//println!("In constraints: {} \n\nRelevant vars: {:?} \n", method, relevant_variables);
 
 	intermediate_var_list.push(relevant_variables.clone());
-
+	let mut i = 1;
 	for constraint in constraints {
-
 		while !intermediate_var_list.is_empty() {
 
 			let current_rel_vars = intermediate_var_list.pop().unwrap();
@@ -962,14 +974,20 @@ fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool, Str
 			} else {
 				relevant_variables_list = constraint_unequal(current_rel_vars, &constraint);
 			}
-
+			
+			for rel in &relevant_variables_list{
+				result.push(rel.clone());
+			}
+			
 		}
-
-		intermediate_var_list = relevant_variables_list.clone();
-		relevant_variables_list = Vec::<Vec<(String, String, Vec<String>)>>::new();
+		intermediate_var_list = result.clone();
+		if i < constraints.len(){
+			result = Vec::<Vec<(String, String, Vec<String>)>>::new();
+		}
+		i += 1;
 	}
-
-	intermediate_var_list
+	
+	result
 }
 
 fn constraint_equal(current_rel_vars: Vec<(String, String, Vec<String>)>, constraint: &(bool, String, String)) -> Vec<Vec<(String, String, Vec<String>)>> {
@@ -1025,10 +1043,15 @@ fn constraint_unequal(mut current_rel_vars: Vec<(String, String, Vec<String>)>, 
 		counting_int = counting_int + 1;
 	}
 
-	// Check is values can even be removed
+	// Check if values can even be removed
 	if current_rel_vars[index_first].2.len() == 1 && current_rel_vars[index_second].2.len() == 1 {
-		relevant_variables_list.push(current_rel_vars);
-		return  relevant_variables_list;
+		if current_rel_vars[index_first].2[0] != current_rel_vars[index_second].2[0]{
+			relevant_variables_list.push(current_rel_vars);
+			return  relevant_variables_list;
+		} else {
+			return relevant_variables_list;
+		}
+		
 	}
 
 	let mut conflict_value_list = Vec::<String>::new();
@@ -1093,8 +1116,6 @@ fn constraint_unequal(mut current_rel_vars: Vec<(String, String, Vec<String>)>, 
 		relevant_variables_list.push(rel_clone_one);
 	}
 
-	//println!("CONFLICT LIST: {:?}", conflict_value_list);
-
 	relevant_variables_list
 }
 
@@ -1143,22 +1164,20 @@ fn update_vars_for_called_method(mut current_node: Node, method: &Method, releva
 
 	let calling_method_subtask = calling_method.subtasks.clone()[current_node.called.2.last().unwrap() - 1].clone();
 
-	println!("UPDATING BACKWARDS");
-	println!("CALLING RELVARS: {:?}", calling_relevant_vars);
-	println!("CURRENT RELVARS: {:?}", relevant_variables);
-
 
 	// let method_task = method.task.clone();
 	let mut i = 0;
 
 	let mut new_rel_vars: RelVars = RelVars::new();
 
-	for var in relevant_variables {
-		if i < method.task.1.len() && var.0 == method.task.1[i] {
 
-			new_rel_vars.push((calling_method_subtask.2[i].clone(), var.1.clone(), var.2.clone()));
-			i = i + 1;
-			continue;
+	'outer: for var in relevant_variables {
+		for i in 0..method.task.1.len(){
+			if var.0 == method.task.1[i] {
+
+				new_rel_vars.push((calling_method_subtask.2[i].clone(), var.1.clone(), var.2.clone()));
+				continue 'outer;
+			}
 		} 
 	}
 
@@ -1185,8 +1204,6 @@ fn update_vars_for_called_method(mut current_node: Node, method: &Method, releva
 	let mut subts = calling_meth.subtasks;
 	subts[current_node.called.2.last().unwrap() - 1].3 = true;
 	calling_meth.subtasks = subts;
-
-	println!("NEW RELVARS: {:?}", new_new_relevant_variables);
 
 	// Push to subtask_q
 	let mut new_sq = current_node.subtask_queue.clone();
