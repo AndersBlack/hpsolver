@@ -953,13 +953,12 @@ fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool, Str
 
 	let mut relevant_variables_list = Vec::<Vec<(String, String, Vec<String>)>>::new();
 	let mut intermediate_var_list = Vec::<Vec<(String, String, Vec<String>)>>::new();
-
+	let mut result = Vec::<Vec<(String, String, Vec<String>)>>::new();
 	//println!("In constraints: {} \n\nRelevant vars: {:?} \n", method, relevant_variables);
 
 	intermediate_var_list.push(relevant_variables.clone());
-
+	let mut i = 1;
 	for constraint in constraints {
-
 		while !intermediate_var_list.is_empty() {
 
 			let current_rel_vars = intermediate_var_list.pop().unwrap();
@@ -969,14 +968,23 @@ fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool, Str
 			} else {
 				relevant_variables_list = constraint_unequal(current_rel_vars, &constraint);
 			}
-
+			
+			for rel in &relevant_variables_list{
+				result.push(rel.clone());
+			}
+			
 		}
 
-		intermediate_var_list = relevant_variables_list.clone();
-		relevant_variables_list = Vec::<Vec<(String, String, Vec<String>)>>::new();
-	}
+		intermediate_var_list = result.clone();
 
-	intermediate_var_list
+		if i < constraints.len(){
+			result = Vec::<Vec<(String, String, Vec<String>)>>::new();
+		}
+		
+		i += 1;
+	}
+	
+	result
 }
 
 fn constraint_equal(current_rel_vars: Vec<(String, String, Vec<String>)>, constraint: &(bool, String, String)) -> Vec<Vec<(String, String, Vec<String>)>> {
