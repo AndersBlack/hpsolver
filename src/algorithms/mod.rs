@@ -1,6 +1,6 @@
 use core::panic;
-use std::{collections::HashSet, thread::current};
-use crate::{datastructures::{node::*, domain::{*, self}, problem::{*}}, toolbox::{reduce_domain, method_calls_method}};
+use std::collections::HashSet;
+use crate::{datastructures::{node::*, domain::*, problem::*}, toolbox::{reduce_domain, method_calls_method}};
 use crate::toolbox::{self};
 pub mod iterative_df;
 pub mod stoppable_df;
@@ -20,9 +20,7 @@ pub fn depth_first(problem: Problem, domain: &Domain) {
 
 	new_problem.htn.subtasks.reverse();
 
-	let mut applied_actions = (Vec::<(String, i32, Vec<String>)>::new(),Vec::<(String, i32, Vec<String>)>::new());
-	let zero: i32 = 0;
-	let mut root_action = ("Root".to_string(), zero,  Vec::<String>::new());
+	let applied_funtions = (("root".to_string(), Vec::<usize>::new()), Vec::<(SubtaskTypes, usize, Vec<usize>, RelVars)>::new());
 
 	for subtask in &new_problem.htn.subtasks {
 
@@ -56,18 +54,14 @@ pub fn depth_first(problem: Problem, domain: &Domain) {
 			}
 		}
 
-		//println!("REL_VAR: {:?}", new_relevant_parameters);
-
-		root_action.2.push(subtask.0.clone());
+		println!("REL_VAR: {:?}", new_relevant_parameters);
 
 		htn_subtask_queue.push((SubtaskTypes::HtnTask(subtask.clone()), new_relevant_parameters));	
 	}
 
-	applied_actions.1.push(root_action.clone());
-
 	let new_domain = reduce_domain(domain, &new_problem);
 	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars)>::new(), Vec::<usize>::new());
-	let new_node = make_node(new_problem.clone(), htn_subtask_queue, called, applied_actions, HashSet::<u64>::new());
+	let new_node = make_node(new_problem.clone(), htn_subtask_queue, called, applied_funtions, HashSet::<u64>::new());
 	
 	println!("Post trim - Actions len: {}, Method len: {}\n", new_domain.actions.len(), new_domain.methods.len());
 
@@ -470,13 +464,13 @@ fn apply_effect( effect: &(bool,String,Vec<String>), problem: &mut Problem, para
 	}
 } 
 
-fn make_node( new_problem: Problem, sq: Vec::<(SubtaskTypes, RelVars)>, called: (Vec<bool>, Vec<(Method, RelVars)>, Vec<usize>), aal: (Vec<(String, i32, Vec<String>)>, Vec<(String, i32, Vec<String>)>), hs: HashSet<u64>) -> Node {
+fn make_node( new_problem: Problem, sq: Vec::<(SubtaskTypes, RelVars)>, called: (Vec<bool>, Vec<(Method, RelVars)>, Vec<usize>), afl:((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>) , hs: HashSet<u64>) -> Node {
 
 		let new_node = Node {
 			problem: new_problem,
 			subtask_queue: sq,
 			called: called,
-			applied_action_list: aal,
+			applied_functions: afl,
 			hash_table: hs
 		};
 
@@ -485,7 +479,7 @@ fn make_node( new_problem: Problem, sq: Vec::<(SubtaskTypes, RelVars)>, called: 
 
 fn perform_htn_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_node: Node, htn_task: (String, String, Vec<String>, bool), relevant_variables: RelVars) {
 
-	//println!("htn_task: {} - VAR: {:?}", htn_task.0, relevant_variables);
+	println!("htn_task: {} - VAR: {:?}", htn_task.0, relevant_variables);
 
 	let mut method_list = Vec::<Method>::new(); 
 
@@ -500,19 +494,22 @@ fn perform_htn_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current
 		method_list.sort_by(|a,b| a.subtasks.len().cmp(&b.subtasks.len()));
 
 		// Expand task and create a new node for every method that task expands to
-		for method in method_list {
+		for mut method in method_list {
 			let mut subtask_queue_clone = current_node.subtask_queue.clone();
 			let updated_relevant_variables = update_relevant_variables(&current_node, &method, &relevant_variables);
+
+			//Applied function addition
+			method.id = current_node.applied_functions.1.len();
+			current_node.applied_functions.0.1.push(method.id);
+			current_node.applied_functions.1.push((SubtaskTypes::Method(method.clone()), method.id, Vec::<usize>::new(), RelVars::new()));
 
 			// Update relevant variables
 			subtask_queue_clone.push((SubtaskTypes::Method(method.clone()),updated_relevant_variables));
 			
-
 			current_node.called.0.push(false);
 			current_node.called.2.push(0);
-			current_node.applied_action_list.1.push(("root".to_string(), method.id, Vec::<String>::new()));
 			
-			let new_node = make_node(current_node.problem.clone(), subtask_queue_clone, (current_node.called.0.clone(), current_node.called.1.clone(), current_node.called.2.clone()), current_node.applied_action_list.clone(), current_node.hash_table.clone());
+			let new_node = make_node(current_node.problem.clone(), subtask_queue_clone, (current_node.called.0.clone(), current_node.called.1.clone(), current_node.called.2.clone()), current_node.applied_functions.clone(), current_node.hash_table.clone());
 
 			node_queue.push(new_node);
 		}
@@ -532,7 +529,6 @@ fn perform_htn_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current
 							updated_relevant_variables.push((action.parameters[n].name.clone(), obj.1.clone(), vec![obj.0.clone()]));
 						}
 					}
-
 				}
 	
 				// Update relevant variables
@@ -541,9 +537,11 @@ fn perform_htn_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current
 
 				current_node.called.0.push(false);
 				current_node.called.2.push(0);
-				current_node.applied_action_list.1.push(("root".to_string(), action.id, Vec::<String>::new()));
+
+				//Applied function addition
+				current_node.applied_functions.0.1.push(current_node.applied_functions.1.len().try_into().unwrap());
 				
-				let new_node = make_node(current_node.problem.clone(), subtask_queue_clone, (current_node.called.0.clone(), current_node.called.1.clone(), current_node.called.2.clone()), current_node.applied_action_list.clone(), current_node.hash_table.clone());
+				let new_node = make_node(current_node.problem.clone(), subtask_queue_clone, (current_node.called.0.clone(), current_node.called.1.clone(), current_node.called.2.clone()), current_node.applied_functions.clone(), current_node.hash_table.clone());
 	
 				node_queue.push(new_node);
 			}
@@ -552,7 +550,7 @@ fn perform_htn_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current
 	} 
 }
 
-fn perform_task ( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: Node, task: Task, relevant_variables: RelVars ) {
+fn perform_task ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_node: Node, task: Task, relevant_variables: RelVars ) {
 
 	//println!("Task: {} - VAR: {:?}", task.name, relevant_variables);
 
@@ -569,7 +567,13 @@ fn perform_task ( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: N
 	method_list.sort_by(|a,b| b.subtasks.len().cmp(&a.subtasks.len()));
 
 	// Expand task and create a new node for every method that task expands to
-	for method in method_list {
+	for mut method in method_list {
+
+		let mut cnaf = current_node.applied_functions.clone(); 
+
+		method.id = cnaf.1.len();
+		println!("printing length {}", method.id);
+		cnaf.1.push((SubtaskTypes::Method(method.clone()), method.id, Vec::<usize>::new(), relevant_variables.clone()));
 
 		let mut new_subtask_queue = current_node.clone().subtask_queue;
 		let new_rel_vars = update_relevant_variables(&current_node, &method, &relevant_variables);
@@ -589,7 +593,7 @@ fn perform_task ( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: N
 			let mut new_called = current_node.called.clone();
 			new_called.2.push(0);
 
-			let new_node = make_node(current_node.problem.clone(), new_subtask_queue, new_called, current_node.applied_action_list.clone(), current_node.hash_table.clone());
+			let new_node = make_node(current_node.problem.clone(), new_subtask_queue, new_called, cnaf.clone(), current_node.hash_table.clone());
 
 			//println!("Pushing node");
 			node_queue.push(new_node)
@@ -605,8 +609,6 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 
 	// Check preconditions
 	if current_subtask_index == 0 {
-
-		current_node.applied_action_list.1.push((method.name.clone(), method.id, Vec::<String>::new()));
 
 		match &method.precondition {
 			Some(precondition) => {
@@ -648,7 +650,7 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 				relevant_variables = relevant_variables_list.pop().unwrap();
 
 				// Push Node versions
-				for relevant_variable in &relevant_variables_list{
+				for relevant_variable in &relevant_variables_list {
 							
 					let new_method = Method {
 						name: method.name.clone(),
@@ -666,20 +668,31 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 					let mut new_called = current_node.called.clone();
 					new_called.2.push(0);
 
-					let new_node = make_node(current_node.problem.clone(), new_sq, new_called, current_node.applied_action_list.clone(), current_node.hash_table.clone());
+					let new_node = make_node(current_node.problem.clone(), new_sq, new_called, current_node.applied_functions.clone(), current_node.hash_table.clone());
 
 					node_queue.push(new_node);
 				}
 			},
 			None => {}
 		}   
-	
 	}
 	
 	if method.subtasks.len() > 0 {
 
 		// We have finished with this methods subtask 
 		if current_subtask_index == method.subtasks.len() {
+
+			let mut trimmed_task_rel_vars = RelVars::new();
+
+			for task_val in &method.task.1 {
+				for param_val in &relevant_variables {
+					if task_val == &param_val.0 {
+						trimmed_task_rel_vars.push(param_val.clone());
+					}
+				}
+			}
+
+			current_node.applied_functions.1[method.id].3 = trimmed_task_rel_vars.clone();
 
 			// Is this not the first method?
 			if current_node.called.0.pop().unwrap() {
@@ -701,8 +714,6 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 
 					let mut updated_variables = RelVars::new();
 
-					//println!("Found task: {:?}", method.subtasks[current_subtask_index]);
-
 					for task_arg in method.subtasks[current_subtask_index].2.clone() {
 						if task_arg.contains("?") {
 							for var in &relevant_variables {
@@ -718,6 +729,10 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 							}
 						}
 					}
+
+					let length = current_node.applied_functions.1.len();
+					println!("printing length {}", length);
+					current_node.applied_functions.1[method.id].2.push(length);
 
 					//println!("Updated stq with task: {}, Relvars: {:?}\n", method.name, updated_variables);
 					new_subtask_queue.push((SubtaskTypes::Task(task.clone()), updated_variables));
@@ -754,6 +769,10 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 							}
 						}
 
+						let length = current_node.applied_functions.1.len();
+						println!("printing length {}", length);
+						current_node.applied_functions.1[method.id].2.push(length);
+
 						//println!("Updated stq with action: {}, Relvars: {:?}\n", action.name, updated_variables);
 						new_subtask_queue.push((SubtaskTypes::Action(action.clone()), updated_variables));
 						break;
@@ -767,7 +786,7 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 			new_called.1.push((method.clone(), relevant_variables));
 			new_called.2.push(current_subtask_index + 1);
 
-			let new_node = make_node(current_node.problem.clone(), new_subtask_queue.clone(), new_called.clone(), current_node.applied_action_list.clone(), current_node.hash_table.clone());
+			let new_node = make_node(current_node.problem.clone(), new_subtask_queue.clone(), new_called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone());
 
 			node_queue.push(new_node);
 		}
@@ -781,10 +800,8 @@ fn perform_method ( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_n
 
 			node_queue.push(new_node);
 		}
-
 	}
 
-	//next_node(node_queue, domain);
 }
 
 fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action: Action, relevant_variables: RelVars) {
@@ -793,7 +810,7 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 
 	//println!("State: {:?}\n", current_node.problem.state);
 
-	let mut permutation_list = permutation_tool(relevant_variables.clone(), action.precondition.unwrap(), &current_node.problem.state, &current_node.problem);
+	let mut permutation_list = permutation_tool(relevant_variables.clone(), action.precondition.clone().unwrap(), &current_node.problem.state, &current_node.problem);
 
 	if action.parameters.len() == 0 {
 		permutation_list.push(Vec::<usize>::new());
@@ -828,13 +845,9 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 				apply_effect(&effect, &mut new_current_node.problem, new_relevant_variables.clone())
 			}
 
-			let mut new_applied_action = (action.name.clone(), action.id, Vec::<String>::new());
+			new_current_node.applied_functions.1.push((SubtaskTypes::Action(action.clone()), new_current_node.applied_functions.1.len(), Vec::<usize>::new(), new_relevant_variables.clone()));
 
-			for rel_var in &new_relevant_variables {
-				new_applied_action.2.push(rel_var.2[0].clone());
-			}
 
-			new_current_node.applied_action_list.0.push(new_applied_action);
 
 			for x in 0..new_relevant_variables.len() {
 				let var_name = calling_method.subtasks.clone()[new_current_node.called.2.last().unwrap() - 1].2[x].clone();
@@ -868,7 +881,7 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 		
 			new_current_node.subtask_queue.push((SubtaskTypes::Method(calling_meth.clone()), new_new_relevant_variables.clone()));
 
-			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_action_list.clone(), current_node.hash_table.clone());
+			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_functions.clone(), current_node.hash_table.clone());
 
 			node_queue.push(new_node);
 			println!("succeded action");
@@ -900,15 +913,9 @@ fn perform_action ( node_queue: &mut Vec::<Node>, mut current_node: Node, action
 				apply_effect(&effect, &mut new_current_node.problem, new_relevant_variables.clone())
 			}
 
-			let mut new_applied_action = (action.name.clone(), action.id, Vec::<String>::new());
+			new_current_node.applied_functions.1.push((SubtaskTypes::Action(action.clone()), new_current_node.applied_functions.1.len(), Vec::<usize>::new(), new_relevant_variables));
 
-			for rel_var in &new_relevant_variables {
-				new_applied_action.2.push(rel_var.2[0].clone());
-			}
-
-			new_current_node.applied_action_list.0.push(new_applied_action);
-
-			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_action_list.clone(), current_node.hash_table.clone());
+			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_functions.clone(), current_node.hash_table.clone());
 
 			node_queue.push(new_node);
 			println!("succeded action");
@@ -1143,11 +1150,6 @@ fn update_vars_for_called_method(mut current_node: Node, method: &Method, releva
 
 	let calling_method_subtask = calling_method.subtasks.clone()[current_node.called.2.last().unwrap() - 1].clone();
 
-	println!("UPDATING BACKWARDS");
-	println!("CALLING RELVARS: {:?}", calling_relevant_vars);
-	println!("CURRENT RELVARS: {:?}", relevant_variables);
-
-
 	// let method_task = method.task.clone();
 	let mut i = 0;
 
@@ -1192,7 +1194,7 @@ fn update_vars_for_called_method(mut current_node: Node, method: &Method, releva
 	let mut new_sq = current_node.subtask_queue.clone();
 	new_sq.push((SubtaskTypes::Method(calling_meth.clone()), new_new_relevant_variables.clone()));
 
-	let new_node = make_node(current_node.problem.clone(), new_sq, current_node.called.clone(), current_node.applied_action_list.clone(), current_node.hash_table.clone());
+	let new_node = make_node(current_node.problem.clone(), new_sq, current_node.called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone());
 
 	new_node
 }

@@ -1,6 +1,8 @@
 use crate::datastructures::{domain::*, problem::*};
 use std::collections::HashSet;
 
+type RelVars = Vec<(String, String, Vec<String>)>;
+
 #[derive(Debug, Clone, Hash)] 
 pub enum SubtaskTypes {
   HtnTask((String, String, Vec<String>, bool)),
@@ -15,6 +17,7 @@ pub struct Node {
   /// Tuple of (name, object_type & possible values)
   pub subtask_queue: Vec<(SubtaskTypes, Vec<(String, String, Vec<String>)>)>,
   pub called: (Vec<bool>, Vec<(Method, Vec<(String, String, Vec<String>)>)>, Vec<usize>),
-  pub applied_action_list: (Vec<(String, i32, Vec<String>)>,Vec<(String, i32, Vec<String>)>),
+  /// Root tuple, List of applied function (Function, id, called id list, relevant variables)
+  pub applied_functions: ((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>),
   pub hash_table: HashSet<u64>
 }

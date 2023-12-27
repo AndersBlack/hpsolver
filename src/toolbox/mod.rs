@@ -1,5 +1,6 @@
 use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
+use std::string;
 use crate::datastructures::{node::*, problem::{*}, domain::{*}};
 use std::fs::OpenOptions;
 use std::io::Write;
@@ -123,31 +124,67 @@ pub fn print_result(current_node: Node) {
 		let intro_string = "Solution for problem: {".to_string() + &current_node.problem.name + "} by Ajess19 & Andla19\n==>\n";
 		data_file.write(intro_string.as_bytes()).expect("write failed");
 
-		for applied_action in &current_node.applied_action_list.0 {
+		//PRINT
+		for applied_function in &current_node.applied_functions.1 {
+			// Actions
+			match &applied_function {
+				(SubtaskTypes::Action(action), id, _, relevant_vars) => {
+					let mut string_to_print = String::new();
 
-			let mut string_collect = applied_action.1.to_string() + " " + &applied_action.0 + " ";
+					string_to_print = id.to_string() + " " + &action.name + " ";
 
-			for param in &applied_action.2 {
-				string_collect = string_collect + param + " "
+					for var in relevant_vars {
+						string_to_print = string_to_print + &var.2[0] + " ";
+					}
+
+					string_to_print = string_to_print + "\n";
+
+					data_file.write(string_to_print.as_bytes()).expect("write failed");
+				},
+				(_,_,_,_) => { 
+					//Ignoring
+				}
 			}
-
-			string_collect = string_collect + "\n";
-
-			data_file.write(string_collect.as_str().as_bytes()).expect("write failed");
 		}
 
-		for applied_method in &current_node.applied_action_list.1 {
+		// Root
+		let mut string_to_print = current_node.applied_functions.0.0 + " ";
 
-			let mut string_collect = applied_method.1.to_string() + " " + &applied_method.0 + " ";
+		for function_called in current_node.applied_functions.0.1 {
+			string_to_print = string_to_print + &function_called.to_string() + " ";
+		}
 
-			for param in &applied_method.2 {
-				string_collect = string_collect + param + " "
+		string_to_print = string_to_print + "\n";
+
+		data_file.write(string_to_print.as_bytes()).expect("write failed");
+		
+
+		for applied_function in &current_node.applied_functions.1 {
+			// Methods
+			match &applied_function {
+				(SubtaskTypes::Method(method), id, call_list, relevant_vars) => {
+					let mut string_to_print = String::new();
+
+					string_to_print = id.to_string() + " " + &method.task.0 + " ";
+
+					for var in relevant_vars {
+						string_to_print = string_to_print + &var.2[0] + " ";
+					}
+
+					string_to_print = string_to_print + "->" + " " + &method.name + " ";
+
+					for called in call_list {
+						string_to_print = string_to_print + &called.to_string() + " ";
+					}
+
+					string_to_print = string_to_print + "\n";
+
+					data_file.write(string_to_print.as_bytes()).expect("write failed");
+				},
+				(_,_,_,_) => { 
+					//Ignoring
+				}
 			}
-
-			string_collect = string_collect + "\n";
-
-			data_file.write(string_collect.as_str().as_bytes()).expect("write failed");
-
 		}
 
 		data_file.write("<==".as_bytes()).expect("write failed");
@@ -166,34 +203,8 @@ pub fn print_result(current_node: Node) {
 			// OUTPUT IN COMPETITION FORMAT
 			let intro_string = "Solution for problem: {".to_string() + &current_node.problem.name + "} by Ajess19 & Andla19\n==>\n";
 			data_file.write(intro_string.as_bytes()).expect("write failed");
-		
-			for applied_action in current_node.applied_action_list.0 {
-		
-				let mut string_collect = applied_action.1.to_string() + " " + &applied_action.0 + " ";
-		
-				for param in &applied_action.2 {
-					string_collect = string_collect + param + " "
-				}
-		
-				string_collect = string_collect + "\n";
-		
-				data_file.write(string_collect.as_str().as_bytes()).expect("write failed");
-			}
-
-			for applied_method in &current_node.applied_action_list.1 {
-
-				let mut string_collect = applied_method.1.to_string() + " " + &applied_method.0 + " ";
-	
-				for param in &applied_method.2 {
-					string_collect = string_collect + param + " "
-				}
-	
-				string_collect = string_collect + "\n";
-	
-				data_file.write(string_collect.as_str().as_bytes()).expect("write failed");
-	
-			}
-		
+			
+			//PRINT
 		
 			data_file.write("<==".as_bytes()).expect("write failed");
 		}

@@ -39,7 +39,7 @@ pub struct Method {
     pub precondition: Option<Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>>,
     pub subtasks: Vec<(String, String, Vec<String>, bool)>,
     pub constraints: Option<Vec<(bool, String, String)>>,
-    pub id: i32
+    pub id: usize
 }
 
 #[derive(Debug, Clone, Hash)] 
