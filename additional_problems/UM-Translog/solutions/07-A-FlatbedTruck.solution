@@ -1,0 +1,22 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 collect_fees Holz 
+8 pick_up_package_ground Holz CraneO27 O27 
+9 put_down_package_vehicle Holz CraneO27 Pferd O27 
+11 move_vehicle_no_traincar Pferd O27 James_Franck_Ring O28 
+14 pick_up_package_vehicle Holz CraneO28 Pferd O28 
+15 put_down_package_ground Holz CraneO28 O28 
+17 deliver_p Holz 
+root 0 
+0 transport Holz O27 O28 -> method0 1 3 16 
+1 pickup Holz -> method1 2 
+3 carry Holz O27 O28 -> method7 4 
+4 carry_direct Holz O27 O28 -> method24 5 
+5 helper_carry_direct Pferd Holz O27 O28 -> method26 6 10 12 
+6 load_top Holz Pferd O27 -> method38 7 
+7 load Holz Pferd O27 -> method45 8 9 
+10 move Pferd O27 O28 -> method27 11 
+12 unload_top Holz Pferd O28 -> method41 13 
+13 unload Holz Pferd O28 -> method32 14 15 
+16 deliver Holz -> method4 17 
+<==

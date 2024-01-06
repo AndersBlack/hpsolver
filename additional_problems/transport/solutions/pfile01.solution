@@ -1,0 +1,22 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 drive truck_0 city_loc_2 city_loc_1 
+4 pick_up truck_0 city_loc_1 package_0 capacity_0 capacity_1 
+6 drive truck_0 city_loc_1 city_loc_0 
+8 drop truck_0 city_loc_0 package_0 capacity_0 capacity_1 
+11 drive truck_0 city_loc_0 city_loc_1 
+13 pick_up truck_0 city_loc_1 package_1 capacity_0 capacity_1 
+15 drive truck_0 city_loc_1 city_loc_2 
+17 drop truck_0 city_loc_2 package_1 capacity_0 capacity_1 
+root 0 9 
+0 deliver package_0 city_loc_0 -> m_deliver_ordering_0 1 3 5 7 
+1 get_to truck_0 city_loc_1 -> m_drive_to_ordering_0 2 
+3 load truck_0 city_loc_1 package_0 -> m_load_ordering_0 4 
+5 get_to truck_0 city_loc_0 -> m_drive_to_ordering_0 6 
+7 unload truck_0 city_loc_0 package_0 -> m_unload_ordering_0 8 
+9 deliver package_1 city_loc_2 -> m_deliver_ordering_0 10 12 14 16 
+10 get_to truck_0 city_loc_1 -> m_drive_to_ordering_0 11 
+12 load truck_0 city_loc_1 package_1 -> m_load_ordering_0 13 
+14 get_to truck_0 city_loc_2 -> m_drive_to_ordering_0 15 
+16 unload truck_0 city_loc_2 package_1 -> m_unload_ordering_0 17 
+<==

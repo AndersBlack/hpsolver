@@ -1,0 +1,45 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+3 drive truck_0 city_loc_3 city_loc_1 
+4 drive truck_0 city_loc_1 city_loc_2 
+6 pick_up truck_0 city_loc_2 package_2 capacity_1 capacity_2 
+10 drive truck_0 city_loc_2 city_loc_1 
+11 drive truck_0 city_loc_1 city_loc_3 
+12 drive truck_0 city_loc_3 city_loc_0 
+14 drop truck_0 city_loc_0 package_2 capacity_1 capacity_2 
+19 drive truck_0 city_loc_0 city_loc_3 
+20 drive truck_0 city_loc_3 city_loc_1 
+21 drive truck_0 city_loc_1 city_loc_2 
+23 pick_up truck_0 city_loc_2 package_1 capacity_1 capacity_2 
+27 drive truck_0 city_loc_2 city_loc_1 
+28 drive truck_0 city_loc_1 city_loc_3 
+29 drive truck_0 city_loc_3 city_loc_0 
+31 drop truck_0 city_loc_0 package_1 capacity_1 capacity_2 
+34 drive truck_0 city_loc_0 city_loc_3 
+36 pick_up truck_0 city_loc_3 package_0 capacity_1 capacity_2 
+38 drive truck_0 city_loc_3 city_loc_1 
+40 drop truck_0 city_loc_1 package_0 capacity_1 capacity_2 
+root 0 15 32 
+0 deliver package_2 city_loc_0 -> m_deliver_ordering_0 1 5 7 13 
+1 get_to truck_0 city_loc_2 -> m_drive_to_via_ordering_0 2 4 
+2 get_to truck_0 city_loc_1 -> m_drive_to_ordering_0 3 
+5 load truck_0 city_loc_2 package_2 -> m_load_ordering_0 6 
+7 get_to truck_0 city_loc_0 -> m_drive_to_via_ordering_0 8 12 
+8 get_to truck_0 city_loc_3 -> m_drive_to_via_ordering_0 9 11 
+9 get_to truck_0 city_loc_1 -> m_drive_to_ordering_0 10 
+13 unload truck_0 city_loc_0 package_2 -> m_unload_ordering_0 14 
+15 deliver package_1 city_loc_0 -> m_deliver_ordering_0 16 22 24 30 
+16 get_to truck_0 city_loc_2 -> m_drive_to_via_ordering_0 17 21 
+17 get_to truck_0 city_loc_1 -> m_drive_to_via_ordering_0 18 20 
+18 get_to truck_0 city_loc_3 -> m_drive_to_ordering_0 19 
+22 load truck_0 city_loc_2 package_1 -> m_load_ordering_0 23 
+24 get_to truck_0 city_loc_0 -> m_drive_to_via_ordering_0 25 29 
+25 get_to truck_0 city_loc_3 -> m_drive_to_via_ordering_0 26 28 
+26 get_to truck_0 city_loc_1 -> m_drive_to_ordering_0 27 
+30 unload truck_0 city_loc_0 package_1 -> m_unload_ordering_0 31 
+32 deliver package_0 city_loc_1 -> m_deliver_ordering_0 33 35 37 39 
+33 get_to truck_0 city_loc_3 -> m_drive_to_ordering_0 34 
+35 load truck_0 city_loc_3 package_0 -> m_load_ordering_0 36 
+37 get_to truck_0 city_loc_1 -> m_drive_to_ordering_0 38 
+39 unload truck_0 city_loc_1 package_0 -> m_unload_ordering_0 40 
+<==

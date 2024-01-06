@@ -1,10 +1,10 @@
 use std::env;
 use std::fs;
+use std::path::PathBuf;
 use std::time::Instant;
 
 extern crate hp_solver;
 
-use hp_solver::beginning::create_problem;
 use hp_solver::parser::parse_hddl;
 use hp_solver::algorithms::depth_first;
 
@@ -24,10 +24,14 @@ fn main() {
 
     let parse_result = parse_hddl( &problem_contents, &domain_contents);
 
+    let mut pb = PathBuf::new();
+
+    pb.push(problem_file_path);
+
     match parse_result {
         Ok((problem,domain)) => {
           println!("\nFinished parsing problem and domain!\n");
-          depth_first(problem, &domain)
+          depth_first(problem, &domain, &pb)
         },
         Err(e) => {
           println!("Failure parsing: {}", e);
@@ -37,11 +41,6 @@ fn main() {
     let elapsed_time = now.elapsed();
     println!("\nRunning depth first took {} milli seconds.\n", elapsed_time.as_millis());
 
-  } else if args.len() == 1 {
-    let (problem, domain) = create_problem();
-
-    println!("Doing df");
-    depth_first(problem, &domain);
   } else {
     println!("Please provide a path for both the problem.hddl and the domain.hddl files. Or add nothing and try the test problem :) arg length: {}", args[1]);
   }

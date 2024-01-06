@@ -1,0 +1,11 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 move f0 f1 
+3 board p0 f1 
+4 move f1 f0 
+5 debark p0 f0 
+root 0 
+0 solve_elevator -> m1_go_ordering_0 1 6 
+1 deliver_person p0 f1 f0 -> m2_ordering_0 2 3 4 5 
+6 solve_elevator -> m1_abort_ordering_0 
+<==

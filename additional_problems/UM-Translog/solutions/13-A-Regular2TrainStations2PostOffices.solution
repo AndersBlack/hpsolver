@@ -1,0 +1,60 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 collect_fees Stuehle 
+9 open_door LKW_Ulm 
+10 load_package Stuehle LKW_Ulm FrauenStrassePost 
+11 close_door LKW_Ulm 
+13 move_vehicle_no_traincar LKW_Ulm FrauenStrassePost James_Franck_Ring HauptbahnhofUlm 
+16 open_door LKW_Ulm 
+17 unload_package Stuehle LKW_Ulm HauptbahnhofUlm 
+18 close_door LKW_Ulm 
+19 go_through_two_tcenters_cities_ottd FrauenStrassePost MuenchnerStrassePost Ulm Muenchen HauptbahnhofUlm HauptbahnhofMuenchen 
+25 open_door Eisenbahnwagen 
+26 load_package Stuehle Eisenbahnwagen HauptbahnhofUlm 
+27 close_door Eisenbahnwagen 
+30 attach_train_car Lokomotive Eisenbahnwagen HauptbahnhofUlm 
+32 move_vehicle_no_traincar Lokomotive HauptbahnhofUlm UlmMuenchenRailRoute HauptbahnhofMuenchen 
+33 detach_train_car Lokomotive Eisenbahnwagen HauptbahnhofMuenchen 
+36 open_door Eisenbahnwagen 
+37 unload_package Stuehle Eisenbahnwagen HauptbahnhofMuenchen 
+38 close_door Eisenbahnwagen 
+39 go_through_two_tcenters HauptbahnhofUlm HauptbahnhofMuenchen 
+44 open_door LKW_Muenchen 
+45 load_package Stuehle LKW_Muenchen HauptbahnhofMuenchen 
+46 close_door LKW_Muenchen 
+48 move_vehicle_no_traincar LKW_Muenchen HauptbahnhofMuenchen BlumenStrasse MuenchnerStrassePost 
+51 open_door LKW_Muenchen 
+52 unload_package Stuehle LKW_Muenchen MuenchnerStrassePost 
+53 close_door LKW_Muenchen 
+55 deliver_p Stuehle 
+root 0 
+0 transport Stuehle FrauenStrassePost MuenchnerStrassePost -> method0 1 3 54 
+1 pickup Stuehle -> method1 2 
+3 carry Stuehle FrauenStrassePost MuenchnerStrassePost -> method14 4 
+4 helper_carry_ottd Stuehle FrauenStrassePost Ulm HauptbahnhofUlm HauptbahnhofMuenchen MuenchnerStrassePost Muenchen -> method15 5 19 20 40 
+5 carry_direct Stuehle FrauenStrassePost HauptbahnhofUlm -> method24 6 
+6 helper_carry_direct LKW_Ulm Stuehle FrauenStrassePost HauptbahnhofUlm -> method26 7 12 14 
+7 load_top Stuehle LKW_Ulm FrauenStrassePost -> method38 8 
+8 load Stuehle LKW_Ulm FrauenStrassePost -> method44 9 10 11 
+12 move LKW_Ulm FrauenStrassePost HauptbahnhofUlm -> method27 13 
+14 unload_top Stuehle LKW_Ulm HauptbahnhofUlm -> method41 15 
+15 unload Stuehle LKW_Ulm HauptbahnhofUlm -> method31 16 17 18 
+20 carry_between_tcenters Stuehle HauptbahnhofUlm HauptbahnhofMuenchen -> method18 21 39 
+21 carry_direct Stuehle HauptbahnhofUlm HauptbahnhofMuenchen -> method24 22 
+22 helper_carry_direct Eisenbahnwagen Stuehle HauptbahnhofUlm HauptbahnhofMuenchen -> method26 23 28 34 
+23 load_top Stuehle Eisenbahnwagen HauptbahnhofUlm -> method38 24 
+24 load Stuehle Eisenbahnwagen HauptbahnhofUlm -> method44 25 26 27 
+28 move Eisenbahnwagen HauptbahnhofUlm HauptbahnhofMuenchen -> method28 29 
+29 helper_move_traincar Eisenbahnwagen Lokomotive HauptbahnhofUlm HauptbahnhofMuenchen -> method30 30 31 33 
+31 move Lokomotive HauptbahnhofUlm HauptbahnhofMuenchen -> method27 32 
+34 unload_top Stuehle Eisenbahnwagen HauptbahnhofMuenchen -> method41 35 
+35 unload Stuehle Eisenbahnwagen HauptbahnhofMuenchen -> method31 36 37 38 
+40 carry_direct Stuehle HauptbahnhofMuenchen MuenchnerStrassePost -> method24 41 
+41 helper_carry_direct LKW_Muenchen Stuehle HauptbahnhofMuenchen MuenchnerStrassePost -> method26 42 47 49 
+42 load_top Stuehle LKW_Muenchen HauptbahnhofMuenchen -> method38 43 
+43 load Stuehle LKW_Muenchen HauptbahnhofMuenchen -> method44 44 45 46 
+47 move LKW_Muenchen HauptbahnhofMuenchen MuenchnerStrassePost -> method27 48 
+49 unload_top Stuehle LKW_Muenchen MuenchnerStrassePost -> method41 50 
+50 unload Stuehle LKW_Muenchen MuenchnerStrassePost -> method31 51 52 53 
+54 deliver Stuehle -> method4 55 
+<==

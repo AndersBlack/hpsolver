@@ -1,0 +1,23 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+3 fly a1 c1 c3 f2 f1 
+4 board p1 a1 c3 
+7 fly a1 c3 c2 f1 f0 
+8 debark p1 a1 c2 
+12 refuel a1 f0 f6 
+13 fly a1 c2 c3 f6 f0 
+14 board p3 a1 c3 
+16 debark p3 a1 c3 
+root 0 9 17 
+0 transport-person p1 c2 -> m3-ordering-0 1 4 5 8 
+1 upper-move-aircraft a1 c3 -> m4-do-ordering-0 2 
+2 move-aircraft a1 c1 c3 -> m5-case1-ordering-0 3 
+5 upper-move-aircraft a1 c2 -> m4-do-ordering-0 6 
+6 move-aircraft a1 c3 c2 -> m5-case1-ordering-0 7 
+9 transport-person p3 c3 -> m3-ordering-0 10 14 15 16 
+10 upper-move-aircraft a1 c3 -> m4-do-ordering-0 11 
+11 move-aircraft a1 c2 c3 -> m5-case2-ordering-0 12 13 
+15 upper-move-aircraft a1 c3 -> m4-abort-ordering-0 
+17 transport-aircraft a1 c3 -> m6-ordering-0 18 
+18 upper-move-aircraft a1 c3 -> m4-abort-ordering-0 
+<==

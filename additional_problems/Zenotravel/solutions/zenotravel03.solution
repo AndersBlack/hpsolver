@@ -1,0 +1,40 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+3 fly a2 c3 c1 f5 f4 
+4 board p2 a2 c1 
+6 debark p2 a2 c1 
+8 board p2 a1 c1 
+11 fly a1 c1 c2 f4 f3 
+12 debark p2 a1 c2 
+16 fly a2 c1 c2 f4 f3 
+17 board p4 a2 c2 
+19 debark p4 a2 c2 
+21 board p3 a1 c2 
+24 fly a1 c2 c1 f3 f2 
+25 debark p3 a1 c1 
+29 fly a2 c2 c3 f3 f2 
+31 board p1 a1 c1 
+34 fly a1 c1 c2 f2 f1 
+35 debark p1 a1 c2 
+root 0 7 13 20 26 30 
+0 transport-person p2 c1 -> m3-ordering-0 1 4 5 6 
+1 upper-move-aircraft a2 c1 -> m4-do-ordering-0 2 
+2 move-aircraft a2 c3 c1 -> m5-case1-ordering-0 3 
+5 upper-move-aircraft a2 c1 -> m4-abort-ordering-0 
+7 transport-person p2 c2 -> m2-ordering-0 8 9 12 
+9 upper-move-aircraft a1 c2 -> m4-do-ordering-0 10 
+10 move-aircraft a1 c1 c2 -> m5-case1-ordering-0 11 
+13 transport-person p4 c2 -> m3-ordering-0 14 17 18 19 
+14 upper-move-aircraft a2 c2 -> m4-do-ordering-0 15 
+15 move-aircraft a2 c1 c2 -> m5-case1-ordering-0 16 
+18 upper-move-aircraft a2 c2 -> m4-abort-ordering-0 
+20 transport-person p3 c1 -> m2-ordering-0 21 22 25 
+22 upper-move-aircraft a1 c1 -> m4-do-ordering-0 23 
+23 move-aircraft a1 c2 c1 -> m5-case1-ordering-0 24 
+26 transport-aircraft a2 c3 -> m6-ordering-0 27 
+27 upper-move-aircraft a2 c3 -> m4-do-ordering-0 28 
+28 move-aircraft a2 c2 c3 -> m5-case1-ordering-0 29 
+30 transport-person p1 c2 -> m2-ordering-0 31 32 35 
+32 upper-move-aircraft a1 c2 -> m4-do-ordering-0 33 
+33 move-aircraft a1 c1 c2 -> m5-case1-ordering-0 34 
+<==

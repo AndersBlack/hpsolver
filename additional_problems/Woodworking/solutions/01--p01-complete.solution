@@ -1,0 +1,10 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+1 do_plane p2 verysmooth natural varnished smooth untreated natural 
+3 do_plane p0 smooth red varnished smooth untreated natural 
+5 do_spray_varnish p2 spray_varnisher0 red smooth untreated untreated varnished natural 
+root 0 2 4 
+0 grindNplane p2 verysmooth natural varnished smooth natural untreated -> method7 1 
+2 grindNplane p0 smooth red varnished smooth natural untreated -> method7 3 
+4 do_colour p2 red spray_varnisher0 untreated -> method1 5 
+<==

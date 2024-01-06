@@ -1,0 +1,17 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+3 do_saw_medium b0 p1 walnut smooth s6 s5 s4 medium natural untreated 
+5 do_plane p1 smooth natural untreated smooth untreated natural 
+7 do_spray_varnish p1 spray_varnisher0 natural smooth untreated untreated varnished natural 
+10 do_grind p0 verysmooth natural glazed untreated verysmooth natural 
+12 do_spray_varnish p0 spray_varnisher0 natural verysmooth untreated untreated varnished natural 
+root 0 8 
+0 process p1 natural smooth smooth -> method14 1 4 6 
+1 cut_and_saw b0 p1 walnut smooth -> method10 2 
+2 do_saw b0 p1 walnut smooth -> method8 3 
+4 grindNplane p1 smooth natural untreated smooth natural untreated -> method7 5 
+6 do_colour p1 natural spray_varnisher0 untreated -> method1 7 
+8 process p0 natural verysmooth verysmooth -> method12 9 11 
+9 grindNplane p0 verysmooth natural glazed verysmooth natural untreated -> method3 10 
+11 do_colour p0 natural spray_varnisher0 untreated -> method1 12 
+<==

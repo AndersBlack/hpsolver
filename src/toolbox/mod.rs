@@ -1,9 +1,10 @@
 use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
-use std::string;
+use std::path::PathBuf;
 use crate::datastructures::{node::*, problem::{*}, domain::{*}};
-use std::fs::OpenOptions;
+use std::fs::{OpenOptions, File};
 use std::io::Write;
+
 
 pub fn hash_state(current_node: &mut Node) -> bool {
 
@@ -107,11 +108,26 @@ fn type_contain_param(types: &Vec<(String,String)>, check_type: &String) -> bool
 	false
 }
 
-pub fn print_result(current_node: Node) {
+pub fn print_result(current_node: Node, path: &PathBuf) {
+
+	let path_buf = PathBuf::from(path);
+
+	let path_stem = path_buf.file_stem().expect("wasn't able to stem file");
+	let mut path_stem_pb = PathBuf::from(path_stem);
+	let path_parent = path_buf.parent().unwrap().parent().unwrap();
+
+	let mut new_path = PathBuf::from(path_parent);
+	new_path.push("solutions");
+	path_stem_pb.set_extension("solution");
+	new_path.push(path_stem_pb);
+
+	let _ = File::create(new_path.clone());
+
+	//println!("Path stem: {:?}, path parent: {:?}, path: {:?}, new path: {:?}", path_stem, path_parent, path, new_path);
 
 	let data_struct = OpenOptions::new()
 	.append(true)
-	.open("notes/solution.txt");
+	.open(new_path);
 
 	if data_struct.is_ok() {
 		let mut data_file = data_struct.expect("cannot open file");
@@ -129,9 +145,8 @@ pub fn print_result(current_node: Node) {
 			// Actions
 			match &applied_function {
 				(SubtaskTypes::Action(action), id, _, relevant_vars) => {
-					let mut string_to_print = String::new();
 
-					string_to_print = id.to_string() + " " + &action.name + " ";
+					let mut string_to_print = id.to_string() + " " + &action.name + " ";
 
 					for var in relevant_vars {
 						string_to_print = string_to_print + &var.2[0] + " ";
@@ -163,11 +178,16 @@ pub fn print_result(current_node: Node) {
 			// Methods
 			match &applied_function {
 				(SubtaskTypes::Method(method), id, call_list, relevant_vars) => {
-					let mut string_to_print = String::new();
 
-					string_to_print = id.to_string() + " " + &method.task.0 + " ";
+					let mut string_to_print = id.to_string() + " " + &method.task.0 + " ";
+
+					//println!("relvars: {:?} method: {:?}", relevant_vars, method.name);
 
 					for var in relevant_vars {
+						if var.2.len() > 1 {
+							println!("panic relvars: {:?}", var);
+							panic!("Values had not been reduced to 1")
+						}
 						string_to_print = string_to_print + &var.2[0] + " ";
 					}
 

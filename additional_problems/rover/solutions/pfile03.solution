@@ -1,0 +1,33 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+3 navigate rover1 waypoint3 waypoint0 
+4 calibrate rover1 camera1 objective0 waypoint0 
+6 take_image rover1 waypoint0 objective0 camera1 colour 
+9 navigate rover1 waypoint0 waypoint3 
+10 communicate_image_data rover1 general objective0 colour waypoint3 waypoint0 
+13 navigate rover1 waypoint3 waypoint2 
+15 sample_soil rover1 rover1store waypoint2 
+18 navigate rover1 waypoint2 waypoint3 
+19 communicate_soil_data rover1 general waypoint2 waypoint3 waypoint0 
+22 navigate rover0 waypoint1 waypoint0 
+24 sample_rock rover0 rover0store waypoint0 
+27 navigate rover0 waypoint0 waypoint1 
+28 communicate_rock_data rover0 general waypoint0 waypoint1 waypoint0 
+root 0 11 20 
+0 get_image_data objective0 colour -> m_get_image_data_ordering_0 1 5 6 7 
+1 calibrate_abs rover1 camera1 -> m_calibrate_abs_ordering_0 2 4 
+2 navigate_abs rover1 waypoint0 -> m_navigate_abs_3_ordering_0 3 
+5 navigate_abs rover1 waypoint0 -> m_navigate_abs_2_ordering_0 
+7 send_image_data rover1 objective0 colour -> m_send_image_data_ordering_0 8 10 
+8 navigate_abs rover1 waypoint3 -> m_navigate_abs_3_ordering_0 9 
+11 get_soil_data waypoint2 -> m_get_soil_data_ordering_0 12 14 15 16 
+12 navigate_abs rover1 waypoint2 -> m_navigate_abs_3_ordering_0 13 
+14 empty_store rover1store rover1 -> m_empty_store_1_ordering_0 
+16 send_soil_data rover1 waypoint2 -> m_send_soil_data_ordering_0 17 19 
+17 navigate_abs rover1 waypoint3 -> m_navigate_abs_3_ordering_0 18 
+20 get_rock_data waypoint0 -> m_get_rock_data_ordering_0 21 23 24 25 
+21 navigate_abs rover0 waypoint0 -> m_navigate_abs_3_ordering_0 22 
+23 empty_store rover0store rover0 -> m_empty_store_1_ordering_0 
+25 send_rock_data rover0 waypoint0 -> m_send_rock_data_ordering_0 26 28 
+26 navigate_abs rover0 waypoint1 -> m_navigate_abs_3_ordering_0 27 
+<==

@@ -1,0 +1,43 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 collect_fees Drucker 
+11 open_door FlugzeugLufthansa 
+12 load_package Drucker FlugzeugLufthansa FlughafenStuttgart 
+13 close_door FlugzeugLufthansa 
+15 move_vehicle_no_traincar FlugzeugLufthansa FlughafenStuttgart Stuttgart_Paris_Air_Route FlughafenParis 
+18 open_door FlugzeugLufthansa 
+19 unload_package Drucker FlugzeugLufthansa FlughafenParis 
+20 close_door FlugzeugLufthansa 
+21 go_through_two_tcenters_via_hub_not_hazardous FlughafenStuttgart HeathrowAirport Stuttgart London BadenWuerttemberg LondonRegion FlughafenParis 
+26 open_door FlugzeugAirFrance 
+27 load_package Drucker FlugzeugAirFrance FlughafenParis 
+28 close_door FlugzeugAirFrance 
+30 move_vehicle_no_traincar FlugzeugAirFrance FlughafenParis Paris_London_Air_Route HeathrowAirport 
+33 open_door FlugzeugAirFrance 
+34 unload_package Drucker FlugzeugAirFrance HeathrowAirport 
+35 close_door FlugzeugAirFrance 
+36 go_through_two_tcenters_tt FlughafenStuttgart HeathrowAirport Stuttgart London 
+38 deliver_p Drucker 
+root 0 
+0 transport Drucker FlughafenStuttgart HeathrowAirport -> method0 1 3 37 
+1 pickup Drucker -> method1 2 
+3 carry Drucker FlughafenStuttgart HeathrowAirport -> method8 4 
+4 helper_carry_tt Drucker FlughafenStuttgart Stuttgart HeathrowAirport London -> method9 5 36 
+5 carry_via_hub Drucker FlughafenStuttgart HeathrowAirport -> method20 6 
+6 helper_carry_via_hub_not_hazardous Drucker FlughafenStuttgart Stuttgart BadenWuerttemberg FlughafenParis HeathrowAirport London LondonRegion -> method21 7 21 22 
+7 carry_direct Drucker FlughafenStuttgart FlughafenParis -> method24 8 
+8 helper_carry_direct FlugzeugLufthansa Drucker FlughafenStuttgart FlughafenParis -> method26 9 14 16 
+9 load_top Drucker FlugzeugLufthansa FlughafenStuttgart -> method38 10 
+10 load Drucker FlugzeugLufthansa FlughafenStuttgart -> method44 11 12 13 
+14 move FlugzeugLufthansa FlughafenStuttgart FlughafenParis -> method27 15 
+16 unload_top Drucker FlugzeugLufthansa FlughafenParis -> method41 17 
+17 unload Drucker FlugzeugLufthansa FlughafenParis -> method31 18 19 20 
+22 carry_direct Drucker FlughafenParis HeathrowAirport -> method24 23 
+23 helper_carry_direct FlugzeugAirFrance Drucker FlughafenParis HeathrowAirport -> method26 24 29 31 
+24 load_top Drucker FlugzeugAirFrance FlughafenParis -> method38 25 
+25 load Drucker FlugzeugAirFrance FlughafenParis -> method44 26 27 28 
+29 move FlugzeugAirFrance FlughafenParis HeathrowAirport -> method27 30 
+31 unload_top Drucker FlugzeugAirFrance HeathrowAirport -> method41 32 
+32 unload Drucker FlugzeugAirFrance HeathrowAirport -> method31 33 34 35 
+37 deliver Drucker -> method4 38 
+<==

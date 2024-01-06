@@ -1,0 +1,24 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 collect_fees Tische 
+8 open_door LKW 
+9 load_package Tische LKW Vendee 
+10 close_door LKW 
+12 move_vehicle_no_traincar LKW Vendee VendeeFrancheComteRoadRoute FrancheComte 
+15 open_door LKW 
+16 unload_package Tische LKW FrancheComte 
+17 close_door LKW 
+19 deliver_p Tische 
+root 0 
+0 transport Tische Vendee FrancheComte -> method0 1 3 18 
+1 pickup Tische -> method1 2 
+3 carry Tische Vendee FrancheComte -> method7 4 
+4 carry_direct Tische Vendee FrancheComte -> method24 5 
+5 helper_carry_direct LKW Tische Vendee FrancheComte -> method26 6 11 13 
+6 load_top Tische LKW Vendee -> method38 7 
+7 load Tische LKW Vendee -> method44 8 9 10 
+11 move LKW Vendee FrancheComte -> method27 12 
+13 unload_top Tische LKW FrancheComte -> method41 14 
+14 unload Tische LKW FrancheComte -> method31 15 16 17 
+18 deliver Tische -> method4 19 
+<==

@@ -1,0 +1,12 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 switch_on instrument1_2 satellite1 
+4 turn_to satellite1 GroundStation2 Phenomenon6 
+5 calibrate satellite1 instrument1_2 GroundStation2 
+6 turn_to satellite1 Phenomenon4 GroundStation2 
+7 take_image satellite1 Phenomenon4 instrument1_2 thermograph0 
+root 0 
+0 do_observation Phenomenon4 thermograph0 -> method0 1 6 7 
+1 activate_instrument satellite1 instrument1_2 -> method5 2 3 
+3 auto_calibrate satellite1 instrument1_2 -> method6 4 5 
+<==

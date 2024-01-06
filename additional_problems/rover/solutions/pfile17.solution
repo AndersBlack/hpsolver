@@ -1,0 +1,146 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+3 calibrate rover3 camera1 objective2 waypoint13 
+5 take_image rover3 waypoint13 objective2 camera1 colour 
+8 navigate rover3 waypoint13 waypoint5 
+9 communicate_image_data rover3 general objective2 colour waypoint5 waypoint13 
+12 navigate rover3 waypoint5 waypoint14 
+14 sample_soil rover3 rover3store waypoint14 
+17 navigate rover3 waypoint14 waypoint5 
+18 communicate_soil_data rover3 general waypoint14 waypoint5 waypoint13 
+21 navigate rover5 waypoint8 waypoint9 
+23 sample_rock rover5 rover5store waypoint9 
+26 navigate rover5 waypoint9 waypoint8 
+27 visit waypoint8 
+28 navigate rover5 waypoint8 waypoint5 
+29 unvisit waypoint8 
+30 communicate_rock_data rover5 general waypoint9 waypoint5 waypoint13 
+33 navigate rover3 waypoint5 waypoint13 
+34 visit waypoint13 
+35 navigate rover3 waypoint13 waypoint3 
+36 unvisit waypoint13 
+38 drop rover3 rover3store 
+39 sample_soil rover3 rover3store waypoint3 
+42 communicate_soil_data rover3 general waypoint3 waypoint3 waypoint13 
+45 navigate rover0 waypoint12 waypoint0 
+46 visit waypoint0 
+47 navigate rover0 waypoint0 waypoint3 
+48 unvisit waypoint0 
+50 sample_rock rover0 rover0store waypoint3 
+53 communicate_rock_data rover0 general waypoint3 waypoint3 waypoint13 
+57 calibrate rover5 camera4 objective3 waypoint5 
+59 navigate rover5 waypoint5 waypoint8 
+60 visit waypoint8 
+61 navigate rover5 waypoint8 waypoint1 
+62 unvisit waypoint8 
+63 take_image rover5 waypoint1 objective5 camera4 colour 
+66 navigate rover5 waypoint1 waypoint14 
+67 communicate_image_data rover5 general objective5 colour waypoint14 waypoint13 
+71 calibrate rover4 camera0 objective2 waypoint1 
+73 take_image rover4 waypoint1 objective2 camera0 low_res 
+76 navigate rover4 waypoint1 waypoint0 
+77 communicate_image_data rover4 general objective2 low_res waypoint0 waypoint13 
+81 calibrate rover3 camera1 objective2 waypoint3 
+83 take_image rover3 waypoint3 objective4 camera1 colour 
+86 communicate_image_data rover3 general objective4 colour waypoint3 waypoint13 
+89 navigate rover3 waypoint3 waypoint13 
+90 visit waypoint13 
+91 navigate rover3 waypoint13 waypoint5 
+92 unvisit waypoint13 
+94 drop rover3 rover3store 
+95 sample_soil rover3 rover3store waypoint5 
+98 communicate_soil_data rover3 general waypoint5 waypoint5 waypoint13 
+101 navigate rover4 waypoint0 waypoint1 
+102 visit waypoint1 
+103 navigate rover4 waypoint1 waypoint5 
+104 unvisit waypoint1 
+106 sample_rock rover4 rover4store waypoint5 
+109 communicate_rock_data rover4 general waypoint5 waypoint5 waypoint13 
+113 calibrate rover3 camera1 objective2 waypoint5 
+115 take_image rover3 waypoint5 objective3 camera1 colour 
+118 communicate_image_data rover3 general objective3 colour waypoint5 waypoint13 
+121 navigate rover3 waypoint5 waypoint2 
+123 drop rover3 rover3store 
+124 sample_soil rover3 rover3store waypoint2 
+127 navigate rover3 waypoint2 waypoint5 
+128 communicate_soil_data rover3 general waypoint2 waypoint5 waypoint13 
+131 navigate rover0 waypoint3 waypoint0 
+132 visit waypoint0 
+133 navigate rover0 waypoint0 waypoint12 
+134 unvisit waypoint0 
+136 drop rover0 rover0store 
+137 sample_rock rover0 rover0store waypoint12 
+140 navigate rover0 waypoint12 waypoint6 
+141 communicate_rock_data rover0 general waypoint12 waypoint6 waypoint13 
+root 0 10 19 31 43 54 68 78 87 99 110 119 129 
+0 get_image_data objective2 colour -> m_get_image_data_ordering_0 1 4 5 6 
+1 calibrate_abs rover3 camera1 -> m_calibrate_abs_ordering_0 2 3 
+2 navigate_abs rover2 waypoint5 -> m_navigate_abs_2_ordering_0 
+4 navigate_abs rover3 waypoint13 -> m_navigate_abs_2_ordering_0 
+6 send_image_data rover3 objective2 colour -> m_send_image_data_ordering_0 7 9 
+7 navigate_abs rover3 waypoint5 -> m_navigate_abs_3_ordering_0 8 
+10 get_soil_data waypoint14 -> m_get_soil_data_ordering_0 11 13 14 15 
+11 navigate_abs rover3 waypoint14 -> m_navigate_abs_3_ordering_0 12 
+13 empty_store rover3store rover3 -> m_empty_store_1_ordering_0 
+15 send_soil_data rover3 waypoint14 -> m_send_soil_data_ordering_0 16 18 
+16 navigate_abs rover3 waypoint5 -> m_navigate_abs_3_ordering_0 17 
+19 get_rock_data waypoint9 -> m_get_rock_data_ordering_0 20 22 23 24 
+20 navigate_abs rover5 waypoint9 -> m_navigate_abs_3_ordering_0 21 
+22 empty_store rover5store rover5 -> m_empty_store_1_ordering_0 
+24 send_rock_data rover5 waypoint9 -> m_send_rock_data_ordering_0 25 30 
+25 navigate_abs rover5 waypoint5 -> m_navigate_abs_4_ordering_0 26 27 28 29 
+31 get_soil_data waypoint3 -> m_get_soil_data_ordering_0 32 37 39 40 
+32 navigate_abs rover3 waypoint3 -> m_navigate_abs_4_ordering_0 33 34 35 36 
+37 empty_store rover3store rover3 -> m_empty_store_2_ordering_0 38 
+40 send_soil_data rover3 waypoint3 -> m_send_soil_data_ordering_0 41 42 
+41 navigate_abs rover3 waypoint3 -> m_navigate_abs_2_ordering_0 
+43 get_rock_data waypoint3 -> m_get_rock_data_ordering_0 44 49 50 51 
+44 navigate_abs rover0 waypoint3 -> m_navigate_abs_4_ordering_0 45 46 47 48 
+49 empty_store rover0store rover0 -> m_empty_store_1_ordering_0 
+51 send_rock_data rover0 waypoint3 -> m_send_rock_data_ordering_0 52 53 
+52 navigate_abs rover0 waypoint3 -> m_navigate_abs_2_ordering_0 
+54 get_image_data objective5 colour -> m_get_image_data_ordering_0 55 58 63 64 
+55 calibrate_abs rover5 camera4 -> m_calibrate_abs_ordering_0 56 57 
+56 navigate_abs rover3 waypoint3 -> m_navigate_abs_2_ordering_0 
+58 navigate_abs rover5 waypoint1 -> m_navigate_abs_4_ordering_0 59 60 61 62 
+64 send_image_data rover5 objective5 colour -> m_send_image_data_ordering_0 65 67 
+65 navigate_abs rover5 waypoint14 -> m_navigate_abs_3_ordering_0 66 
+68 get_image_data objective2 low_res -> m_get_image_data_ordering_0 69 72 73 74 
+69 calibrate_abs rover4 camera0 -> m_calibrate_abs_ordering_0 70 71 
+70 navigate_abs rover5 waypoint14 -> m_navigate_abs_2_ordering_0 
+72 navigate_abs rover4 waypoint1 -> m_navigate_abs_2_ordering_0 
+74 send_image_data rover4 objective2 low_res -> m_send_image_data_ordering_0 75 77 
+75 navigate_abs rover4 waypoint0 -> m_navigate_abs_3_ordering_0 76 
+78 get_image_data objective4 colour -> m_get_image_data_ordering_0 79 82 83 84 
+79 calibrate_abs rover3 camera1 -> m_calibrate_abs_ordering_0 80 81 
+80 navigate_abs rover5 waypoint14 -> m_navigate_abs_2_ordering_0 
+82 navigate_abs rover3 waypoint3 -> m_navigate_abs_2_ordering_0 
+84 send_image_data rover3 objective4 colour -> m_send_image_data_ordering_0 85 86 
+85 navigate_abs rover3 waypoint3 -> m_navigate_abs_2_ordering_0 
+87 get_soil_data waypoint5 -> m_get_soil_data_ordering_0 88 93 95 96 
+88 navigate_abs rover3 waypoint5 -> m_navigate_abs_4_ordering_0 89 90 91 92 
+93 empty_store rover3store rover3 -> m_empty_store_2_ordering_0 94 
+96 send_soil_data rover3 waypoint5 -> m_send_soil_data_ordering_0 97 98 
+97 navigate_abs rover3 waypoint5 -> m_navigate_abs_2_ordering_0 
+99 get_rock_data waypoint5 -> m_get_rock_data_ordering_0 100 105 106 107 
+100 navigate_abs rover4 waypoint5 -> m_navigate_abs_4_ordering_0 101 102 103 104 
+105 empty_store rover4store rover4 -> m_empty_store_1_ordering_0 
+107 send_rock_data rover4 waypoint5 -> m_send_rock_data_ordering_0 108 109 
+108 navigate_abs rover4 waypoint5 -> m_navigate_abs_2_ordering_0 
+110 get_image_data objective3 colour -> m_get_image_data_ordering_0 111 114 115 116 
+111 calibrate_abs rover3 camera1 -> m_calibrate_abs_ordering_0 112 113 
+112 navigate_abs rover5 waypoint14 -> m_navigate_abs_2_ordering_0 
+114 navigate_abs rover3 waypoint5 -> m_navigate_abs_2_ordering_0 
+116 send_image_data rover3 objective3 colour -> m_send_image_data_ordering_0 117 118 
+117 navigate_abs rover3 waypoint5 -> m_navigate_abs_2_ordering_0 
+119 get_soil_data waypoint2 -> m_get_soil_data_ordering_0 120 122 124 125 
+120 navigate_abs rover3 waypoint2 -> m_navigate_abs_3_ordering_0 121 
+122 empty_store rover3store rover3 -> m_empty_store_2_ordering_0 123 
+125 send_soil_data rover3 waypoint2 -> m_send_soil_data_ordering_0 126 128 
+126 navigate_abs rover3 waypoint5 -> m_navigate_abs_3_ordering_0 127 
+129 get_rock_data waypoint12 -> m_get_rock_data_ordering_0 130 135 137 138 
+130 navigate_abs rover0 waypoint12 -> m_navigate_abs_4_ordering_0 131 132 133 134 
+135 empty_store rover0store rover0 -> m_empty_store_2_ordering_0 136 
+138 send_rock_data rover0 waypoint12 -> m_send_rock_data_ordering_0 139 141 
+139 navigate_abs rover0 waypoint6 -> m_navigate_abs_3_ordering_0 140 
+<==

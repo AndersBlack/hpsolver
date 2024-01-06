@@ -1,0 +1,116 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+5 drive truck_1 city_loc_5 city_loc_6 
+6 drive truck_1 city_loc_6 city_loc_1 
+7 drive truck_1 city_loc_1 city_loc_0 
+8 drive truck_1 city_loc_0 city_loc_3 
+10 pick_up truck_1 city_loc_3 package_5 capacity_1 capacity_2 
+15 drive truck_1 city_loc_3 city_loc_0 
+16 drive truck_1 city_loc_0 city_loc_1 
+17 drive truck_1 city_loc_1 city_loc_6 
+18 drive truck_1 city_loc_6 city_loc_5 
+20 drop truck_1 city_loc_5 package_5 capacity_1 capacity_2 
+23 drive truck_1 city_loc_5 city_loc_4 
+25 pick_up truck_1 city_loc_4 package_4 capacity_1 capacity_2 
+27 drive truck_1 city_loc_4 city_loc_5 
+29 drop truck_1 city_loc_5 package_4 capacity_1 capacity_2 
+35 drive truck_1 city_loc_5 city_loc_6 
+36 drive truck_1 city_loc_6 city_loc_1 
+37 drive truck_1 city_loc_1 city_loc_0 
+38 drive truck_1 city_loc_0 city_loc_3 
+40 pick_up truck_1 city_loc_3 package_1 capacity_1 capacity_2 
+45 drive truck_1 city_loc_3 city_loc_0 
+46 drive truck_1 city_loc_0 city_loc_1 
+47 drive truck_1 city_loc_1 city_loc_6 
+48 drive truck_1 city_loc_6 city_loc_4 
+50 drop truck_1 city_loc_4 package_1 capacity_1 capacity_2 
+53 drive truck_0 city_loc_5 city_loc_7 
+55 pick_up truck_0 city_loc_7 package_3 capacity_1 capacity_2 
+58 drive truck_0 city_loc_7 city_loc_5 
+59 drive truck_0 city_loc_5 city_loc_2 
+61 drop truck_0 city_loc_2 package_3 capacity_1 capacity_2 
+64 noop truck_0 city_loc_2 
+66 pick_up truck_0 city_loc_2 package_6 capacity_1 capacity_2 
+69 drive truck_0 city_loc_2 city_loc_5 
+70 drive truck_0 city_loc_5 city_loc_7 
+72 drop truck_0 city_loc_7 package_6 capacity_1 capacity_2 
+75 noop truck_1 city_loc_4 
+77 pick_up truck_1 city_loc_4 package_2 capacity_1 capacity_2 
+81 drive truck_1 city_loc_4 city_loc_6 
+82 drive truck_1 city_loc_6 city_loc_1 
+83 drive truck_1 city_loc_1 city_loc_0 
+85 drop truck_1 city_loc_0 package_2 capacity_1 capacity_2 
+88 noop truck_1 city_loc_0 
+90 pick_up truck_1 city_loc_0 package_0 capacity_1 capacity_2 
+95 drive truck_1 city_loc_0 city_loc_1 
+96 drive truck_1 city_loc_1 city_loc_6 
+97 drive truck_1 city_loc_6 city_loc_5 
+98 drive truck_1 city_loc_5 city_loc_2 
+100 drop truck_1 city_loc_2 package_0 capacity_1 capacity_2 
+103 noop truck_0 city_loc_7 
+105 pick_up truck_0 city_loc_7 package_7 capacity_1 capacity_2 
+108 drive truck_0 city_loc_7 city_loc_5 
+109 drive truck_0 city_loc_5 city_loc_4 
+111 drop truck_0 city_loc_4 package_7 capacity_1 capacity_2 
+root 0 21 30 51 62 73 86 101 
+0 deliver package_5 city_loc_5 -> m_deliver_ordering_0 1 9 11 19 
+1 get_to truck_1 city_loc_3 -> m_drive_to_via_ordering_0 2 8 
+2 get_to truck_1 city_loc_0 -> m_drive_to_via_ordering_0 3 7 
+3 get_to truck_1 city_loc_1 -> m_drive_to_via_ordering_0 4 6 
+4 get_to truck_1 city_loc_6 -> m_drive_to_ordering_0 5 
+9 load truck_1 city_loc_3 package_5 -> m_load_ordering_0 10 
+11 get_to truck_1 city_loc_5 -> m_drive_to_via_ordering_0 12 18 
+12 get_to truck_1 city_loc_6 -> m_drive_to_via_ordering_0 13 17 
+13 get_to truck_1 city_loc_1 -> m_drive_to_via_ordering_0 14 16 
+14 get_to truck_1 city_loc_0 -> m_drive_to_ordering_0 15 
+19 unload truck_1 city_loc_5 package_5 -> m_unload_ordering_0 20 
+21 deliver package_4 city_loc_5 -> m_deliver_ordering_0 22 24 26 28 
+22 get_to truck_1 city_loc_4 -> m_drive_to_ordering_0 23 
+24 load truck_1 city_loc_4 package_4 -> m_load_ordering_0 25 
+26 get_to truck_1 city_loc_5 -> m_drive_to_ordering_0 27 
+28 unload truck_1 city_loc_5 package_4 -> m_unload_ordering_0 29 
+30 deliver package_1 city_loc_4 -> m_deliver_ordering_0 31 39 41 49 
+31 get_to truck_1 city_loc_3 -> m_drive_to_via_ordering_0 32 38 
+32 get_to truck_1 city_loc_0 -> m_drive_to_via_ordering_0 33 37 
+33 get_to truck_1 city_loc_1 -> m_drive_to_via_ordering_0 34 36 
+34 get_to truck_1 city_loc_6 -> m_drive_to_ordering_0 35 
+39 load truck_1 city_loc_3 package_1 -> m_load_ordering_0 40 
+41 get_to truck_1 city_loc_4 -> m_drive_to_via_ordering_0 42 48 
+42 get_to truck_1 city_loc_6 -> m_drive_to_via_ordering_0 43 47 
+43 get_to truck_1 city_loc_1 -> m_drive_to_via_ordering_0 44 46 
+44 get_to truck_1 city_loc_0 -> m_drive_to_ordering_0 45 
+49 unload truck_1 city_loc_4 package_1 -> m_unload_ordering_0 50 
+51 deliver package_3 city_loc_2 -> m_deliver_ordering_0 52 54 56 60 
+52 get_to truck_0 city_loc_7 -> m_drive_to_ordering_0 53 
+54 load truck_0 city_loc_7 package_3 -> m_load_ordering_0 55 
+56 get_to truck_0 city_loc_2 -> m_drive_to_via_ordering_0 57 59 
+57 get_to truck_0 city_loc_5 -> m_drive_to_ordering_0 58 
+60 unload truck_0 city_loc_2 package_3 -> m_unload_ordering_0 61 
+62 deliver package_6 city_loc_7 -> m_deliver_ordering_0 63 65 67 71 
+63 get_to truck_0 city_loc_2 -> m_i_am_there_ordering_0 64 
+65 load truck_0 city_loc_2 package_6 -> m_load_ordering_0 66 
+67 get_to truck_0 city_loc_7 -> m_drive_to_via_ordering_0 68 70 
+68 get_to truck_0 city_loc_5 -> m_drive_to_ordering_0 69 
+71 unload truck_0 city_loc_7 package_6 -> m_unload_ordering_0 72 
+73 deliver package_2 city_loc_0 -> m_deliver_ordering_0 74 76 78 84 
+74 get_to truck_1 city_loc_4 -> m_i_am_there_ordering_0 75 
+76 load truck_1 city_loc_4 package_2 -> m_load_ordering_0 77 
+78 get_to truck_1 city_loc_0 -> m_drive_to_via_ordering_0 79 83 
+79 get_to truck_1 city_loc_1 -> m_drive_to_via_ordering_0 80 82 
+80 get_to truck_1 city_loc_6 -> m_drive_to_ordering_0 81 
+84 unload truck_1 city_loc_0 package_2 -> m_unload_ordering_0 85 
+86 deliver package_0 city_loc_2 -> m_deliver_ordering_0 87 89 91 99 
+87 get_to truck_1 city_loc_0 -> m_i_am_there_ordering_0 88 
+89 load truck_1 city_loc_0 package_0 -> m_load_ordering_0 90 
+91 get_to truck_1 city_loc_2 -> m_drive_to_via_ordering_0 92 98 
+92 get_to truck_1 city_loc_5 -> m_drive_to_via_ordering_0 93 97 
+93 get_to truck_1 city_loc_6 -> m_drive_to_via_ordering_0 94 96 
+94 get_to truck_1 city_loc_1 -> m_drive_to_ordering_0 95 
+99 unload truck_1 city_loc_2 package_0 -> m_unload_ordering_0 100 
+101 deliver package_7 city_loc_4 -> m_deliver_ordering_0 102 104 106 110 
+102 get_to truck_0 city_loc_7 -> m_i_am_there_ordering_0 103 
+104 load truck_0 city_loc_7 package_7 -> m_load_ordering_0 105 
+106 get_to truck_0 city_loc_4 -> m_drive_to_via_ordering_0 107 109 
+107 get_to truck_0 city_loc_5 -> m_drive_to_ordering_0 108 
+110 unload truck_0 city_loc_4 package_7 -> m_unload_ordering_0 111 
+<==

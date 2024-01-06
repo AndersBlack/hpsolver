@@ -1,0 +1,24 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+3 do_saw_medium b0 p1 pine rough s3 s2 s1 medium natural untreated 
+5 do_plane_untreated p1 planer0 rough natural untreated untreated untreated smooth natural 
+7 do_glaze p1 glazer0 red untreated untreated glazed natural 
+10 do_plane p0 smooth red varnished smooth untreated natural 
+11 do_grind_untreated p0 grinder0 smooth natural untreated untreated untreated untreated untreated verysmooth natural 
+13 do_glaze p0 glazer0 red untreated untreated glazed natural 
+16 do_plane p2 verysmooth natural varnished smooth untreated natural 
+17 do_grind_untreated p2 grinder0 smooth natural untreated untreated untreated untreated untreated verysmooth natural 
+19 do_glaze p2 glazer0 red untreated untreated glazed natural 
+root 0 8 14 
+0 process p1 red rough smooth -> method14 1 4 6 
+1 cut_and_saw b0 p1 pine rough -> method10 2 
+2 do_saw b0 p1 pine rough -> method8 3 
+4 grindNplane p1 rough natural untreated smooth natural untreated -> method15 5 
+6 do_colour p1 red glazer0 untreated -> method2 7 
+8 process p0 red smooth verysmooth -> method16 9 11 12 
+9 grindNplane p0 smooth red varnished smooth natural untreated -> method7 10 
+12 do_colour p0 red glazer0 untreated -> method2 13 
+14 process p2 red verysmooth verysmooth -> method16 15 17 18 
+15 grindNplane p2 verysmooth natural varnished smooth natural untreated -> method7 16 
+18 do_colour p2 red glazer0 untreated -> method2 19 
+<==

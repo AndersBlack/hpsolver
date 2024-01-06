@@ -1,0 +1,16 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+1 attachRegularInformationToEMail email1 dateForMeeting 
+4 press_Home_People 
+6 select_People_Favourite_NoOp contact1 headOfDepartment 
+7 select_People_FavouriteSelected_EMail contact1 headOfDepartment 
+8 select_AccountSelection_Account account1 
+9 press_EMail_NewEMail_Send headOfDepartment email1 
+11 extractsInformation_Regular headOfDepartment email1 dateForMeeting 
+root 0 2 10 
+0 attachInformationToEMail email1 dateForMeeting -> method65 1 
+2 send_EMail headOfDepartment email1 -> method60 3 5 7 8 9 
+3 enterMode_People -> method85 4 
+5 select_People_Favourite contact1 headOfDepartment -> method59 6 
+10 extractsInformation headOfDepartment email1 dateForMeeting -> method72 11 
+<==

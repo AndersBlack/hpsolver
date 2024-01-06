@@ -1,0 +1,43 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 switch_on instrument2 satellite2 
+4 turn_to satellite2 star1 star7 
+5 calibrate satellite2 instrument2 star1 
+6 turn_to satellite2 planet9 star1 
+7 take_image satellite2 planet9 instrument2 infrared3 
+10 switch_on instrument1 satellite1 
+12 turn_to satellite1 star1 phenomenon6 
+13 calibrate satellite1 instrument1 star1 
+14 turn_to satellite1 planet5 star1 
+15 take_image satellite1 planet5 instrument1 image0 
+17 turn_to satellite2 phenomenon6 planet9 
+18 take_image satellite2 phenomenon6 instrument2 infrared3 
+21 switch_on instrument0 satellite0 
+23 turn_to satellite0 star0 star1 
+24 calibrate satellite0 instrument0 star0 
+25 turn_to satellite0 phenomenon10 star0 
+26 take_image satellite0 phenomenon10 instrument0 spectrograph2 
+28 turn_to satellite0 star7 phenomenon10 
+29 take_image satellite0 star7 instrument0 image0 
+31 turn_to satellite2 planet4 phenomenon6 
+32 take_image satellite2 planet4 instrument2 thermograph1 
+34 turn_to satellite0 star8 star7 
+35 take_image satellite0 star8 instrument0 image0 
+37 turn_to satellite2 star3 planet4 
+38 take_image satellite2 star3 instrument2 thermograph1 
+root 0 8 16 19 27 30 33 36 
+0 do_observation planet9 infrared3 -> method0 1 6 7 
+1 activate_instrument satellite2 instrument2 -> method5 2 3 
+3 auto_calibrate satellite2 instrument2 -> method6 4 5 
+8 do_observation planet5 image0 -> method0 9 14 15 
+9 activate_instrument satellite1 instrument1 -> method5 10 11 
+11 auto_calibrate satellite1 instrument1 -> method6 12 13 
+16 do_observation phenomenon6 infrared3 -> method1 17 18 
+19 do_observation phenomenon10 spectrograph2 -> method0 20 25 26 
+20 activate_instrument satellite0 instrument0 -> method5 21 22 
+22 auto_calibrate satellite0 instrument0 -> method6 23 24 
+27 do_observation star7 image0 -> method1 28 29 
+30 do_observation planet4 thermograph1 -> method1 31 32 
+33 do_observation star8 image0 -> method1 34 35 
+36 do_observation star3 thermograph1 -> method1 37 38 
+<==

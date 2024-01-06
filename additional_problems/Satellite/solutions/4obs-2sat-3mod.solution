@@ -1,0 +1,32 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 switch_on instrument3 satellite1 
+4 turn_to satellite1 star0 groundstation1 
+5 calibrate satellite1 instrument3 star0 
+6 turn_to satellite1 phenomenon3 star0 
+7 take_image satellite1 phenomenon3 instrument3 spectrograph0 
+9 turn_to satellite1 star2 phenomenon3 
+10 take_image satellite1 star2 instrument3 infrared2 
+13 switch_on instrument1 satellite0 
+15 turn_to satellite0 groundstation1 phenomenon3 
+16 calibrate satellite0 instrument1 groundstation1 
+17 turn_to satellite0 phenomenon5 groundstation1 
+18 take_image satellite0 phenomenon5 instrument1 thermograph1 
+21 switch_off instrument3 satellite1 
+22 switch_on instrument2 satellite1 
+24 turn_to satellite1 groundstation1 star2 
+25 calibrate satellite1 instrument2 groundstation1 
+26 turn_to satellite1 planet4 groundstation1 
+27 take_image satellite1 planet4 instrument2 thermograph1 
+root 0 8 11 19 
+0 do_observation phenomenon3 spectrograph0 -> method0 1 6 7 
+1 activate_instrument satellite1 instrument3 -> method5 2 3 
+3 auto_calibrate satellite1 instrument3 -> method6 4 5 
+8 do_observation star2 infrared2 -> method1 9 10 
+11 do_observation phenomenon5 thermograph1 -> method0 12 17 18 
+12 activate_instrument satellite0 instrument1 -> method5 13 14 
+14 auto_calibrate satellite0 instrument1 -> method6 15 16 
+19 do_observation planet4 thermograph1 -> method0 20 26 27 
+20 activate_instrument satellite1 instrument2 -> method4 21 22 23 
+23 auto_calibrate satellite1 instrument2 -> method6 24 25 
+<==

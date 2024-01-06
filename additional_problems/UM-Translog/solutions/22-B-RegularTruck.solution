@@ -1,0 +1,44 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 collect_fees Toshiba_Laptops 
+8 open_door Pferd 
+9 load_package Toshiba_Laptops Pferd O27 
+10 close_door Pferd 
+12 move_vehicle_no_traincar Pferd O27 James_Franck_Ring O28 
+15 open_door Pferd 
+16 unload_package Toshiba_Laptops Pferd O28 
+17 close_door Pferd 
+19 deliver_p Toshiba_Laptops 
+22 collect_fees Drucker 
+28 open_door Pferd 
+29 load_package Drucker Pferd O28 
+30 close_door Pferd 
+32 move_vehicle_no_traincar Pferd O28 Frauen_Strasse Bibliothek 
+35 open_door Pferd 
+36 unload_package Drucker Pferd Bibliothek 
+37 close_door Pferd 
+39 deliver_p Drucker 
+root 0 20 
+0 transport Toshiba_Laptops O27 O28 -> method0 1 3 18 
+1 pickup Toshiba_Laptops -> method1 2 
+3 carry Toshiba_Laptops O27 O28 -> method7 4 
+4 carry_direct Toshiba_Laptops O27 O28 -> method24 5 
+5 helper_carry_direct Pferd Toshiba_Laptops O27 O28 -> method26 6 11 13 
+6 load_top Toshiba_Laptops Pferd O27 -> method38 7 
+7 load Toshiba_Laptops Pferd O27 -> method44 8 9 10 
+11 move Pferd O27 O28 -> method27 12 
+13 unload_top Toshiba_Laptops Pferd O28 -> method41 14 
+14 unload Toshiba_Laptops Pferd O28 -> method31 15 16 17 
+18 deliver Toshiba_Laptops -> method4 19 
+20 transport Drucker O28 Bibliothek -> method0 21 23 38 
+21 pickup Drucker -> method1 22 
+23 carry Drucker O28 Bibliothek -> method7 24 
+24 carry_direct Drucker O28 Bibliothek -> method24 25 
+25 helper_carry_direct Pferd Drucker O28 Bibliothek -> method26 26 31 33 
+26 load_top Drucker Pferd O28 -> method38 27 
+27 load Drucker Pferd O28 -> method44 28 29 30 
+31 move Pferd O28 Bibliothek -> method27 32 
+33 unload_top Drucker Pferd Bibliothek -> method41 34 
+34 unload Drucker Pferd Bibliothek -> method31 35 36 37 
+38 deliver Drucker -> method4 39 
+<==

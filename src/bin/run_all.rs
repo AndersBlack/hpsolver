@@ -52,15 +52,14 @@ fn main() {
           Ok((problem, domain)) => {
 
             let handle = thread::spawn(move || {
-              let result = stoppable_depth_first(problem, &domain, &now);
-
+              let result = stoppable_depth_first(problem, &domain, &now, &path_clone);
 
               (result, now.elapsed().as_millis())
             });
 
             while now.elapsed().as_secs() < 10 {
               
-              thread::sleep(Duration::from_millis(5));
+              thread::sleep(Duration::from_millis(50));
 
               if handle.is_finished() {
                 break;

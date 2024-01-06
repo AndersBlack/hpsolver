@@ -1,0 +1,17 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 attachRegularInformationToSMS sms1 dateForMeeting 
+6 press_Home_People 
+8 select_People_Favourite_NoOp contact1 Biundo 
+9 select_People_FavouriteSelected_SMS contact1 Biundo 
+10 press_NewMessage_Send_Mobile Biundo sms1 
+12 extractsInformation_Regular Biundo sms1 dateForMeeting 
+root 0 3 11 
+0 attachInformation sms1 dateForMeeting -> method71 1 
+1 attachInformationToSMS sms1 dateForMeeting -> method67 2 
+3 contact Biundo sms1 -> method80 4 
+4 send_SMS Biundo sms1 -> method54 5 7 9 10 
+5 enterMode_People -> method85 6 
+7 select_People_Favourite contact1 Biundo -> method59 8 
+11 extractsInformation Biundo sms1 dateForMeeting -> method72 12 
+<==

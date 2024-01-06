@@ -1,0 +1,26 @@
+Solution for problem: { } by Ajess19 & Andla19
+==>
+2 collect_fees Toshiba_Laptops 
+7 move_vehicle_no_traincar Pferd Bibliothek Frauen_Strasse O27 
+10 open_door Pferd 
+11 load_package Toshiba_Laptops Pferd O27 
+12 close_door Pferd 
+14 move_vehicle_no_traincar Pferd O27 James_Franck_Ring O28 
+17 open_door Pferd 
+18 unload_package Toshiba_Laptops Pferd O28 
+19 close_door Pferd 
+21 deliver_p Toshiba_Laptops 
+root 0 
+0 transport Toshiba_Laptops O27 O28 -> method0 1 3 20 
+1 pickup Toshiba_Laptops -> method1 2 
+3 carry Toshiba_Laptops O27 O28 -> method7 4 
+4 carry_direct Toshiba_Laptops O27 O28 -> method24 5 
+5 helper_carry_direct Pferd Toshiba_Laptops O27 O28 -> method25 6 8 13 15 
+6 move Pferd Bibliothek O27 -> method27 7 
+8 load_top Toshiba_Laptops Pferd O27 -> method38 9 
+9 load Toshiba_Laptops Pferd O27 -> method44 10 11 12 
+13 move Pferd O27 O28 -> method27 14 
+15 unload_top Toshiba_Laptops Pferd O28 -> method41 16 
+16 unload Toshiba_Laptops Pferd O28 -> method31 17 18 19 
+20 deliver Toshiba_Laptops -> method4 21 
+<==
