@@ -5,7 +5,7 @@ use crate::datastructures::{node::*, problem::{*}, domain::{*}};
 use std::fs::{OpenOptions, File};
 use std::io::Write;
 
-
+/// Hashes the state and returns a boolean representing whether or not it is a duplicate state
 pub fn hash_state(current_node: &mut Node) -> bool {
 
 	//Hash and check if hashset contains
@@ -23,6 +23,7 @@ pub fn hash_state(current_node: &mut Node) -> bool {
 	return false
 }
 
+/// Removes actions, methods & tasks from the domain based on objects in problem
 pub fn reduce_domain( domain: &Domain, problem: &Problem ) -> Domain {
 
 	let mut new_domain = domain.clone();
@@ -108,6 +109,7 @@ fn type_contain_param(types: &Vec<(String,String)>, check_type: &String) -> bool
 	false
 }
 
+/// Writes the solution to the solution files
 pub fn print_result(current_node: Node, path: &PathBuf) {
 
 	let path_buf = PathBuf::from(path);
@@ -234,6 +236,7 @@ pub fn print_result(current_node: Node, path: &PathBuf) {
 
 }
 
+/// Checks if the domain contains methods that call itself
 pub fn method_calls_method(method_list: &Vec<Method>) -> bool {
 
 	for method in method_list {
@@ -259,6 +262,7 @@ pub fn compare_lists(list1: Vec<String>, list2: Vec<String>) -> bool {
 	true
 }
 
+/// Checks if the goal state reached is valid
 pub fn check_goal_condition( state: &Vec<(String, Vec<String>)>, goal: &Option<Vec<(String, Vec<String>)>>) -> bool {
 
 	let mut res = true;
