@@ -5,26 +5,14 @@ Solution for problem: { } by Ajess19 & Andla19
 5 calibrate satellite0 instrument0 GroundStation2 
 6 turn_to satellite0 Phenomenon6 GroundStation2 
 7 take_image satellite0 Phenomenon6 instrument0 thermograph0 
-10 switch_off instrument0 satellite0 
-11 switch_on instrument0 satellite0 
-13 turn_to satellite0 GroundStation2 Phenomenon6 
-14 calibrate satellite0 instrument0 GroundStation2 
-15 turn_to satellite0 Star5 GroundStation2 
-16 take_image satellite0 Star5 instrument0 thermograph0 
-19 switch_off instrument0 satellite0 
-20 switch_on instrument0 satellite0 
-22 turn_to satellite0 GroundStation2 Star5 
-23 calibrate satellite0 instrument0 GroundStation2 
-24 turn_to satellite0 Phenomenon4 GroundStation2 
-25 take_image satellite0 Phenomenon4 instrument0 thermograph0 
-root 0 8 17 
+9 turn_to satellite0 Star5 Phenomenon6 
+10 take_image satellite0 Star5 instrument0 thermograph0 
+12 turn_to satellite0 Phenomenon4 Star5 
+13 take_image satellite0 Phenomenon4 instrument0 thermograph0 
+root 0 8 11 
 0 do_observation Phenomenon6 thermograph0 -> method0 1 6 7 
 1 activate_instrument satellite0 instrument0 -> method5 2 3 
 3 auto_calibrate satellite0 instrument0 -> method6 4 5 
-8 do_observation Star5 thermograph0 -> method0 9 15 16 
-9 activate_instrument satellite0 instrument0 -> method4 10 11 12 
-12 auto_calibrate satellite0 instrument0 -> method6 13 14 
-17 do_observation Phenomenon4 thermograph0 -> method0 18 24 25 
-18 activate_instrument satellite0 instrument0 -> method4 19 20 21 
-21 auto_calibrate satellite0 instrument0 -> method6 22 23 
+8 do_observation Star5 thermograph0 -> method1 9 10 
+11 do_observation Phenomenon4 thermograph0 -> method1 12 13 
 <==

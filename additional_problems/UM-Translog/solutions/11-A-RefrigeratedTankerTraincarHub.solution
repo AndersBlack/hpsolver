@@ -1,59 +1,66 @@
 Solution for problem: { } by Ajess19 & Andla19
 ==>
 2 collect_fees Chemicalien 
-11 connect_hose Eisenbahnwagen Chemicalien 
-12 open_valve Eisenbahnwagen 
-13 fill_tank Eisenbahnwagen Chemicalien HauptbahnhofStuttgart 
-14 close_valve Eisenbahnwagen 
-15 disconnect_hose Eisenbahnwagen Chemicalien 
-18 attach_train_car LokomotiveDB Eisenbahnwagen HauptbahnhofStuttgart 
-20 move_vehicle_no_traincar LokomotiveDB HauptbahnhofStuttgart Stuttgart_Paris_Rail_Route GareParisNord 
-21 detach_train_car LokomotiveDB Eisenbahnwagen GareParisNord 
-24 connect_hose Eisenbahnwagen Chemicalien 
-25 open_valve Eisenbahnwagen 
-26 empty_tank Eisenbahnwagen Chemicalien GareParisNord 
-27 close_valve Eisenbahnwagen 
-28 disconnect_hose Eisenbahnwagen Chemicalien 
-29 go_through_two_tcenters_via_hub_hazardous HauptbahnhofStuttgart LondonWaterloo GareParisNord Stuttgart Paris London BadenWuerttemberg LondonRegion 
-34 connect_hose Eisenbahnwagen Chemicalien 
-35 open_valve Eisenbahnwagen 
-36 fill_tank Eisenbahnwagen Chemicalien GareParisNord 
-37 close_valve Eisenbahnwagen 
-38 disconnect_hose Eisenbahnwagen Chemicalien 
-41 attach_train_car LokomotiveSNCF Eisenbahnwagen GareParisNord 
-43 move_vehicle_no_traincar LokomotiveSNCF GareParisNord Paris_London_Rail_Route LondonWaterloo 
-44 detach_train_car LokomotiveSNCF Eisenbahnwagen LondonWaterloo 
-47 connect_hose Eisenbahnwagen Chemicalien 
-48 open_valve Eisenbahnwagen 
-49 empty_tank Eisenbahnwagen Chemicalien LondonWaterloo 
-50 close_valve Eisenbahnwagen 
-51 disconnect_hose Eisenbahnwagen Chemicalien 
-52 go_through_two_tcenters_tt HauptbahnhofStuttgart LondonWaterloo Stuttgart London 
-54 deliver_p Chemicalien 
+3 obtain_permit Chemicalien 
+11 affix_warning_signs Eisenbahnwagen 
+13 connect_hose Eisenbahnwagen Chemicalien 
+14 open_valve Eisenbahnwagen 
+15 fill_tank Eisenbahnwagen Chemicalien HauptbahnhofStuttgart 
+16 close_valve Eisenbahnwagen 
+17 disconnect_hose Eisenbahnwagen Chemicalien 
+20 attach_train_car LokomotiveDB Eisenbahnwagen HauptbahnhofStuttgart 
+22 move_vehicle_no_traincar LokomotiveDB HauptbahnhofStuttgart Stuttgart_Paris_Rail_Route GareParisNord 
+23 detach_train_car LokomotiveDB Eisenbahnwagen GareParisNord 
+26 connect_hose Eisenbahnwagen Chemicalien 
+27 open_valve Eisenbahnwagen 
+28 empty_tank Eisenbahnwagen Chemicalien GareParisNord 
+29 close_valve Eisenbahnwagen 
+30 disconnect_hose Eisenbahnwagen Chemicalien 
+31 decontaminate_interior Eisenbahnwagen 
+32 remove_warning_signs Eisenbahnwagen 
+33 go_through_two_tcenters_via_hub_hazardous HauptbahnhofStuttgart LondonWaterloo GareParisNord Stuttgart Paris London BadenWuerttemberg LondonRegion 
+37 affix_warning_signs Eisenbahnwagen 
+39 connect_hose Eisenbahnwagen Chemicalien 
+40 open_valve Eisenbahnwagen 
+41 fill_tank Eisenbahnwagen Chemicalien GareParisNord 
+42 close_valve Eisenbahnwagen 
+43 disconnect_hose Eisenbahnwagen Chemicalien 
+46 attach_train_car LokomotiveSNCF Eisenbahnwagen GareParisNord 
+48 move_vehicle_no_traincar LokomotiveSNCF GareParisNord Paris_London_Rail_Route LondonWaterloo 
+49 detach_train_car LokomotiveSNCF Eisenbahnwagen LondonWaterloo 
+52 connect_hose Eisenbahnwagen Chemicalien 
+53 open_valve Eisenbahnwagen 
+54 empty_tank Eisenbahnwagen Chemicalien LondonWaterloo 
+55 close_valve Eisenbahnwagen 
+56 disconnect_hose Eisenbahnwagen Chemicalien 
+57 decontaminate_interior Eisenbahnwagen 
+58 remove_warning_signs Eisenbahnwagen 
+59 go_through_two_tcenters_tt HauptbahnhofStuttgart LondonWaterloo Stuttgart London 
+61 deliver_h Chemicalien 
 root 0 
-0 transport Chemicalien HauptbahnhofStuttgart LondonWaterloo -> method0 1 3 53 
-1 pickup Chemicalien -> method1 2 
-3 carry Chemicalien HauptbahnhofStuttgart LondonWaterloo -> method8 4 
-4 helper_carry_tt Chemicalien HauptbahnhofStuttgart Stuttgart LondonWaterloo London -> method9 5 52 
-5 carry_via_hub Chemicalien HauptbahnhofStuttgart LondonWaterloo -> method22 6 
-6 helper_carry_via_hub_hazardous Chemicalien HauptbahnhofStuttgart Stuttgart BadenWuerttemberg GareParisNord Paris LondonWaterloo London LondonRegion -> method23 7 29 30 
-7 carry_direct Chemicalien HauptbahnhofStuttgart GareParisNord -> method24 8 
-8 helper_carry_direct Eisenbahnwagen Chemicalien HauptbahnhofStuttgart GareParisNord -> method26 9 16 22 
-9 load_top Chemicalien Eisenbahnwagen HauptbahnhofStuttgart -> method38 10 
-10 load Chemicalien Eisenbahnwagen HauptbahnhofStuttgart -> method47 11 12 13 14 15 
-16 move Eisenbahnwagen HauptbahnhofStuttgart GareParisNord -> method28 17 
-17 helper_move_traincar Eisenbahnwagen LokomotiveDB HauptbahnhofStuttgart GareParisNord -> method30 18 19 21 
-19 move LokomotiveDB HauptbahnhofStuttgart GareParisNord -> method27 20 
-22 unload_top Chemicalien Eisenbahnwagen GareParisNord -> method41 23 
-23 unload Chemicalien Eisenbahnwagen GareParisNord -> method34 24 25 26 27 28 
-30 carry_direct Chemicalien GareParisNord LondonWaterloo -> method24 31 
-31 helper_carry_direct Eisenbahnwagen Chemicalien GareParisNord LondonWaterloo -> method26 32 39 45 
-32 load_top Chemicalien Eisenbahnwagen GareParisNord -> method38 33 
-33 load Chemicalien Eisenbahnwagen GareParisNord -> method47 34 35 36 37 38 
-39 move Eisenbahnwagen GareParisNord LondonWaterloo -> method28 40 
-40 helper_move_traincar Eisenbahnwagen LokomotiveSNCF GareParisNord LondonWaterloo -> method30 41 42 44 
-42 move LokomotiveSNCF GareParisNord LondonWaterloo -> method27 43 
-45 unload_top Chemicalien Eisenbahnwagen LondonWaterloo -> method41 46 
-46 unload Chemicalien Eisenbahnwagen LondonWaterloo -> method34 47 48 49 50 51 
-53 deliver Chemicalien -> method4 54 
+0 transport Chemicalien HauptbahnhofStuttgart LondonWaterloo -> method0 1 4 60 
+1 pickup Chemicalien -> method2 2 3 
+4 carry Chemicalien HauptbahnhofStuttgart LondonWaterloo -> method8 5 
+5 helper_carry_tt Chemicalien HauptbahnhofStuttgart Stuttgart LondonWaterloo London -> method9 6 59 
+6 carry_via_hub Chemicalien HauptbahnhofStuttgart LondonWaterloo -> method22 7 
+7 helper_carry_via_hub_hazardous Chemicalien HauptbahnhofStuttgart Stuttgart BadenWuerttemberg GareParisNord Paris LondonWaterloo London LondonRegion -> method23 8 33 34 
+8 carry_direct Chemicalien HauptbahnhofStuttgart GareParisNord -> method24 9 
+9 helper_carry_direct Eisenbahnwagen Chemicalien HauptbahnhofStuttgart GareParisNord -> method26 10 18 24 
+10 load_top Chemicalien Eisenbahnwagen HauptbahnhofStuttgart -> method39 11 12 
+12 load Chemicalien Eisenbahnwagen HauptbahnhofStuttgart -> method47 13 14 15 16 17 
+18 move Eisenbahnwagen HauptbahnhofStuttgart GareParisNord -> method28 19 
+19 helper_move_traincar Eisenbahnwagen LokomotiveDB HauptbahnhofStuttgart GareParisNord -> method30 20 21 23 
+21 move LokomotiveDB HauptbahnhofStuttgart GareParisNord -> method27 22 
+24 unload_top Chemicalien Eisenbahnwagen GareParisNord -> method42 25 31 32 
+25 unload Chemicalien Eisenbahnwagen GareParisNord -> method34 26 27 28 29 30 
+34 carry_direct Chemicalien GareParisNord LondonWaterloo -> method24 35 
+35 helper_carry_direct Eisenbahnwagen Chemicalien GareParisNord LondonWaterloo -> method26 36 44 50 
+36 load_top Chemicalien Eisenbahnwagen GareParisNord -> method39 37 38 
+38 load Chemicalien Eisenbahnwagen GareParisNord -> method47 39 40 41 42 43 
+44 move Eisenbahnwagen GareParisNord LondonWaterloo -> method28 45 
+45 helper_move_traincar Eisenbahnwagen LokomotiveSNCF GareParisNord LondonWaterloo -> method30 46 47 49 
+47 move LokomotiveSNCF GareParisNord LondonWaterloo -> method27 48 
+50 unload_top Chemicalien Eisenbahnwagen LondonWaterloo -> method42 51 57 58 
+51 unload Chemicalien Eisenbahnwagen LondonWaterloo -> method34 52 53 54 55 56 
+60 deliver Chemicalien -> method6 61 
 <==

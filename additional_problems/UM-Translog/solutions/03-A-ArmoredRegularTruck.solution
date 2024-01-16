@@ -1,24 +1,29 @@
 Solution for problem: { } by Ajess19 & Andla19
 ==>
 2 collect_fees Gemaelde 
-8 open_door Pferd 
-9 load_package Gemaelde Pferd O27 
-10 close_door Pferd 
-12 move_vehicle_no_traincar Pferd O27 James_Franck_Ring O28 
-15 open_door Pferd 
-16 unload_package Gemaelde Pferd O28 
-17 close_door Pferd 
-19 deliver_p Gemaelde 
+3 collect_insurance Gemaelde 
+8 post_guard_outside Pferd 
+10 open_door Pferd 
+11 load_package Gemaelde Pferd O27 
+12 close_door Pferd 
+13 post_guard_inside Pferd 
+15 move_vehicle_no_traincar Pferd O27 James_Franck_Ring O28 
+17 post_guard_outside Pferd 
+19 open_door Pferd 
+20 unload_package Gemaelde Pferd O28 
+21 close_door Pferd 
+22 remove_guard Pferd 
+24 deliver_v Gemaelde 
 root 0 
-0 transport Gemaelde O27 O28 -> method0 1 3 18 
-1 pickup Gemaelde -> method1 2 
-3 carry Gemaelde O27 O28 -> method7 4 
-4 carry_direct Gemaelde O27 O28 -> method24 5 
-5 helper_carry_direct Pferd Gemaelde O27 O28 -> method26 6 11 13 
-6 load_top Gemaelde Pferd O27 -> method38 7 
-7 load Gemaelde Pferd O27 -> method44 8 9 10 
-11 move Pferd O27 O28 -> method27 12 
-13 unload_top Gemaelde Pferd O28 -> method41 14 
-14 unload Gemaelde Pferd O28 -> method31 15 16 17 
-18 deliver Gemaelde -> method4 19 
+0 transport Gemaelde O27 O28 -> method0 1 4 23 
+1 pickup Gemaelde -> method3 2 3 
+4 carry Gemaelde O27 O28 -> method7 5 
+5 carry_direct Gemaelde O27 O28 -> method24 6 
+6 helper_carry_direct Pferd Gemaelde O27 O28 -> method26 7 14 16 
+7 load_top Gemaelde Pferd O27 -> method40 8 9 13 
+9 load Gemaelde Pferd O27 -> method44 10 11 12 
+14 move Pferd O27 O28 -> method27 15 
+16 unload_top Gemaelde Pferd O28 -> method43 17 18 22 
+18 unload Gemaelde Pferd O28 -> method31 19 20 21 
+23 deliver Gemaelde -> method5 24 
 <==

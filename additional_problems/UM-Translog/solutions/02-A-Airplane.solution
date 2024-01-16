@@ -1,24 +1,28 @@
 Solution for problem: { } by Ajess19 & Andla19
 ==>
 2 collect_fees Drucker 
-8 open_door Flugzeug 
-9 load_package Drucker Flugzeug FlughafenStuttgart 
-10 close_door Flugzeug 
-12 move_vehicle_no_traincar Flugzeug FlughafenStuttgart Stuttart_London_Air_Route HeathrowAirport 
-15 open_door Flugzeug 
-16 unload_package Drucker Flugzeug HeathrowAirport 
-17 close_door Flugzeug 
-19 deliver_p Drucker 
+8 attach_conveyor_ramp Flugzeug Plane_RampStuttgart FlughafenStuttgart 
+9 open_door Flugzeug 
+10 load_package Drucker Flugzeug FlughafenStuttgart 
+11 close_door Flugzeug 
+12 detach_conveyor_ramp Flugzeug Plane_RampStuttgart FlughafenStuttgart 
+14 move_vehicle_no_traincar Flugzeug FlughafenStuttgart Stuttart_London_Air_Route HeathrowAirport 
+17 attach_conveyor_ramp Flugzeug Plane_RampHeathrow HeathrowAirport 
+18 open_door Flugzeug 
+19 unload_package Drucker Flugzeug HeathrowAirport 
+20 close_door Flugzeug 
+21 detach_conveyor_ramp Flugzeug Plane_RampHeathrow HeathrowAirport 
+23 deliver_p Drucker 
 root 0 
-0 transport Drucker FlughafenStuttgart HeathrowAirport -> method0 1 3 18 
+0 transport Drucker FlughafenStuttgart HeathrowAirport -> method0 1 3 22 
 1 pickup Drucker -> method1 2 
 3 carry Drucker FlughafenStuttgart HeathrowAirport -> method7 4 
 4 carry_direct Drucker FlughafenStuttgart HeathrowAirport -> method24 5 
-5 helper_carry_direct Flugzeug Drucker FlughafenStuttgart HeathrowAirport -> method26 6 11 13 
+5 helper_carry_direct Flugzeug Drucker FlughafenStuttgart HeathrowAirport -> method26 6 13 15 
 6 load_top Drucker Flugzeug FlughafenStuttgart -> method38 7 
-7 load Drucker Flugzeug FlughafenStuttgart -> method44 8 9 10 
-11 move Flugzeug FlughafenStuttgart HeathrowAirport -> method27 12 
-13 unload_top Drucker Flugzeug HeathrowAirport -> method41 14 
-14 unload Drucker Flugzeug HeathrowAirport -> method31 15 16 17 
-18 deliver Drucker -> method4 19 
+7 load Drucker Flugzeug FlughafenStuttgart -> method50 8 9 10 11 12 
+13 move Flugzeug FlughafenStuttgart HeathrowAirport -> method27 14 
+15 unload_top Drucker Flugzeug HeathrowAirport -> method41 16 
+16 unload Drucker Flugzeug HeathrowAirport -> method37 17 18 19 20 21 
+22 deliver Drucker -> method4 23 
 <==

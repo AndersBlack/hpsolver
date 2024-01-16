@@ -11,10 +11,10 @@ Solution for problem: { } by Ajess19 & Andla19
 20 board p2 a1 c2 
 23 fly a1 c2 c3 f1 f0 
 24 debark p2 a1 c3 
-26 board p5 a1 c3 
-28 debark p5 a1 c3 
-32 refuel a1 f0 f6 
-33 fly a1 c3 c1 f6 f0 
+26 board p5 a2 c3 
+28 debark p5 a2 c3 
+32 refuel a1 f0 f0 
+33 fly a1 c3 c1 f0 f0 
 root 0 9 16 25 29 
 0 transport-person p4 c2 -> m3-ordering-0 1 4 5 8 
 1 upper-move-aircraft a1 c1 -> m4-do-ordering-0 2 
@@ -31,7 +31,7 @@ root 0 9 16 25 29
 21 upper-move-aircraft a1 c3 -> m4-do-ordering-0 22 
 22 move-aircraft a1 c2 c3 -> m5-case1-ordering-0 23 
 25 transport-person p5 c3 -> m2-ordering-0 26 27 28 
-27 upper-move-aircraft a1 c3 -> m4-abort-ordering-0 
+27 upper-move-aircraft a2 c3 -> m4-abort-ordering-0 
 29 transport-aircraft a1 c1 -> m6-ordering-0 30 
 30 upper-move-aircraft a1 c1 -> m4-do-ordering-0 31 
 31 move-aircraft a1 c3 c1 -> m5-case2-ordering-0 32 33 

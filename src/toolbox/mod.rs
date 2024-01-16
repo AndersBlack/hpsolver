@@ -5,6 +5,10 @@ use crate::datastructures::{node::*, problem::{*}, domain::{*}};
 use std::fs::{OpenOptions, File};
 use std::io::Write;
 
+pub mod passing_preconditions;
+pub mod constraints;
+pub mod precondition;
+
 /// Hashes the state and returns a boolean representing whether or not it is a duplicate state
 pub fn hash_state(current_node: &mut Node) -> bool {
 

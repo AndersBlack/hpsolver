@@ -1,11 +1,23 @@
 Solution for problem: { } by Ajess19 & Andla19
 ==>
-2 move f0 f3 
-3 board p0 f3 
-4 move f3 f0 
-5 debark p0 f0 
+2 move f0 f0 
+3 board p2 f0 
+4 move f0 f5 
+5 debark p2 f5 
+8 move f5 f2 
+9 board p1 f2 
+10 move f2 f0 
+11 debark p1 f0 
+14 move f0 f3 
+15 board p0 f3 
+16 move f3 f0 
+17 debark p0 f0 
 root 0 
 0 solve_elevator -> m1_go_ordering_0 1 6 
-1 deliver_person p0 f3 f0 -> m2_ordering_0 2 3 4 5 
-6 solve_elevator -> m1_abort_ordering_0 
+1 deliver_person p2 f0 f5 -> m2_ordering_0 2 3 4 5 
+6 solve_elevator -> m1_go_ordering_0 7 12 
+7 deliver_person p1 f2 f0 -> m2_ordering_0 8 9 10 11 
+12 solve_elevator -> m1_go_ordering_0 13 18 
+13 deliver_person p0 f3 f0 -> m2_ordering_0 14 15 16 17 
+18 solve_elevator -> m1_abort_ordering_0 
 <==

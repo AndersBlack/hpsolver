@@ -4,8 +4,8 @@ Solution for problem: { } by Ajess19 & Andla19
 4 board p1 a1 c3 
 7 fly a1 c3 c2 f1 f0 
 8 debark p1 a1 c2 
-12 refuel a1 f0 f6 
-13 fly a1 c2 c3 f6 f0 
+12 refuel a1 f0 f0 
+13 fly a1 c2 c3 f0 f0 
 14 board p3 a1 c3 
 16 debark p3 a1 c3 
 root 0 9 17 
