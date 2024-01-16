@@ -25,10 +25,8 @@ pub fn depth_first( problem: Problem, domain: &Domain, path: &PathBuf) {
 	}
 
 	let new_domain = reduce_domain(domain, &new_problem);
-	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars)>::new(), Vec::<usize>::new());
-	let new_node = make_node(new_problem.clone(), htn_subtask_queue, called, applied_funtions, HashSet::<u64>::new());
-	
-	//println!("Post trim - Actions len: {}, Method len: {}\n", new_domain.actions.len(), new_domain.methods.len());
+	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars, Vec<Precondition>)>::new(), Vec::<usize>::new());
+	let new_node = make_node(new_problem.clone(), htn_subtask_queue, called, applied_funtions, HashSet::<u64>::new(), Vec::<Precondition>::new());
 
 	node_queue.push(new_node);
 
@@ -75,10 +73,7 @@ fn run_df( node_queue: &mut Vec::<Node>, domain: &Domain, path: &PathBuf) {
 						perform_task(node_queue, domain, current_node, task, relevant_variables);
 					},
 					Some((SubtaskTypes::Method(method), relevant_variables)) => {
-						//println!("Method {:?}, RELVARS: {:?}\n", method.name, relevant_variables);
-						
-						// let mut line = String::new();
-						// let b1 = std::io::stdin().read_line(&mut line).unwrap();
+						println!("Method {:?}, Relvars: {:?} \n", method.name, relevant_variables);
 
 						perform_method(node_queue, domain, current_node, method, relevant_variables);
 					},
@@ -94,6 +89,7 @@ fn run_df( node_queue: &mut Vec::<Node>, domain: &Domain, path: &PathBuf) {
 
 						if toolbox::check_goal_condition( &current_node.problem.state, &current_node.problem.goal ) {
 							finished = true;
+							//println!("State: {:?}", current_node.problem.state);
 							//println!("Finished problem");
 							toolbox::print_result(current_node, path);
 						}
@@ -208,9 +204,6 @@ fn check_precondition( precondition: &Precondition, param_list: &RelVars, state:
 			let mut precondition_value_list = Vec::<(String, Vec<String>)>::new();
 			let mut param_counter = 0;
 
-			//println!("precon: {:?}", precondition);
-			//println!("params: {:?}", param_list);
-		
 			//Find needed values
 			for value in &precondition.2 {
 				for param in param_list {
@@ -232,6 +225,7 @@ fn check_precondition( precondition: &Precondition, param_list: &RelVars, state:
 				let mut found_counter = 0;
 		
 				if value.0 == precondition.1 {
+					//println!("Equal {} and {}", value.0, precondition.1);
 					// For every variable in state parameter
 		
 					for n in 0..value.1.len() {
@@ -241,18 +235,20 @@ fn check_precondition( precondition: &Precondition, param_list: &RelVars, state:
 							} 
 						}
 					}
-				}
-		
-				if found_counter == value.1.len() && precondition.0 == 0 {
-					found_one = true;
-					break;
+
+					if found_counter == value.1.len() {
+						//println!("Found {:?}", value);
+						found_one = true;
+						break;
+					}
 				}
 			}
 		
 			if (found_one == false && precondition.0 == 0) || (found_one == true && precondition.0 == 1) {
+				//println!("Failed precon: {:?}", precondition);
 				return false;
 			}
-
+			//println!("Succeded precon: {:?}", precondition);
 			return true
 		},
 		2 | 3 => { 
@@ -276,9 +272,7 @@ fn check_precondition( precondition: &Precondition, param_list: &RelVars, state:
 		4 => { 
 
 			let forall = precondition.3.clone().unwrap();
-
 			let mut overall_bool = true;
-
 			let mut forall_param = (forall.0.0, Vec::<String>::new());
 
 			// Get all for all objects
@@ -301,12 +295,9 @@ fn check_precondition( precondition: &Precondition, param_list: &RelVars, state:
 
 						for val in &precondition_inner.2 {
 
-							//println!("VAL: {}", val);
-
 							if val == &forall_param.0 {
 
 								// Found forall arguement in precondition inner
-								//println!("Checking {} against {} forall param", value, state_var.1[var_index]);
 								if value == state_var.1[var_index] {
 									// Value var equal to found state var value
 									found_vars = found_vars + 1;
@@ -316,40 +307,27 @@ fn check_precondition( precondition: &Precondition, param_list: &RelVars, state:
 
 								// val is a general parameter
 								for general_param in param_list {
-
 									if &general_param.0 == val {
-										//println!("Checking {:?} against {} general param", general_param.2, state_var.1[var_index]);
 										if general_param.2.contains(&state_var.1[var_index]) {
 											// Value var equal to found state var value
 											found_vars = found_vars + 1;
 										}
 									}
 								}
-
 							}
 
 							var_index = var_index + 1;
-
 						}
 
 						if found_vars == state_var.1.len() {
-							//println!("Found one! \n");
 							if !precondition_inner.0 {
 								overall_bool = false;
 								break 'outer;
 							}
-
 						}
 					}
 				}
 			}
-
-			if overall_bool {
-				//println!("A precondition: {:?}, params: {:?} \n", precondition, param_list);
-			}
-
-			//let mut answer = String::new();
-			//io::stdin().read_line(&mut answer).ok();
 
 			return overall_bool
 		},
@@ -359,11 +337,20 @@ fn check_precondition( precondition: &Precondition, param_list: &RelVars, state:
 }
 
 /// Generates a list of lists of indexes representing a valid permutations of the available variables values
-fn permutation_tool( value_list: RelVars , precondition_list: Vec<Precondition>, state: &Vec<(String, Vec<String>)>, problem: &Problem) ->   Vec::<Vec::<usize>> {
+fn permutation_tool( value_list: RelVars , precondition_list: Vec<Precondition>, state: &Vec<(String, Vec<String>)>, problem: &Problem) -> (Vec<Vec<usize>>, bool) {
 
 	let mut size_ref_list = Vec::<usize>::new();
 	let mut permutation_holder = Vec::<usize>::new();
 	let mut permutation_list_list = Vec::<Vec::<usize>>::new();
+
+	// If there are no relevant variables, we still need to check precondition
+	if value_list.len() == 0 {
+		if precon_cleared(&permutation_holder, &value_list, &precondition_list, state, problem) {
+			return (permutation_list_list, true)
+		} else {
+			return (permutation_list_list, false)
+		}
+	}
 
 	for var_info in &value_list {
 		size_ref_list.push(var_info.2.len());
@@ -374,31 +361,33 @@ fn permutation_tool( value_list: RelVars , precondition_list: Vec<Precondition>,
 
 	if precondition_list.len() == 0 {
 		permutation_list_list.push(permutation_holder.clone());
-		return permutation_list_list;
+		return (permutation_list_list, true);
 	}
 
 	while n < size_ref_list.len() {
-
 		n = 0;
 		
 		// Check precondition
 		if precon_cleared(&permutation_holder, &value_list, &precondition_list, state, problem) {
+			//println!("WHILE PRECON");
 			permutation_list_list.push(permutation_holder.clone());		
 		} 
 
 		if permutation_holder[n] != (size_ref_list[n] - 1) {
+			//println!("WHILE PERMHOLDER NOT SIZE REF");
 			permutation_holder[n] = permutation_holder[n] + 1;
 		} else {
 
 			let mut found_expansion = false;
 
 			while !found_expansion && n < size_ref_list.len() {
-
+				//println!("INNER WHILE");
 				permutation_holder[n] = 0;
 
 				n = n + 1;
 
 				if n < size_ref_list.len() && permutation_holder[n] != (size_ref_list[n] - 1) {
+					//println!("FOUND EXPANSION");
 					permutation_holder[n] = permutation_holder[n] + 1;
 					found_expansion = true;
 				}
@@ -406,7 +395,7 @@ fn permutation_tool( value_list: RelVars , precondition_list: Vec<Precondition>,
 		}
 	}
 
-	permutation_list_list
+	(permutation_list_list, true)
 
 }
 
@@ -416,8 +405,6 @@ fn precon_cleared( permutation: &Vec::<usize>, value_list: &RelVars, preconditio
 	let mut clear = true;
 	let mut new_value_list = RelVars::new();
 	let mut perm_index = 0;
-
-	//println!("{:?} - {:?}", permutation, value_list);
 
 	// Push the relevant values from each relevant variables based on the given permutation to new_value_list
 	for val in value_list {
@@ -447,7 +434,7 @@ fn apply_effect( effect: &(bool,String,Vec<String>), problem: &mut Problem, para
 		if optional_index.is_some() {
 			problem.state.remove(optional_index.unwrap());
 		}
-	
+		
 	} else {
 
 		let effect_values = generate_effect_param_list(effect, &param_list); 
@@ -459,7 +446,7 @@ fn apply_effect( effect: &(bool,String,Vec<String>), problem: &mut Problem, para
 
 } 
 
-/// Make a list for every parameter relevant to the effect
+/// Makes a list for every parameter relevant to the effect
 fn generate_effect_param_list( effect: &(bool,String,Vec<String>), param_list: &RelVars) -> Vec<String> {
 
 	let mut effect_values = Vec::<String>::new();
@@ -476,14 +463,15 @@ fn generate_effect_param_list( effect: &(bool,String,Vec<String>), param_list: &
 }
 
 /// Generates a Node with the given arguments
-fn make_node( new_problem: Problem, sq: Vec::<(SubtaskTypes, RelVars)>, called: (Vec<bool>, Vec<(Method, RelVars)>, Vec<usize>), afl:((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>) , hs: HashSet<u64>) -> Node {
+fn make_node( new_problem: Problem, sq: Vec::<(SubtaskTypes, RelVars)>, called: (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>), afl:((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>) , hs: HashSet<u64>, passing_precondition: Vec<Precondition>) -> Node {
 
 		let new_node = Node {
 			problem: new_problem,
 			subtask_queue: sq,
 			called: called,
 			applied_functions: afl,
-			hash_table: hs
+			hash_table: hs,
+			passing_preconditions: passing_precondition
 		};
 
 		new_node
@@ -519,7 +507,7 @@ fn perform_htn_task( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_
 			//Applied function addition
 			method.id = applied_functions_clone.1.len();
 			applied_functions_clone.0.1.push(method.id);
-			applied_functions_clone.1.push((SubtaskTypes::Method(method.clone()), method.id, Vec::<usize>::new(), RelVars::new()));
+			applied_functions_clone.1.push((SubtaskTypes::Method(method.clone()), method.id, Vec::<usize>::new(), relevant_variables.clone()));
 
 			// Update relevant variables
 			subtask_queue_clone.push((SubtaskTypes::Method(method.clone()),updated_relevant_variables));
@@ -527,7 +515,7 @@ fn perform_htn_task( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_
 			current_node.called.0.push(false);
 			current_node.called.2.push(0);
 			
-			let new_node = make_node(current_node.problem.clone(), subtask_queue_clone, (current_node.called.0.clone(), current_node.called.1.clone(), current_node.called.2.clone()), applied_functions_clone, current_node.hash_table.clone());
+			let new_node = make_node(current_node.problem.clone(), subtask_queue_clone, (current_node.called.0.clone(), current_node.called.1.clone(), current_node.called.2.clone()), applied_functions_clone, current_node.hash_table.clone(), current_node.passing_preconditions.clone());
 
 			node_queue.push(new_node);
 		}
@@ -559,7 +547,7 @@ fn perform_htn_task( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_
 				//Applied function addition
 				current_node.applied_functions.0.1.push(current_node.applied_functions.1.len().try_into().unwrap());
 				
-				let new_node = make_node(current_node.problem.clone(), subtask_queue_clone, (current_node.called.0.clone(), current_node.called.1.clone(), current_node.called.2.clone()), current_node.applied_functions.clone(), current_node.hash_table.clone());
+				let new_node = make_node(current_node.problem.clone(), subtask_queue_clone, (current_node.called.0.clone(), current_node.called.1.clone(), current_node.called.2.clone()), current_node.applied_functions.clone(), current_node.hash_table.clone(), current_node.passing_preconditions.clone());
 	
 				node_queue.push(new_node);
 			}
@@ -601,13 +589,15 @@ fn perform_task( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: No
 
 		if !empty_rel_var {
 
+			let new_passing_precon = update_passing_precondition(&current_node, &task.parameters);
+
 			//println!("Updated stq with method: {}, Relvars: {:?}\n", method.name, new_rel_vars);
 			new_subtask_queue.push((SubtaskTypes::Method(method.clone()), new_rel_vars));
 
 			let mut new_called = current_node.called.clone();
 			new_called.2.push(0);
 
-			let new_node = make_node(current_node.problem.clone(), new_subtask_queue, new_called, cnaf.clone(), current_node.hash_table.clone());
+			let new_node = make_node(current_node.problem.clone(), new_subtask_queue, new_called, cnaf.clone(), current_node.hash_table.clone(), new_passing_precon);
 
 			//println!("Pushing node");
 			node_queue.push(new_node)
@@ -627,10 +617,15 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 		// Check preconditions
 		match &method.precondition {
 			Some(precondition) => {
+				let (mut permutation_list, cleared_preconditions) = permutation_tool(relevant_variables.clone(), precondition.clone(), &current_node.problem.state, &current_node.problem);
 
-				let mut permutation_list = permutation_tool(relevant_variables.clone(), precondition.clone(), &current_node.problem.state, &current_node.problem);
+				// Didnt clear preconditions
+				if !cleared_preconditions {
+					//println!("Didnt clear precon");
+					return
+				}
 
-				// There was no parameters edge-case
+				// There was no parameters edge-case	
 				if method.parameters.len() == 0{
 					permutation_list.push(Vec::<usize>::new());
 				}
@@ -640,74 +635,74 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 					return
 				}
 
-				// Commented out for testing branching on method permutations
-				// let perm_map = construct_perm_map(permutation_list);
-				// let mut new_relevant_variables = Vec::<(String, String, Vec<String>)>::new();
-				// let mut map_index = 0;
+				// Merge values from every precondition back into the same relevant variables
+				let perm_map = construct_perm_map(permutation_list);
+				let mut new_relevant_variables = Vec::<(String, String, Vec<String>)>::new();
+				let mut map_index = 0;
 
-				// for variable in &relevant_variables {
-				// 	let mut new_variable = (variable.0.clone(), variable.1.clone(), Vec::<String>::new());
-				// 	for index in &perm_map[map_index]{
-				// 		new_variable.2.push(variable.2[*index].clone()); 
-				// 	}
-				// 	map_index = map_index + 1;
-				// 	new_relevant_variables.push(new_variable); 
-				// }
-
-				// relevant_variables = new_relevant_variables;
-				
-				// ------------- NODE FOR EVERY PERMUTATION --------------------
-				
-				let mut first = true;
-				let mut continuing_relvar = Vec::<(String, String, Vec<String>)>::new();
-
-				for permutation in permutation_list {
-
-					if first {
-						first = false;
-
-						// Make relvars this permutation
-						let mut index_counter = 0;
-						for value_index in permutation {
-							let mut new_variable = (relevant_variables[index_counter].0.clone(), relevant_variables[index_counter].1.clone(), Vec::<String>::new());
-
-							new_variable.2.push(relevant_variables[index_counter].2[value_index].clone());
-							continuing_relvar.push(new_variable);
-							index_counter = index_counter + 1;
-						}
-
-					} else {
-						// Make new node for permutation
-						let mut new_relevant_variables = Vec::<(String, String, Vec<String>)>::new();
-
-						let mut index_counter = 0;
-						for value_index in permutation {
-							let mut new_variable = (relevant_variables[index_counter].0.clone(), relevant_variables[index_counter].1.clone(), Vec::<String>::new());
-
-							new_variable.2.push(relevant_variables[index_counter].2[value_index].clone());
-							new_relevant_variables.push(new_variable);
-							index_counter = index_counter + 1;
-						}
-
-						//Make node
-						let mut new_sq = current_node.subtask_queue.clone();
-						new_sq.push((SubtaskTypes::Method(method.clone()), new_relevant_variables));
-
-						let mut new_called = current_node.called.clone();
-						new_called.2.push(current_subtask_index);
-
-						let new_node = make_node(current_node.problem.clone(), new_sq, new_called, current_node.applied_functions.clone(), current_node.hash_table.clone());
-
-						//println!("Pushing node");
-						node_queue.push(new_node)
+				for variable in &relevant_variables {
+					let mut new_variable = (variable.0.clone(), variable.1.clone(), Vec::<String>::new());
+					for index in &perm_map[map_index]{
+						new_variable.2.push(variable.2[*index].clone()); 
 					}
-
-
+					map_index = map_index + 1;
+					new_relevant_variables.push(new_variable); 
 				}
 
-				relevant_variables = continuing_relvar;
+				relevant_variables = new_relevant_variables;
 				
-				// ------------- NODE FOR EVERY PERMUTATION END -----------
+				/* ------------- NODE FOR EVERY PERMUTATION --------------------
+				
+				// let mut first = true;
+				// let mut continuing_relvar = Vec::<(String, String, Vec<String>)>::new();
+
+				// for permutation in permutation_list {
+				// 	if first {
+				// 		first = false;
+
+				// 		// Make relvars this permutation
+				// 		let mut index_counter = 0;
+				// 		for value_index in permutation {
+				// 			let mut new_variable = (relevant_variables[index_counter].0.clone(), relevant_variables[index_counter].1.clone(), Vec::<String>::new());
+
+				// 			new_variable.2.push(relevant_variables[index_counter].2[value_index].clone());
+				// 			continuing_relvar.push(new_variable);
+				// 			index_counter = index_counter + 1;
+				// 		}
+
+				// 	} else {
+				// 		// Make new node for permutation
+				// 		let mut new_relevant_variables = Vec::<(String, String, Vec<String>)>::new();
+
+				// 		let mut index_counter = 0;
+				// 		for value_index in permutation {
+				// 			let mut new_variable = (relevant_variables[index_counter].0.clone(), relevant_variables[index_counter].1.clone(), Vec::<String>::new());
+
+				// 			new_variable.2.push(relevant_variables[index_counter].2[value_index].clone());
+				// 			new_relevant_variables.push(new_variable);
+				// 			index_counter = index_counter + 1;
+				// 		}
+
+				// 		//Make node
+				// 		let mut new_sq = current_node.subtask_queue.clone();
+				// 		new_sq.push((SubtaskTypes::Method(method.clone()), new_relevant_variables));
+
+				// 		let mut new_called = current_node.called.clone();
+				// 		new_called.2.push(current_subtask_index);
+
+				// 		let new_node = make_node(current_node.problem.clone(), new_sq, new_called, current_node.applied_functions.clone(), current_node.hash_table.clone());
+
+				// 		//println!("Pushing node");
+				// 		node_queue.push(new_node)
+				// 	}
+
+
+				// }
+
+				// relevant_variables = continuing_relvar;
+				
+				------------- NODE FOR EVERY PERMUTATION END -----------
+				*/
 
 			},
 			None => {}
@@ -716,6 +711,11 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 		// Check constraints
 		if method.constraints.is_some() {
 			let mut relevant_variables_list = check_constraints( &relevant_variables, &method.constraints.clone().unwrap() );
+
+			//Return if no relevant_variables was returned from check_constraints
+			if relevant_variables_list.is_empty() {
+				return
+			}
 
 			relevant_variables = relevant_variables_list.pop().unwrap();
 
@@ -735,18 +735,19 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 				let mut new_sq = current_node.subtask_queue.clone();
 				new_sq.push((SubtaskTypes::Method(new_method), relevant_variable.clone()));
 				
-				let mut new_called = current_node.called.clone();
+				let mut new_called: (Vec<bool>, Vec<(Method, Vec<(String, String, Vec<String>)>, Vec<Precondition>)>, Vec<usize>) = current_node.called.clone();
 				new_called.2.push(0);
 
-				let new_node = make_node(current_node.problem.clone(), new_sq, new_called, current_node.applied_functions.clone(), current_node.hash_table.clone());
+				let new_node = make_node(current_node.problem.clone(), new_sq, new_called, current_node.applied_functions.clone(), current_node.hash_table.clone(), current_node.passing_preconditions.clone());
 
 				node_queue.push(new_node);
 			}
 		}
-
 	}
-	
+
 	if method.subtasks.len() > 0 {
+
+		//println!("Passing precons: {:?}", new_passing_preconditions);
 
 		// We have finished with this methods subtask 
 		if current_subtask_index == method.subtasks.len() {
@@ -765,18 +766,22 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 
 			// CHECK THAT EVERY VARIABLE HAS BEEN REDUCED TO ONE!
 			let subtask_list = current_node.applied_functions.1[method.id].2.clone();
+
+			// let mut line = String::new();
+			// let b1 = std::io::stdin().read_line(&mut line).unwrap();
+
 			for subtask in subtask_list {
 				//For every subtask 
 				let applied_method = &mut current_node.applied_functions.1[subtask];
 				let mut param_counter = 0;
 				let mut new_values = Vec::<String>::new();
 				let mut found_one = false;
-				
+
 				for parameters in &applied_method.3.clone() {
 					if parameters.2.len() > 1 {
-						//println!("\n BIGGER THAN ONE! \n");
-						//println!("OVERTASK PARAM: {:?}\n OVERMETHOD: {:?}\n", relevant_variables, method);
-						//println!("SUBTASK PARAM: {:?}\n SUBMETHOD: {:?}", parameters, applied_method);
+						// println!("\n BIGGER THAN ONE! \n");
+						// println!("OVERTASK PARAM: {:?}\n OVERMETHOD: {:?}\n", relevant_variables, method);
+						// println!("SUBTASK PARAM: {:?}\n SUBMETHOD: {:?}", parameters, applied_method);
 
 						//Parameter name
 						let sub_task_param_name = &parameters.0;
@@ -785,14 +790,17 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 
 						// Get the called index for parameter
 						match &applied_method.0 {
-							SubtaskTypes::Method(method) => {
-								sub_task_task_name = method.task.0.clone();
+							SubtaskTypes::Method(subtask_method) => {
+								sub_task_task_name = subtask_method.task.0.clone();
 								let mut index_counter = 0;
-								for task_var in &method.task.1 {
+								//println!("METHOD TASK: {:?}", subtask_method.task);
+								for task_var in &subtask_method.task.1 {
 									
 									if task_var == sub_task_param_name {
+										//println!("match");
 										called_index = index_counter;
 									}
+
 									index_counter = index_counter + 1;
 								}
 
@@ -806,15 +814,14 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 						// Get name from overmethod
 						for over_method_task in &method.subtasks {
 							if over_method_task.0 == sub_task_task_name {
-								let over_method_arg_name = over_method_task.2[called_index].clone();
-
+								let over_method_arg_name = over_method_task.2[param_counter].clone();
+								//println!("\n RELVARS: {:?} OVERMETH: {:?}, CALLED_INDEX: {:?}\n", relevant_variables, over_method_task, called_index);
 								for rel_var in &relevant_variables {
 									if rel_var.0 == over_method_arg_name {
 										new_values = rel_var.2.clone();
 										found_one = true;
 									}
 								}
-
 							}
 						}
 					}
@@ -829,7 +836,6 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 			}
 
 			//panic!("testing");
-			//println!("yikes scoop, {:?}", current_node.applied_functions.1[method.id]);
 			// Is this not the first method?
 			if current_node.called.0.pop().unwrap() {
 
@@ -841,7 +847,7 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 			}
 
 		} else {
-
+			let new_passing_preconditions = decide_passing_preconditions(&relevant_variables, &mut current_node.passing_preconditions, &method, current_subtask_index);
 			let mut new_subtask_queue = current_node.subtask_queue.clone();
 			let mut found_task = false;
 
@@ -878,6 +884,7 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 				}
 			}
 
+			// Look for the subtask among actions in the domain
 			if !found_task {
 				// Look for the subtask among actions in the domain
 				for action in domain.actions.iter().clone() {
@@ -902,8 +909,6 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 										updated_variables.push((action.parameters[n].name.clone(), obj.1.clone(), vec![obj.0.clone()]));
 									}
 								}
-								
-
 							}
 						}
 
@@ -918,13 +923,15 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 				}
 			}
 
+			//println!("Passing precon: {:?}\n Subtask: {:?}", new_passing_preconditions, new_subtask_queue.last().unwrap());
+
 			let mut new_called = current_node.called.clone();
 
 			new_called.0.push(true);
-			new_called.1.push((method.clone(), relevant_variables));
+			new_called.1.push((method.clone(), relevant_variables, current_node.passing_preconditions.clone()));
 			new_called.2.push(current_subtask_index + 1);
 
-			let new_node = make_node(current_node.problem.clone(), new_subtask_queue.clone(), new_called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone());
+			let new_node = make_node(current_node.problem.clone(), new_subtask_queue.clone(), new_called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone(), new_passing_preconditions.clone());
 
 			node_queue.push(new_node);
 		}
@@ -934,6 +941,7 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 		if !current_node.called.0.pop().unwrap() {
 			node_queue.push(current_node.clone());
 		} else {				
+
 			let new_node = update_vars_for_called_method(current_node, &method, &relevant_variables);
 			node_queue.push(new_node);
 		}
@@ -945,15 +953,24 @@ fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_no
 /// Perform an action
 fn perform_action( node_queue: &mut Vec::<Node>, mut current_node: Node, action: Action, relevant_variables: RelVars) {
 
-	let mut permutation_list = permutation_tool(relevant_variables.clone(), action.precondition.clone().unwrap(), &current_node.problem.state, &current_node.problem);
+	//println!("Action passing precon {:?} ACTION: {:?}", current_node.passing_preconditions, action.name);
 
-	if action.parameters.len() == 0 {
+	// Update passing preconditions
+	let new_passing_precon = update_passing_precondition(&current_node, &action.parameters);
+
+	// Add passing preconditions to actions own precondition list
+	let mut precondition_list = action.precondition.clone().unwrap();
+	precondition_list = [precondition_list, new_passing_precon].concat();
+
+	let (mut permutation_list, cleared_precon) = permutation_tool(relevant_variables.clone(), precondition_list, &current_node.problem.state, &current_node.problem);
+
+	if action.parameters.len() == 0 && cleared_precon {
 		permutation_list.push(Vec::<usize>::new());
 	}
 
 	if current_node.called.1.len() != 0 {
 
-		let (calling_method, calling_relevant_vars) = current_node.called.1.pop().unwrap();
+		let (calling_method, calling_relevant_vars, called_passing_precon) = current_node.called.1.pop().unwrap();
 		current_node.called.0.pop();
 
 		for permutation in permutation_list {
@@ -994,7 +1011,7 @@ fn perform_action( node_queue: &mut Vec::<Node>, mut current_node: Node, action:
 		
 			new_current_node.subtask_queue.push((SubtaskTypes::Method(calling_meth.clone()), new_new_relevant_variables.clone()));
 
-			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_functions.clone(), current_node.hash_table.clone());
+			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_functions.clone(), current_node.hash_table.clone(), called_passing_precon.clone());
 
 			node_queue.push(new_node);
 		}
@@ -1008,15 +1025,128 @@ fn perform_action( node_queue: &mut Vec::<Node>, mut current_node: Node, action:
 
 			let new_current_node = clone_node_and_apply_effects(&current_node, &relevant_variables, &permutation, &action, &mut new_relevant_variables);
 
-			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_functions.clone(), current_node.hash_table.clone());
+			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_functions.clone(), current_node.hash_table.clone(), Vec::<Precondition>::new());
 
 			node_queue.push(new_node);
 		}
+	}
+}
 
+/// Update passing preconditions
+fn update_passing_precondition(current_node: &Node, parameters: &Vec<Argument>) -> Vec<Precondition> {
+	let mut new_passing_precon = Vec::<Precondition>::new();
+
+	if !current_node.passing_preconditions.is_empty() {
+		let caller_method = &current_node.called.1.last().unwrap().0;
+
+		//println!("caller_method: {:?}", caller_method);
+
+		let subtask = &caller_method.subtasks[current_node.called.2.last().unwrap().clone() - 1];
+		
+		for precon in &current_node.passing_preconditions.clone() {
+			let mut new_precon = (precon.0, precon.1.clone(), Vec::<String>::new(), precon.3.clone());
+			
+			//println!("Uhm {:?} uhm {:?}", precon, subtask.2);
+
+			for precon_parameter in &precon.2 {
+				let mut j = 0;
+				for subtask_parameter in &subtask.2 {
+					if subtask_parameter == precon_parameter {
+						
+						new_precon.2.push(parameters[j].name.clone());
+					}
+					j += 1;
+
+				}
+			}
+
+			new_passing_precon.push(new_precon);
+		}	
+	}
+
+	new_passing_precon
+}
+
+/// Go through all preconditions and checks whether they should be passed to the next method/action
+fn decide_passing_preconditions( relevant_variables: &RelVars, passing_preconditions: &mut Vec<Precondition>, method: &Method, index: usize) -> Vec<Precondition> {
+
+	let mut new_passing_preconditions = Vec::<Precondition>::new();
+
+	//println!("Old passing precon: {:?}", passing_preconditions);
+
+	// Add relevant preconditions for the coming subtask
+	if method.precondition.is_some() {
+		let precons = method.precondition.clone().unwrap();
+		for precon in precons {
+			if precon.0 < 2 {
+				if precondition_should_be_passed(&precon, method.subtasks[index].clone(), relevant_variables) {
+					new_passing_preconditions.push(precon);
+				}
+			}
+		}
 	}
 
 
+	// Which passing preconditions should continue?
+	for passing_precon in passing_preconditions {
+		if precondition_should_be_passed(&passing_precon, method.subtasks[index].clone(), relevant_variables) {
+			new_passing_preconditions.push(passing_precon.clone());
+		}
+	}
+
+	//println!("New passing precon: {:?}", new_passing_preconditions);
+	new_passing_preconditions
 }
+
+// Check if a precon should be forwarded to a given subtask based on relevant variables
+fn precondition_should_be_passed(precondition: &Precondition, subtask: (String, String, Vec<String>, bool), relevant_variables: &RelVars) -> bool {
+
+	let mut precondition_passed = false;
+
+	if precondition.2.len() == 1 {
+		return false;
+	}
+
+	// Is precondition relevant for this subtask?
+	let mut param_count = 0;
+	for precon_param in &precondition.2 {
+		for subtask_param in &subtask.2 {
+			if precon_param == subtask_param { 
+				param_count = param_count + 1;
+			}
+		}
+	}
+
+	if param_count == precondition.2.len() {
+		//println!("precon was relevant! {precondition:?}");
+		precondition_passed = true; 
+	}
+
+
+	// Is relevant variables in a state so that it makes sense to pass precondition?
+	// if precondition_passed == true {
+
+	// 	let mut found_not_one_value = 0;
+
+	// 	for precon_param in &precondition.2 {
+	// 		for relvar in relevant_variables {
+	// 			println!("precon_param {}, relvar.0 {:?}", precon_param, relvar.0);
+	// 			if precon_param == &relvar.0 {
+
+	// 				if relvar.2.len() == 1 {
+	// 					found_not_one_value = found_not_one_value + 1;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+
+	// 	if found_not_one_value == precondition.2.len() {
+	// 		precondition_passed = false;
+	// 	}
+	// }
+
+	precondition_passed
+} 
 
 // Generates a new node with the effects applied based on the provided permutation
 fn clone_node_and_apply_effects( current_node: &Node, relevant_variables: &RelVars, permutation: &Vec::<usize>, action: &Action, new_relevant_variables: &mut RelVars) -> Node {
@@ -1041,7 +1171,6 @@ fn clone_node_and_apply_effects( current_node: &Node, relevant_variables: &RelVa
 } 
 
 /// Based on the permutation list, make a new list representing the still valid values for every relevant variable
-/* 
 fn construct_perm_map( permutation_list: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
 
 	let mut perm_map = Vec::<Vec<usize>>::new();
@@ -1064,7 +1193,6 @@ fn construct_perm_map( permutation_list: Vec<Vec<usize>>) -> Vec<Vec<usize>> {
 
 	perm_map
 }
-*/
 
 /// Returns a list of relevant variables that fulfills the constraints
 fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool, String, String)>) -> Vec<RelVars> {
@@ -1084,6 +1212,7 @@ fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool, Str
 				relevant_variables_list = constraint_equal(current_rel_vars, &constraint);
 			} else {
 				relevant_variables_list = constraint_unequal(current_rel_vars, &constraint);
+				//println!("CONS UE RELVARS: {:?}", relevant_variables_list);
 			}
 			
 			for rel in &relevant_variables_list{
@@ -1143,6 +1272,8 @@ fn constraint_equal( current_rel_vars: RelVars, constraint: &(bool, String, Stri
 fn constraint_unequal( mut current_rel_vars: RelVars, constraint: &(bool, String, String)) -> Vec<RelVars> {
 	// De må ikke være ens
 
+	//println!("CURRENT RELVARS: {:?}", current_rel_vars);
+
 	let mut relevant_variables_list = Vec::<RelVars>::new();
 
 	let mut index_first = 0;
@@ -1161,7 +1292,11 @@ fn constraint_unequal( mut current_rel_vars: RelVars, constraint: &(bool, String
 
 	// Check is values can even be removed
 	if current_rel_vars[index_first].2.len() == 1 && current_rel_vars[index_second].2.len() == 1 {
-		relevant_variables_list.push(current_rel_vars);
+
+		if current_rel_vars[index_second].2[0] != current_rel_vars[index_first].2[0] {
+			relevant_variables_list.push(current_rel_vars);
+		}
+		
 		return  relevant_variables_list;
 	}
 
@@ -1271,7 +1406,7 @@ fn update_objects( mut problem: Problem, domain: &Domain ) -> Problem {
 /// Updates relevant variables for the method that called the current task in order to trim the caller methods variables
 fn update_vars_for_called_method( mut current_node: Node, method: &Method, relevant_variables: &RelVars) -> Node {
 
-	let (calling_method, calling_relevant_vars) = current_node.called.1.pop().unwrap();
+	let (calling_method, calling_relevant_vars, called_passing_precon) = current_node.called.1.pop().unwrap();
 
 	let calling_method_subtask = calling_method.subtasks.clone()[current_node.called.2.last().unwrap() - 1].clone();
 
@@ -1312,13 +1447,13 @@ fn update_vars_for_called_method( mut current_node: Node, method: &Method, relev
 	subts[current_node.called.2.last().unwrap() - 1].3 = true;
 	calling_meth.subtasks = subts;
 
-	//println!("NEW RELVARS: {:?}", new_new_relevant_variables);
+	//println!("APPLIED: {:?}", current_node.applied_functions);
 
 	// Push to subtask_q
 	let mut new_sq = current_node.subtask_queue.clone();
 	new_sq.push((SubtaskTypes::Method(calling_meth.clone()), new_new_relevant_variables.clone()));
 
-	let new_node = make_node(current_node.problem.clone(), new_sq, current_node.called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone());
+	let new_node = make_node(current_node.problem.clone(), new_sq, current_node.called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone(), called_passing_precon);
 
 	new_node
 }

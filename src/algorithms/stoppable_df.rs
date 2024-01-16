@@ -54,8 +54,8 @@ pub fn stoppable_depth_first(problem: Problem, domain: &Domain, stopped: &Instan
 	}
 
 	let new_domain = algorithms::reduce_domain(domain, &new_problem);
-	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars)>::new(), Vec::<usize>::new());
-	let new_node = algorithms::make_node(new_problem.clone(), htn_subtask_queue, called, applied_funtions, HashSet::<u64>::new());
+	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars, Vec<Precondition>)>::new(), Vec::<usize>::new());
+	let new_node = algorithms::make_node(new_problem.clone(), htn_subtask_queue, called, applied_funtions, HashSet::<u64>::new(), Vec::<Precondition>::new());
 	
 	node_queue.push(new_node);
 

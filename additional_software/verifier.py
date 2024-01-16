@@ -33,3 +33,5 @@ for folder in listdir(base_path):
 
         if output.stdout.__contains__("Plan verification result: \x1b[1;32mtrue"):
           print("Verified plan ", problem_path)
+        else:
+          print("Invalid plan ", problem_path)
