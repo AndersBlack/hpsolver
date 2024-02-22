@@ -57,7 +57,8 @@ fn main() {
               (result, now.elapsed().as_millis())
             });
 
-            while now.elapsed().as_secs() < 10 {
+            //while now.elapsed().as_secs() < 10
+            loop {
               
               thread::sleep(Duration::from_millis(50));
 

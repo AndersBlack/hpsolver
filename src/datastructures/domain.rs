@@ -1,8 +1,10 @@
-#[derive(Debug, Clone, Hash)]
+use std::collections::HashMap;
+
+#[derive(Debug, Clone)]
 pub struct Domain {
     pub name: String,
     pub tasks: Vec<Task>,
-    pub methods: Vec<Method>,
+    pub methods: HashMap<String, Vec<Method>>,
     pub actions: Vec<Action>,
     pub types: Vec<(String, String)>,
     pub constants: Option<Vec<(String, String)>>,
@@ -70,10 +72,10 @@ impl std::fmt::Display for Domain {
             println!("| Task: {:?}, Parameters: {:?}", t.name, t.parameters);
         }
 
-        write!(f, "\nMethods:\n")?;
-        for m in &self.methods {
-            println!("| {}\n", m)
-        }
+        // write!(f, "\nMethods:\n")?;
+        // for m in &self.methods {
+        //     println!("| {}\n", m)
+        // }
 
         write!(f, "Actions:\n")?;
         for a in &self.actions {

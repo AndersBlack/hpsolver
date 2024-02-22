@@ -1,6 +1,5 @@
-use crate::datastructures::{node::*, problem::{*}, domain::{*}};
+use crate::datastructures::{node::*, domain::{*}};
 
-type RelVars = Vec<(String, String, Vec<String>)>;
 type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
 
 /// Update passing preconditions
@@ -10,14 +9,10 @@ pub fn update_passing_precondition(current_node: &Node, parameters: &Vec<Argumen
 	if !current_node.passing_preconditions.is_empty() {
 		let caller_method = &current_node.called.1.last().unwrap().0;
 
-		//println!("caller_method: {:?}", caller_method);
-
 		let subtask = &caller_method.subtasks[current_node.called.2.last().unwrap().clone() - 1];
 		
 		for precon in &current_node.passing_preconditions.clone() {
 			let mut new_precon = (precon.0, precon.1.clone(), Vec::<String>::new(), precon.3.clone());
-			
-			//println!("Uhm {:?} uhm {:?}", precon, subtask.2);
 
 			for precon_parameter in &precon.2 {
 				let mut j = 0;
@@ -26,8 +21,8 @@ pub fn update_passing_precondition(current_node: &Node, parameters: &Vec<Argumen
 						
 						new_precon.2.push(parameters[j].name.clone());
 					}
-					j += 1;
 
+					j += 1;
 				}
 			}
 
@@ -39,7 +34,7 @@ pub fn update_passing_precondition(current_node: &Node, parameters: &Vec<Argumen
 }
 
 /// Go through all preconditions and checks whether they should be passed to the next method/action
-pub fn decide_passing_preconditions( relevant_variables: &RelVars, passing_preconditions: &mut Vec<Precondition>, method: &Method, index: usize) -> Vec<Precondition> {
+pub fn decide_passing_preconditions( passing_preconditions: &mut Vec<Precondition>, method: &Method, index: usize) -> Vec<Precondition> {
 
 	let mut new_passing_preconditions = Vec::<Precondition>::new();
 
@@ -50,17 +45,16 @@ pub fn decide_passing_preconditions( relevant_variables: &RelVars, passing_preco
 		let precons = method.precondition.clone().unwrap();
 		for precon in precons {
 			if precon.0 < 2 {
-				if precondition_should_be_passed(&precon, method.subtasks[index].clone(), relevant_variables) {
+				if precondition_should_be_passed(&precon, &method.subtasks[index]) {
 					new_passing_preconditions.push(precon);
 				}
 			}
 		}
 	}
 
-
 	// Which passing preconditions should continue?
 	for passing_precon in passing_preconditions {
-		if precondition_should_be_passed(&passing_precon, method.subtasks[index].clone(), relevant_variables) {
+		if precondition_should_be_passed(&passing_precon, &method.subtasks[index]) {
 			new_passing_preconditions.push(passing_precon.clone());
 		}
 	}
@@ -70,7 +64,7 @@ pub fn decide_passing_preconditions( relevant_variables: &RelVars, passing_preco
 }
 
 // Check if a precon should be forwarded to a given subtask based on relevant variables
-fn precondition_should_be_passed(precondition: &Precondition, subtask: (String, String, Vec<String>, bool), relevant_variables: &RelVars) -> bool {
+fn precondition_should_be_passed(precondition: &Precondition, subtask: &(String, String, Vec<String>, bool)) -> bool {
 
 	let mut precondition_passed = false;
 

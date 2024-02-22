@@ -1,5 +1,6 @@
 use crate::datastructures::{domain::*, problem::*};
 use std::collections::HashSet;
+use std::collections::HashMap;
 
 type RelVars = Vec<(String, String, Vec<String>)>;
 type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
@@ -21,5 +22,6 @@ pub struct Node {
   /// Root tuple, List of applied function (Function, id, called id list, relevant variables)
   pub applied_functions: ((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>),
   pub hash_table: HashSet<u64>,
-  pub passing_preconditions: Vec<Precondition>
+  pub passing_preconditions: Vec<Precondition>,
+  pub goal_functions: (HashMap<(String, Vec<String>), Vec<SubtaskTypes>>, Vec<String>)
 }

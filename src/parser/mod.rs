@@ -153,22 +153,6 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>, bool)>, ordering: 
         }
 
       }
-    
-      // let mut degree_counter = 0;
-      // let mut push_counter = 0;
-      // while push_counter < degree_list.len() {
-      //   for node in &mut degree_list {
-      //     if node.0 == degree_counter {
-      //       for sub in &subtasks {
-      //         if node.1 == sub.1 {
-      //           push_counter = push_counter + 1;
-      //           sorted_subs.push((sub.0.clone(), sub.1.clone(), sub.2.clone(), false));
-      //         }
-      //       }
-      //     }
-      //   }
-      //   degree_counter = degree_counter + 1;
-      // }
 
       sorted_subs
     },

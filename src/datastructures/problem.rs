@@ -15,3 +15,4 @@ pub struct Problem {
   pub goal: Option<Vec<(String, Vec<String>)>>
 }
 
+

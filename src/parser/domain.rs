@@ -10,6 +10,7 @@ use nom::character::complete::alphanumeric1;
 use nom::sequence::{tuple, pair};
 use nom::multi::{many1, many0};
 use nom::error::context;
+use std::collections::HashMap;
 
 // ------------------------- DOMAIN PARSER ----------------------------------------
 
@@ -29,12 +30,27 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
   .map(|(next_input, res)| {
       let (domain_name, types, constants, predicates, tasks, methods, actions) = res;
 
+      let mut method_hashmap = HashMap::new();
+      
+      for task in &tasks {
+
+        let mut method_list = Vec::<Method>::new();
+
+        for method in &methods {
+          if method.task.0 == task.name {
+            method_list.push(method.clone());
+          }
+        }
+
+        method_hashmap.insert(task.name.clone(), method_list);
+      }
+
       (
         next_input,
         Domain {
           name: domain_name,
           tasks: tasks,
-          methods: methods,
+          methods: method_hashmap,
           actions: actions,
           types: types,
           constants: constants,

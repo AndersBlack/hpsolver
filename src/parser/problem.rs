@@ -27,7 +27,7 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
 )(input)
 .map(|(next_input, res)| {
     let (name, domain, objects, htn, state, goal) = res;
-
+    
     let problem = Problem {
       name,
       domain,

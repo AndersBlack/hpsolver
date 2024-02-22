@@ -1476,7 +1476,7 @@
 			(and
 				(hasInformation_Contactable ?newObj_variable182 ?newObj_variable185 ?newObj_variable184)
 			)
-	)
+	) 
 
 	(:action extractsInformation_Regular
 		:parameters (?newObj_variable186 - Contactable ?newObj_variable187 - Message ?newObj_variable188 - RegularInformation)

@@ -1,7 +1,4 @@
-use crate::datastructures::{problem::{*}, domain::{*}};
-
 type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
 
 /// Returns a list of relevant variables that fulfills the constraints
 pub fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool, String, String)>) -> Vec<RelVars> {
