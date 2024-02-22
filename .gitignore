@@ -1,0 +1,3 @@
+/target
+*.solution
+.vscode/settings.json
