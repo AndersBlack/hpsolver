@@ -14,6 +14,8 @@ pub mod passing_preconditions;
 pub mod constraints;
 pub mod precondition;
 pub mod back_tracking;
+pub mod effect;
+pub mod update;
 
 /// Hashes the state and returns a boolean representing whether or not it is a duplicate state
 pub fn hash_state(current_node: &mut Node) -> bool {
@@ -30,6 +32,32 @@ pub fn hash_state(current_node: &mut Node) -> bool {
 	current_node.hash_table.insert(hash);
 
 	false
+}
+
+pub fn check_duplicates(relvars: &mut RelVars) -> RelVars {
+	let mut names = vec![];
+	let mut new_relvars = RelVars::new();
+	let mut relvar_index = 0;
+	 
+	for relvar in relvars{
+		if names.contains(&relvar.0){
+			let mut duplicate_index = 0;
+			for duplicate in new_relvars.clone() {
+				if relvar.0 == duplicate.0{
+					let new_value_list = intersection(vec![new_relvars[duplicate_index].2.clone(), relvar.2.clone()]);
+					new_relvars[duplicate_index].2 = new_value_list;
+					break;
+				}
+				duplicate_index = duplicate_index + 1;
+			}
+		} else {
+			names.push(relvar.0.clone());
+			new_relvars.push(relvar.clone());
+		}
+		relvar_index = relvar_index + 1;
+
+	}
+	new_relvars
 }
 
 // Decide which actions has a positive impact on the goal state
@@ -53,12 +81,12 @@ pub fn goal_oriented_action_finder ( domain: &Domain, goal: Vec<(String, Vec<Str
 	goal_action_list
 }
 
-pub fn goal_oriented_finder ( domain: &Domain, goal: Vec<(String, Vec<String>)>) -> (HashMap<(String, Vec<String>), Vec<SubtaskTypes>>, Vec<String> ) {
-	let mut goal_list = (HashMap::<(String, Vec<String>), Vec<SubtaskTypes>>::new(),Vec::<String>::new());
+pub fn goal_oriented_finder ( domain: &Domain, goal: Vec<(String, Vec<String>)>) -> (HashMap<(String, Vec<String>), Vec<Action>>, Vec<String> ) {
+	let mut goal_list = (HashMap::<(String, Vec<String>), Vec<Action>>::new(),Vec::<String>::new());
 	
 	for predicate in goal {
 
-		let mut function_list = Vec::<SubtaskTypes>::new();
+		let mut function_list = Vec::<Action>::new();
 		let mut precon_list = Vec::<Precondition>::new();
 		let mut pushed_already = Vec::<String>::new();
 		
@@ -73,7 +101,7 @@ pub fn goal_oriented_finder ( domain: &Domain, goal: Vec<(String, Vec<String>)>)
 							goal_list.1.push(action.name.clone());
 						}
 						
-						function_list.push(SubtaskTypes::Action(action.clone()));
+						function_list.push(action.clone());
 
 						if action.precondition.is_some() {
 							for precondition in action.precondition.clone().unwrap() {
@@ -86,7 +114,6 @@ pub fn goal_oriented_finder ( domain: &Domain, goal: Vec<(String, Vec<String>)>)
 								for subtask in &method.subtasks {
 									if subtask.0 == action.name{
 										pushed_already.push(method.name.clone());
-										function_list.push(SubtaskTypes::Method(method.clone()));
 										if method.precondition.is_some() {
 											for precondition in method.precondition.clone().unwrap() {
 												precon_list.push(precondition);
@@ -119,17 +146,17 @@ pub fn goal_oriented_finder ( domain: &Domain, goal: Vec<(String, Vec<String>)>)
 								if effect.1 == precondition.1 {
 
 									if !pushed_already.contains(&action.name) {
-										function_list.push(SubtaskTypes::Action(action.clone()));
+										function_list.push(action.clone());
 										pushed_already.push(action.name.clone());
 										goal_list.1.push(action.name.clone());
 										
-										if action.precondition.is_some() {
-											for precondition in action.precondition.clone().unwrap() {
-												if precondition.0 == 0 {
-													precon_list.push(precondition.clone());
-												}
-											}
-										}
+										// if action.precondition.is_some() {
+										// 	for precondition in action.precondition.clone().unwrap() {
+										// 		if precondition.0 == 0 {
+										// 			precon_list.push(precondition.clone());
+										// 		}
+										// 	}
+										// }
 									}
 
 									for method_list in domain.methods.clone().into_values(){
@@ -137,16 +164,15 @@ pub fn goal_oriented_finder ( domain: &Domain, goal: Vec<(String, Vec<String>)>)
 											for subtask in &method.subtasks {
 												if subtask.0 == action.name{
 													if !pushed_already.contains(&method.name) {
-														function_list.push(SubtaskTypes::Method(method.clone()));
 														pushed_already.push(method.name.clone());
 
-														if method.precondition.is_some() {
-															for precondition in method.precondition.clone().unwrap() {
-																if precondition.0 == 0 {
-																	precon_list.push(precondition.clone());
-																}
-															}
-														}
+														// if method.precondition.is_some() {
+														//  	for precondition in method.precondition.clone().unwrap() {
+														//  		if precondition.0 == 0 {
+														//  			precon_list.push(precondition.clone());
+														//  		}
+														// 	}
+														// }
 													}
 												}
 											}
@@ -166,10 +192,29 @@ pub fn goal_oriented_finder ( domain: &Domain, goal: Vec<(String, Vec<String>)>)
 		goal_list.0.insert(predicate, function_list);
 	}
 	
-
-
-
 	goal_list
+}
+
+/// Generates a Node with the given arguments
+pub fn make_node( new_problem: Problem, 
+	sq: Vec::<(SubtaskTypes, RelVars)>, 
+	called: (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>), 
+	afl:((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>) , 
+	hs: HashSet<u64>, 
+	passing_precondition: Vec<Precondition>, 
+	goal_functions: (HashMap<(String, Vec<String>), Vec<Action>>, Vec<String>)) -> Node {
+
+let new_node = Node {
+problem: new_problem,
+subtask_queue: sq,
+called: called,
+applied_functions: afl,
+hash_table: hs,
+passing_preconditions: passing_precondition,
+goal_functions: goal_functions
+};
+
+new_node
 }
 
 /// Removes actions, methods & tasks from the domain based on objects in problem
@@ -252,9 +297,9 @@ pub fn reduce_domain( domain: &Domain, problem: &Problem ) -> Domain {
 	new_domain.types = new_types;
 	new_domain.tasks = new_tasks;
 
-	// if problem.goal.is_some() {
-	// 	new_domain = effect_trim_domain(domain, &problem);
-	// }
+	if problem.goal.is_some() {
+		new_domain = effect_trim_domain(domain, &problem);
+	}
 
 	new_domain
 }
@@ -574,15 +619,14 @@ pub fn prioritize_methods(domain: &Domain, current_node: &Node, task_name: Strin
 				if !was_interesting {
 					method_list_rest.push(method.clone());
 				}
-				
 			}
 
 			method_list_interesting.sort_by(|a,b| b.subtasks.len().cmp(&a.subtasks.len()));
 			method_list_rest.sort_by(|a,b| b.subtasks.len().cmp(&a.subtasks.len()));
 
-			method_list_interesting.append(&mut method_list_rest);
+			method_list_rest.append(&mut method_list_interesting);
 
-			return method_list_interesting
+			return method_list_rest
 
 		} else {
 			return vec![];

@@ -1,0 +1,17 @@
+[ Sidste HTN ]
+ |
+[]
+ |
+ []
+ |
+[]
+ |
+ []
+ |
+[]
+ |
+ [ ]
+ |
+[ Method ] 
+ |
+[ Action ( Mangler pred y for at sætte x ) -> Check goal state ] ( Mangler predicate x )

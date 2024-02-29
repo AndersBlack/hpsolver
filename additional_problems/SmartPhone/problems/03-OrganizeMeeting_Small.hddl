@@ -15,9 +15,7 @@
 		email1 - EMail
 		email2 - EMail
 		account1 - EMailAccount
-		peer1Picture - Picture
 		room101 - Location
-		headOfDepartmentPicture - Picture
 	)
 	(:htn
 		:parameters ()

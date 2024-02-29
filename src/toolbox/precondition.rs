@@ -5,7 +5,7 @@ type RelVars = Vec<(String, String, Vec<String>)>;
 type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
 
 /// Checks a given precondition. Takes the boolean prefix, the name, the list of lists of possible values and a ref to the state
-fn check_precondition( precondition: &Precondition, relevant_variables: &RelVars, state: &Vec<(String, Vec<String>)>, problem: &Problem) -> bool {
+pub fn check_precondition( precondition: &Precondition, relevant_variables: &RelVars, problem: &Problem) -> bool {
 
 	match precondition.0 {
 		0 | 1 => {
@@ -29,7 +29,7 @@ fn check_precondition( precondition: &Precondition, relevant_variables: &RelVars
 			let mut found_one = false;
 
 			// Find state parameter
-			for value in state {
+			for value in &problem.state {
 				let mut found_counter = 0;
 		
 				if value.0 == precondition.1 {
@@ -94,7 +94,7 @@ fn check_precondition( precondition: &Precondition, relevant_variables: &RelVars
 
 			'outer: for value in forall_param.1 {
 
-				for state_var in state {
+				for state_var in &problem.state {
 
 					if state_var.0 == precondition_inner.1 {
 
@@ -161,7 +161,7 @@ pub fn permutation_tool( relevant_variables: RelVars , precondition_list: Vec<Pr
 
 	// If there are no relevant variables, we still need to check precondition
 	if new_relevant_variables.len() == 0 {
-		if precon_cleared(&permutation_holder, &new_relevant_variables, &precondition_list, state, problem) {
+		if precon_cleared(&permutation_holder, &new_relevant_variables, &precondition_list, problem) {
 			return (permutation_list_list, new_relevant_variables, true)
 		} else {
 			return (permutation_list_list, new_relevant_variables, false)
@@ -184,7 +184,7 @@ pub fn permutation_tool( relevant_variables: RelVars , precondition_list: Vec<Pr
 		n = 0;
 		
 		// Check precondition
-		if precon_cleared(&permutation_holder, &new_relevant_variables, &precondition_list, state, problem) {
+		if precon_cleared(&permutation_holder, &new_relevant_variables, &precondition_list, problem) {
 			//println!("WHILE PRECON");
 			permutation_list_list.push(permutation_holder.clone());		
 		} 
@@ -215,7 +215,7 @@ pub fn permutation_tool( relevant_variables: RelVars , precondition_list: Vec<Pr
 }
 
 /// Counts permutations and returns the count
-pub fn perm_count ( size_ref: &Vec::<Vec<usize>>) -> usize {
+pub fn perm_count( size_ref: &Vec::<Vec<usize>>) -> usize {
   let mut count = 1;
 
   for list in size_ref {
@@ -694,7 +694,7 @@ pub fn precon_trim_forall( relevant_variables: &RelVars , precondition: &Precond
 }
 
 /// Loop preconditions and determine whether or not all preconditions was cleared
-fn precon_cleared( permutation: &Vec::<usize>, relevant_variables: &RelVars, precondition_list: &Vec<Precondition>, state: &Vec<(String, Vec<String>)>, problem: &Problem) -> bool {
+fn precon_cleared( permutation: &Vec::<usize>, relevant_variables: &RelVars, precondition_list: &Vec<Precondition>, problem: &Problem) -> bool {
 
 	let mut clear = true;
 	let mut new_value_list = RelVars::new();
@@ -707,7 +707,7 @@ fn precon_cleared( permutation: &Vec::<usize>, relevant_variables: &RelVars, pre
 	}
 
 	for precon in precondition_list {
-		if !check_precondition(precon, &new_value_list, state, problem)  {
+		if !check_precondition(precon, &new_value_list, problem)  {
 			clear = false;
 		}
 	}

@@ -9,7 +9,7 @@ pub fn stoppable_depth_first(problem: Problem, domain: &Domain, stopped: &Instan
 
 	let mut node_queue = Vec::<Node>::new();
 	let mut htn_subtask_queue = Vec::<(SubtaskTypes, RelVars)>::new();
-	let mut function_list: (HashMap<(String, Vec<String>), Vec<SubtaskTypes>>, Vec<String>) = (HashMap::<(String, Vec<String>), Vec<SubtaskTypes>>::new(), Vec::<String>::new());
+	let mut function_list: (HashMap<(String, Vec<String>), Vec<Action>>, Vec<String>) = (HashMap::<(String, Vec<String>), Vec<Action>>::new(), Vec::<String>::new());
 	let mut new_problem: Problem = algorithms::update_objects(problem.clone(), domain);
   let applied_funtions = (("root".to_string(), Vec::<usize>::new()), Vec::<(SubtaskTypes, usize, Vec<usize>, RelVars)>::new());
 
@@ -41,9 +41,9 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path
 
 	while !finished {
 
-    // if stopped.elapsed().as_secs() > 10 { 
-    //   return "stopped";
-    // }
+    if stopped.elapsed().as_secs() > 10 { 
+      return "stopped";
+    }
 
 		let current_node = node_queue.pop();
 
@@ -87,6 +87,11 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path
 							toolbox::print_result(current_node, path);
               return "success";
 						}
+
+						if current_node.goal_functions.0.len() > 0 {
+							toolbox::back_tracking::backtrack_from_goal(node_queue, &current_node, &domain);
+						}
+						
 					}
 				}
 			},

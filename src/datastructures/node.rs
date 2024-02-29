@@ -23,5 +23,5 @@ pub struct Node {
   pub applied_functions: ((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>),
   pub hash_table: HashSet<u64>,
   pub passing_preconditions: Vec<Precondition>,
-  pub goal_functions: (HashMap<(String, Vec<String>), Vec<SubtaskTypes>>, Vec<String>)
+  pub goal_functions: (HashMap<(String, Vec<String>), Vec<Action>>, Vec<String>)
 }
