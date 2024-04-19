@@ -3,7 +3,7 @@ use crate::parser::{underscore_stringer, order_subtasks};
 
 use nom::IResult;
 //use nom::branch::alt;
-use nom::bytes::complete::tag;
+use nom::bytes::complete::{tag, take_until};
 use nom::branch::alt;
 use nom::combinator::{opt, not};
 use nom::character::complete::{alphanumeric1, multispace0};
@@ -17,21 +17,30 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
 
   context("problem", 
   tuple((
+    take_until("(define"),
     get_name,
     get_domain,
-    get_objects,
+    opt(get_objects),
     get_htn,
     get_init,
     opt(get_goal)
   ))
 )(input)
 .map(|(next_input, res)| {
-    let (name, domain, objects, htn, state, goal) = res;
+    let (_, name, domain, objects, htn, state, goal) = res;
     
+    let return_objects;
+
+    if objects.clone().is_none() {
+      return_objects = Vec::<(String, String, Vec<String>)>::new();
+    } else {
+      return_objects = objects.unwrap();
+    }
+
     let problem = Problem {
       name,
       domain,
-      objects,
+      objects: return_objects,
       htn,
       state,
       goal
@@ -55,12 +64,13 @@ fn get_name( input: &str ) -> IResult<&str, String> {
       tag("(problem"),
       multispace0,
       underscore_stringer,
+      multispace0,
       tag(")"),
       multispace0
     ))
   )(input)
   .map(|(next_input, res)| {
-    let (_define, _newline1, _problem, name, _, _tag, _newline2) = res;
+    let (_define, _newline1, _problem, _, name, _, _tag, _newline2) = res;
     (
       next_input, name.to_string()
     )
@@ -75,12 +85,13 @@ fn get_domain( input: &str ) -> IResult<&str, String> {
       tag("(:domain"),
       multispace0,
       underscore_stringer,
+      multispace0,
       tag(")"),
       multispace0
     ))
   )(input)
   .map(|(next_input, res)| {
-    let (_domain_keyword, _, domain, _tag, _newline) = res;
+    let (_domain_keyword, _, domain, _tag, _, _newline) = res;
 
     (
       next_input, domain.to_string()
@@ -146,14 +157,15 @@ fn get_htn( input: &str ) -> IResult<&str, Htn> {
       get_htn_subtasks,
       opt(get_htn_ordering),
       opt(tag(":constraints ( )")),
-      tag(")"),
+      multispace0,
+      opt(tag(")")),
       multispace0
     ))
   )(input)
   .map(|(next_input, res)| {
-    let (_, _header, _newline, parameters, subtasks, ordering, _, _tag, _ws) = res;
+    let (_, _header, _newline, parameters, subtasks, ordering, _, _, _tag, _ws) = res;
 
-    let sorted_subtasks = order_subtasks(subtasks, ordering);
+    let sorted_subtasks = order_subtasks(subtasks, &ordering);
 
     let mut parms = Vec::<(String, String)>::new();
 
@@ -182,6 +194,7 @@ fn get_htn_parameters( input: &str) -> IResult<&str, Vec<(String,String)>> {
       multispace0,
       tag(":parameters "),
       tag("("),
+      multispace0,
       opt(many0(tuple
         ((tag("?"), underscore_stringer, tag(" - "), underscore_stringer, multispace0))
       )),
@@ -190,7 +203,7 @@ fn get_htn_parameters( input: &str) -> IResult<&str, Vec<(String,String)>> {
     ))
   )(input)
   .map(|(next_input, res)| {
-    let (_, _header, _tag1, parameters, _tag2, _) = res;
+    let (_, _header, _tag1, _, parameters, _tag2, _) = res;
 
     let mut parameters_vec = Vec::<(String, String)>::new();
 
@@ -211,19 +224,22 @@ fn get_htn_parameters( input: &str) -> IResult<&str, Vec<(String,String)>> {
   })
 }
 
-fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<String>, bool)>> {
+fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<String>)>> {
   //println!("htn_subtasks input:\n{}", input);
 
   context("subtasks",
     tuple((
       multispace0,
-      alt((tag(":subtasks (and"), tag(":tasks (and"),tag(":ordered-subtasks (and"))),
+      alt((tag(":subtasks"), tag(":tasks"),tag(":ordered-subtasks"), tag(":ordered-tasks"))),
+      multispace0,
+      opt(tag("(and")),
       multispace0,
       many0(
         tuple((
           tag("("),
           underscore_stringer,
-          opt(pair(tag(" ("), underscore_stringer)),
+          multispace0,
+          opt(pair(tag("("), underscore_stringer)),
           multispace0,
           many0(tuple((
             opt(tag("?")),
@@ -231,18 +247,19 @@ fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<Stri
             multispace0
           ))),
           tag(")"),
+          multispace0,
           opt(tag(")")),
           multispace0
         ))
       ),
-      tag(")"),
+      opt(tag(")")),
       multispace0
     ))
   )(input)
   .map(|(next_input, res)| {
-    let(_ws1, _tag1, _, tuple, _tag0, _ws2) = res;
+    let(_ws1, _tag1, _, _, _, tuple, _tag0, _ws2) = res;
 
-    let mut subtask_vec: Vec<(String, String, Vec<String>, bool)> = Vec::<(String, String, Vec<String>, bool)>::new();
+    let mut subtask_vec: Vec<(String, String, Vec<String>)> = Vec::<(String, String, Vec<String>)>::new();
 
     // TODO: MOVE 
     for task in tuple {
@@ -250,16 +267,16 @@ fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<Stri
       let mut obj_vec = Vec::<String>::new();
 
       //Construct obj vector
-      for obj in task.4 {
+      for obj in task.5 {
         match obj.0 {
           Some(_task0) => { obj_vec.push("?".to_string() + &obj.1) },
           None => { obj_vec.push(obj.1); }
         }
       }
 
-      match task.2 {
-        Some(task2) => { subtask_vec.push((task2.1.to_string(), task.1, obj_vec, false)); },
-        None => { subtask_vec.push((task.1.to_string(), "No alias".to_string(), obj_vec, false)); }
+      match task.3 {
+        Some(task3) => { subtask_vec.push((task3.1.to_string(), task.1, obj_vec)); },
+        None => { subtask_vec.push((task.1.to_string(), "No alias".to_string(), obj_vec)); }
       }
     }
 
@@ -337,9 +354,9 @@ fn get_init( input: &str ) -> IResult<&str, Vec<(String, Vec<String>)>> {
           ),
           tag(")"),
           multispace0
-      ))
+        ))
       ),
-      tag(")"),
+      opt(tag(")")),
       multispace0
     ))
   )(input)
@@ -381,14 +398,14 @@ fn get_goal( input: &str ) -> IResult<&str, Vec<(String, Vec<String>)>> {
     tuple((
       tag("(:goal"),
       multispace0,
-      tag("(and"),
+      opt(tag("(and")),
       multispace0,
       many1(
         tuple((
           tag("("),
           underscore_stringer,
           multispace0,
-          many1(
+          many0(
             tuple((
               underscore_stringer,
               multispace0

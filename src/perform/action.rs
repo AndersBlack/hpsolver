@@ -1,5 +1,5 @@
 use crate::datastructures::{domain::*, node::*};
-use crate::toolbox::{self, make_node, effect};
+use crate::toolbox::{self, effect, make_node};
 
 type RelVars = Vec<(String, String, Vec<String>)>;
 type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
@@ -7,12 +7,20 @@ type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool
 /// Improving the runtime of the perform action method using CDCL
 pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node, action: Action, mut relevant_variables: RelVars ) {
 
+	//print!("Passing precons! {:?}\n", current_node.passing_preconditions);
+
 	// Update passing preconditions	
-	let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition(&current_node, &action.parameters);
+	let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition(&current_node.called, &current_node.passing_preconditions, &action.parameters); // Since the parameters is wrong, this must be wrong
+	let precondition_list;
+
+
 
 	// Add passing preconditions to actions own precondition list
-	let mut precondition_list = action.precondition.clone().unwrap();
-	precondition_list = [precondition_list, new_passing_precon.clone()].concat();
+	if action.precondition.is_some() {
+		precondition_list = [action.precondition.clone().unwrap(), new_passing_precon.clone()].concat();
+	} else {
+		precondition_list = new_passing_precon.clone();
+	}
 
 	let mut action_can_set_effects = true;
 	let cleared_precon: bool;
@@ -42,14 +50,14 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node
 			// Lock values and branch on action
 			for value in &relvar.2 {
 
+				let mut new_node_mod = current_node.clone();
+
 				let mut branch_relevant_variable = relevant_variables.clone();
 				branch_relevant_variable[relvar_index].2 = vec![value.clone()];
 
-				let mut new_sq = current_node.subtask_queue.clone();
+				new_node_mod.subtask_queue.push((SubtaskTypes::Action(action.clone()), branch_relevant_variable));
 
-				new_sq.push((SubtaskTypes::Action(action.clone()), branch_relevant_variable));
-
-				let new_node = make_node(current_node.problem.clone(), new_sq.clone(), current_node.called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone(), new_passing_precon.clone(), current_node.goal_functions.clone());
+				let new_node = make_node(new_node_mod.problem, new_node_mod.subtask_queue, new_node_mod.called, new_node_mod.applied_functions, new_node_mod.hash_table, new_passing_precon.clone(), new_node_mod.goal_functions);
 
 				node_queue.push(new_node);
 			}
@@ -68,16 +76,24 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node
 			let (calling_method, calling_relevant_vars, called_passing_precon) = current_node.called.1.pop().unwrap();
 			current_node.called.0.pop();
 
-			if !action.effect.clone().unwrap().is_empty() && !action.precondition.clone().unwrap().is_empty() && toolbox::action_would_result_in_nothing(&relevant_variables, &action, &current_node.problem.state) {
-				return;
-			}
+			println!("Cleared action!\n");
 
 			// Apply effects!
-			effect::apply_effects_cdcl(&mut current_node, &relevant_variables, &action);
+			effect::apply_effects_cdcl(&mut current_node.problem, &mut current_node.applied_functions, &relevant_variables, &action);
 
 			for x in 0..relevant_variables.len() {
-				let var_name = calling_method.subtasks.clone()[current_node.called.2.last().unwrap() - 1].2[x].clone();
-				relevant_variables[x].0 = var_name;
+
+				match calling_method.subtasks[current_node.called.2.last().unwrap() - 1].clone() {
+					(SubtaskTypes::Action(action), _) => {
+						relevant_variables[x].0 = action.parameters[x].name.clone();
+					},
+					(SubtaskTypes::Task(task), _) => {
+						relevant_variables[x].0 = task.parameters[x].name.clone();
+					},
+					_ => {
+						// Do nothing
+					}
+				}
 			}
 
 			let mut new_relevant_variables = RelVars::new();
@@ -98,23 +114,17 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node
 					new_relevant_variables.push(rel_var.clone());
 				}
 			}
-
-			// SET METHOD BOOL TO TRUE
-			let mut calling_meth = calling_method.clone();
-			let mut subts = calling_meth.subtasks;
-			subts[current_node.called.2.last().unwrap() - 1].3 = true;
-			calling_meth.subtasks = subts;
 		
-			current_node.subtask_queue.push((SubtaskTypes::Method(calling_meth.clone()), new_relevant_variables.clone()));
+			current_node.subtask_queue.push((SubtaskTypes::Method(calling_method), new_relevant_variables));
 
-			let new_node = make_node(current_node.problem.clone(), current_node.subtask_queue.clone(), current_node.called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone(), called_passing_precon.clone(), current_node.goal_functions.clone());
+			let new_node = make_node(current_node.problem, current_node.subtask_queue, current_node.called, current_node.applied_functions, current_node.hash_table, called_passing_precon, current_node.goal_functions);
 
 			node_queue.push(new_node);
 		} else {
 
-			effect::apply_effects_cdcl(&mut current_node, &relevant_variables, &action);
+			effect::apply_effects_cdcl(&mut current_node.problem, &mut current_node.applied_functions, &relevant_variables, &action);
 
-			let new_node = make_node(current_node.problem.clone(), current_node.subtask_queue.clone(), current_node.called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone(), current_node.passing_preconditions.clone(), current_node.goal_functions.clone());
+			let new_node = make_node(current_node.problem, current_node.subtask_queue, current_node.called, current_node.applied_functions, current_node.hash_table, current_node.passing_preconditions, current_node.goal_functions);
 
 			node_queue.push(new_node);
 		}
@@ -125,7 +135,7 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node
 pub fn perform_action( node_queue: &mut Vec::<Node>, mut current_node: Node, action: Action, relevant_variables: RelVars) {
 
 	// Update passing preconditions	
-	let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition(&current_node, &action.parameters);
+	let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition(&current_node.called, &current_node.passing_preconditions, &action.parameters);
 
 	// Add passing preconditions to actions own precondition list
 	let mut precondition_list = action.precondition.clone().unwrap();
@@ -154,9 +164,19 @@ pub fn perform_action( node_queue: &mut Vec::<Node>, mut current_node: Node, act
 
 			let mut new_current_node = effect::clone_node_and_apply_effects(&mut current_node, &edited_relevant_variables, &permutation, &action, &mut new_relevant_variables);
 
-			for x in 0..new_relevant_variables.len() {
-				let var_name = calling_method.subtasks.clone()[new_current_node.called.2.last().unwrap() - 1].2[x].clone();
-				new_relevant_variables[x].0 = var_name;
+			for x in 0..relevant_variables.len() {
+
+				match calling_method.subtasks[current_node.called.2.last().unwrap() - 1].clone() {
+					(SubtaskTypes::Action(action), _) => {
+						new_relevant_variables[x].0 = action.parameters[x].name.clone();
+					},
+					(SubtaskTypes::Task(task), _) => {
+						new_relevant_variables[x].0 = task.parameters[x].name.clone();
+					},
+					_ => {
+						// Do nothing
+					}
+				}
 			}
 
 			let mut new_new_relevant_variables = RelVars::new();
@@ -179,14 +199,14 @@ pub fn perform_action( node_queue: &mut Vec::<Node>, mut current_node: Node, act
 			}
 
 			// SET METHOD BOOL TO TRUE
-			let mut calling_meth = calling_method.clone();
-			let mut subts = calling_meth.subtasks;
-			subts[current_node.called.2.last().unwrap() - 1].3 = true;
-			calling_meth.subtasks = subts;
+			//let mut calling_meth = calling_method.clone();
+			//let mut subts = calling_meth.subtasks;
+			//subts[current_node.called.2.last().unwrap() - 1].3 = true;
+			//calling_meth.subtasks = subts;
 		
-			new_current_node.subtask_queue.push((SubtaskTypes::Method(calling_meth.clone()), new_new_relevant_variables.clone()));
+			new_current_node.subtask_queue.push((SubtaskTypes::Method(calling_method.clone()), new_new_relevant_variables.clone()));
 
-			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_functions.clone(), current_node.hash_table.clone(), called_passing_precon.clone(), current_node.goal_functions.clone());
+			let new_node = make_node(new_current_node.problem, new_current_node.subtask_queue, new_current_node.called, new_current_node.applied_functions, current_node.hash_table.clone(), called_passing_precon.clone(), current_node.goal_functions.clone());
 
 			node_queue.push(new_node);
 		}
@@ -200,7 +220,7 @@ pub fn perform_action( node_queue: &mut Vec::<Node>, mut current_node: Node, act
 
 			let new_current_node = effect::clone_node_and_apply_effects(&mut current_node, &relevant_variables, &permutation, &action, &mut new_relevant_variables);
 
-			let new_node = make_node(new_current_node.problem.clone(), new_current_node.subtask_queue.clone(), new_current_node.called.clone(), new_current_node.applied_functions.clone(), current_node.hash_table.clone(), Vec::<Precondition>::new(), current_node.goal_functions.clone());
+			let new_node = make_node(new_current_node.problem, new_current_node.subtask_queue, new_current_node.called, new_current_node.applied_functions, current_node.hash_table.clone(), Vec::<Precondition>::new(), current_node.goal_functions.clone());
 
 			node_queue.push(new_node);
 		}

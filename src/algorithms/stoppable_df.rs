@@ -5,11 +5,11 @@ use crate::toolbox::{self};
 // Relevant Variables datatype
 type RelVars = Vec<(String, String, Vec<String>)>;
 
-pub fn stoppable_depth_first(problem: Problem, domain: &Domain, stopped: &Instant, path: &PathBuf) -> &'static str {
+pub fn stoppable_depth_first(problem: &Problem, domain: &Domain, stopped: &Instant, path: &PathBuf) -> &'static str {
 
 	let mut node_queue = Vec::<Node>::new();
 	let mut htn_subtask_queue = Vec::<(SubtaskTypes, RelVars)>::new();
-	let mut function_list: (HashMap<(String, Vec<String>), Vec<Action>>, Vec<String>) = (HashMap::<(String, Vec<String>), Vec<Action>>::new(), Vec::<String>::new());
+	let mut function_list = Vec::<String>::new();
 	let mut new_problem: Problem = algorithms::update_objects(problem.clone(), domain);
   let applied_funtions = (("root".to_string(), Vec::<usize>::new()), Vec::<(SubtaskTypes, usize, Vec<usize>, RelVars)>::new());
 
@@ -22,7 +22,7 @@ pub fn stoppable_depth_first(problem: Problem, domain: &Domain, stopped: &Instan
 	let new_domain = algorithms::reduce_domain(domain, &new_problem);
 
 	if problem.goal.is_some() {
-		function_list = toolbox::goal_oriented_finder(domain, problem.goal.unwrap());
+		function_list = toolbox::goal_oriented_finder(domain, problem.goal.clone().unwrap());
 	}
 
 	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars, Vec<Precondition>)>::new(), Vec::<usize>::new());
@@ -41,7 +41,7 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path
 
 	while !finished {
 
-    if stopped.elapsed().as_secs() > 10 { 
+    if stopped.elapsed().as_secs() > 1800 { 
       return "stopped";
     }
 
@@ -84,13 +84,13 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path
 						let finished_state = toolbox::check_goal_condition( &current_node.problem.state, &current_node.problem.goal );
 
 						if finished_state {
-							toolbox::print_result(current_node, path);
+							toolbox::print_result(current_node.problem.name, current_node.applied_functions, path);
               return "success";
 						}
 
-						if current_node.goal_functions.0.len() > 0 {
-							toolbox::back_tracking::backtrack_from_goal(node_queue, &current_node, &domain);
-						}
+						// if current_node.goal_functions.0.len() > 0 {
+						// 	toolbox::back_tracking::backtrack_from_goal(node_queue, &current_node, &domain);
+						// }
 						
 					}
 				}

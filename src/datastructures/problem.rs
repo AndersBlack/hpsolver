@@ -1,7 +1,7 @@
 #[derive(Debug, Default, Clone, Hash)]
 pub struct Htn {
   pub parameters: Vec<(String, String)>, 
-  pub subtasks: Vec<(String, String, Vec<String>, bool)>
+  pub subtasks: Vec<(String, String, Vec<String>)>
 }
 
 // The overarching struct for the entire problem

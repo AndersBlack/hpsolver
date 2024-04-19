@@ -1,14 +1,13 @@
 use crate::toolbox::{self, make_node};
 use crate::datastructures::{domain::*, node::*};
-use crate::toolbox::{constraints::*, precondition::{*}};
+use crate::toolbox::precondition::{*};
 
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
 type RelVars = Vec<(String, String, Vec<String>)>;
 
 /// Perform a method (Check preconditions and constraints and attempt to perform every subtask)
-pub fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_node: Node, method: Method, mut relevant_variables: RelVars ) {
-
-	// What is the index of this method in the subtask queue of the method that called it?
+pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut current_node: Node, method: Method, mut relevant_variables: RelVars ) {
+	//println!("Passing precons: {:?}", current_node.passing_preconditions);
+	// What is the index of next function in the subtask queue of this method?
 	let current_subtask_index = current_node.called.2.pop().unwrap();
 
 	if current_subtask_index == 0 {
@@ -22,48 +21,11 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut curren
 				if preconditions_cleared {
 					relevant_variables = new_relevant_variables;
 				} else {
-					//toolbox::back_tracking::backtrack_for_method_param_value(node_queue, &new_relevant_variables);
 					return
 				}
 
 			},
 			None => {}
-		}
-		
-		// Check constraints
-		if method.constraints.is_some() {
-			let mut relevant_variables_list = check_constraints( &relevant_variables, &method.constraints.clone().unwrap() );
-
-			//Return if no relevant_variables was returned from check_constraints
-			if relevant_variables_list.is_empty() {
-				return
-			}
-
-			relevant_variables = relevant_variables_list.pop().unwrap();
-
-			// Push Node versions
-			for relevant_variable in &relevant_variables_list {
-						
-				let new_method = Method {
-					name: method.name.clone(),
-					parameters: method.parameters.clone(),
-					task: method.task.clone(),
-					precondition: None,
-					subtasks: method.subtasks.clone(),
-					constraints: None,
-					id: method.id
-				};
-
-				let mut new_sq = current_node.subtask_queue.clone();
-				new_sq.push((SubtaskTypes::Method(new_method), relevant_variable.clone()));
-				
-				let mut new_called: (Vec<bool>, Vec<(Method, Vec<(String, String, Vec<String>)>, Vec<Precondition>)>, Vec<usize>) = current_node.called.clone();
-				new_called.2.push(0);
-
-				let new_node = make_node(current_node.problem.clone(), new_sq, new_called, current_node.applied_functions.clone(), current_node.hash_table.clone(), current_node.passing_preconditions.clone(), current_node.goal_functions.clone());
-
-				node_queue.push(new_node);
-			}
 		}
 	}
 
@@ -84,7 +46,7 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut curren
 				}
 			}
 
-			current_node.applied_functions.1[method.id].3 = trimmed_task_rel_vars.clone();
+			current_node.applied_functions.1[method.id].3 = trimmed_task_rel_vars;
 
 			// CHECK THAT EVERY VARIABLE HAS BEEN REDUCED TO ONE!
 			let subtask_list = current_node.applied_functions.1[method.id].2.clone();
@@ -98,9 +60,12 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut curren
 
 				for parameters in &applied_method.3.clone() {
 					if parameters.2.len() > 1 {
-						// println!("\n BIGGER THAN ONE! \n");
+						// println!("BIGGER THAN ONE! \n");
 						// println!("OVERTASK PARAM: {:?}\n OVERMETHOD: {:?}\n", relevant_variables, method);
 						// println!("SUBTASK PARAM: {:?}\n SUBMETHOD: {:?}", parameters, applied_method);
+
+						// let mut line = String::new();
+						// let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						//Parameter name
 						let mut sub_task_task_name = String::new();
@@ -114,21 +79,37 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut curren
 						}
 
 						// Get name from overmethod
-						for over_method_task in &method.subtasks {
-							if over_method_task.0 == sub_task_task_name {
-								let over_method_arg_name = over_method_task.2[param_counter].clone();
-								for rel_var in &relevant_variables {
-									if rel_var.0 == over_method_arg_name {
-										new_values = rel_var.2.clone();
-										found_one = true;
+						for over_function in &method.subtasks {
+							match over_function {
+									(SubtaskTypes::Task(over_task), _actual_args_task) => {
+										if over_task.name == sub_task_task_name {
+											
+											let over_task_arg_name = over_task.parameters[param_counter].name.clone();
+											//println!("Over_task arg: {}", over_task_arg_name);
+
+											for rel_var in &relevant_variables {
+												//println!("RELVARS: {:?}\n", rel_var); 
+												if rel_var.0 == over_task_arg_name {
+													new_values = rel_var.2.clone();
+													found_one = true;
+												}
+											}
+										}
+									},
+									_ => {
+										// Do nothing
 									}
-								}
 							}
+							
 						}
 					}
 
 					if found_one {
+						//println!("UPDATED: {:?}", applied_method.3[param_counter]);
 						applied_method.3[param_counter].2 = new_values.clone();
+						// println!("UPDATED: {:?}", applied_method.3[param_counter]);
+						// println!("METHOD ID: {}", subtask);
+
 						found_one = false;
 					}
 
@@ -136,38 +117,50 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut curren
 				}
 			}
 
+			println!("Cleared method!\n");
+
 			// Is this not the first method?
 			if current_node.called.0.pop().unwrap() {
-
 				let new_node = toolbox::update::update_vars_for_called_method(current_node, &method, &relevant_variables);
 
 				node_queue.push(new_node);
 			} else {
+
 				node_queue.push(current_node.clone());
 			}
 
 		} else {
-			let new_passing_preconditions = toolbox::passing_preconditions::decide_passing_preconditions( &mut current_node.passing_preconditions, &method, current_subtask_index);
-			let mut new_subtask_queue = current_node.subtask_queue.clone();
-			let mut found_task = false;
 
-			// Look for the subtask among tasks in the domain
-			for task in &domain.tasks { 	
-				if task.name == method.subtasks[current_subtask_index].0 {
+			let (new_relevant_variables, preconditions_cleared) = toolbox::precondition::precon_trimmer(relevant_variables, &current_node.passing_preconditions, &current_node.problem);
+
+			if preconditions_cleared {
+				relevant_variables = new_relevant_variables;
+			} else {
+				return
+			}
+
+			let new_passing_preconditions = toolbox::passing_preconditions::decide_passing_preconditions( &mut current_node.passing_preconditions, &method, current_subtask_index, &relevant_variables, &current_node.problem);
+
+			//println!("PASSING THESE: {:?}", new_passing_preconditions);
+
+			let mut new_subtask_queue = current_node.subtask_queue.clone();
+
+			match method.subtasks[current_subtask_index].clone() {
+				(SubtaskTypes::Task(task), actual_task_args) => {
 
 					let mut updated_variables = RelVars::new();
 
-					for task_arg in method.subtasks[current_subtask_index].2.clone() {
-						if task_arg.contains("?") {
+					for x in 0..task.parameters.len() {
+						if task.parameters[x].name.contains("?") {
 							for var in &relevant_variables {
-								if var.0 == task_arg {
-									updated_variables.push(var.clone());
+								if var.0 == task.parameters[x].name {
+									updated_variables.push((actual_task_args[x].name.clone(), var.1.clone(), var.2.clone()));
 								}
 							}
 						} else {
 							for obj in &current_node.problem.objects {
-								if obj.0 == task_arg {
-									updated_variables.push(("no name".to_string(), obj.1.clone(), vec![task_arg.clone()]));
+								if obj.0 == task.parameters[x].name {
+									updated_variables.push(("no name".to_string(), obj.1.clone(), vec![obj.0.clone()]));
 								} 
 							}
 						}
@@ -177,72 +170,63 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, domain: &Domain, mut curren
 					//println!("printing length {}", length);
 					current_node.applied_functions.1[method.id].2.push(length);
 
-					//println!("Updated stq with task: {}, Relvars: {:?}\n", method.name, updated_variables);
-					new_subtask_queue.push((SubtaskTypes::Task(task.clone()), updated_variables));
-					found_task = true;
-					break;
-				}
-			}
+					new_subtask_queue.push((SubtaskTypes::Task(task), updated_variables));
+				},
+				(SubtaskTypes::Action(mut action), actual_action_args) => {
 
-			// Look for the subtask among actions in the domain
-			if !found_task {
-				// Look for the subtask among actions in the domain
-				for action in domain.actions.iter().clone() {
-					if action.name == method.subtasks[current_subtask_index].0 {
-
-						let mut updated_variables = RelVars::new();
+					let mut updated_variables = RelVars::new();
 						
-						for n in 0..method.subtasks[current_subtask_index].2.len() {
+					'outer: for n in 0..action.parameters.len() {
 
-							if method.subtasks[current_subtask_index].2[n].contains("?"){
-								for var in &relevant_variables {
-									if var.0 == method.subtasks[current_subtask_index].2[n] {
-										
-										updated_variables.push((action.parameters[n].name.clone(), var.1.clone(), var.2.clone()));
-									}
+						if action.parameters[n].name.contains("?"){
+							for var in &relevant_variables {
+								if var.0 == action.parameters[n].name {
+									updated_variables.push((actual_action_args[n].name.clone(), var.1.clone(), var.2.clone()));
+									action.parameters[n].name = actual_action_args[n].name.clone();
+									continue 'outer;
 								}
-							} else {
+							}
+						} else {
 
-								// Found constant in action subtask
-								for obj in &current_node.problem.objects{
-									if obj.0 == method.subtasks[current_subtask_index].2[n] {
-										updated_variables.push((action.parameters[n].name.clone(), obj.1.clone(), vec![obj.0.clone()]));
-									}
+							// Found constant in action subtask
+							for obj in &current_node.problem.objects{
+								if obj.0 == action.parameters[n].name {
+									updated_variables.push((actual_action_args[n].name.clone(), obj.1.clone(), vec![obj.0.clone()]));
 								}
 							}
 						}
-
-						let length = current_node.applied_functions.1.len();
-						//println!("printing length {}", length);
-						current_node.applied_functions.1[method.id].2.push(length);
-
-						new_subtask_queue.push((SubtaskTypes::Action(action.clone()), updated_variables));
-						break;
 					}
-				}
+
+					let length = current_node.applied_functions.1.len();
+					//println!("printing length {}", length);
+					current_node.applied_functions.1[method.id].2.push(length);
+
+					new_subtask_queue.push((SubtaskTypes::Action(action), updated_variables));
+
+				},
+				_ => {}
 			}
 
-			let mut new_called = current_node.called.clone();
+			current_node.called.0.push(true);
+			current_node.called.1.push((method, relevant_variables, current_node.passing_preconditions));
+			current_node.called.2.push(current_subtask_index + 1);
 
-			new_called.0.push(true);
-			new_called.1.push((method, relevant_variables, current_node.passing_preconditions.clone()));
-			new_called.2.push(current_subtask_index + 1);
-
-			let new_node = make_node(current_node.problem.clone(), new_subtask_queue.clone(), new_called.clone(), current_node.applied_functions.clone(), current_node.hash_table.clone(), new_passing_preconditions.clone(), current_node.goal_functions.clone());
+			let new_node = make_node(current_node.problem, new_subtask_queue, current_node.called, current_node.applied_functions, current_node.hash_table, new_passing_preconditions, current_node.goal_functions);
 
 			node_queue.push(new_node);
 		}
 
 	} else {
 
+		println!("Cleared method!");
+
 		if !current_node.called.0.pop().unwrap() {
-			node_queue.push(current_node.clone());
-		} else {				
+			node_queue.push(current_node);
+
+		} else {
 
 			let new_node = toolbox::update::update_vars_for_called_method(current_node, &method, &relevant_variables);
 			node_queue.push(new_node);
 		}
-
 	}
-
 }

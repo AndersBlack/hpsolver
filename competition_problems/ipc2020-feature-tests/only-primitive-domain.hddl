@@ -1,0 +1,7 @@
+(define (domain test-domain)
+	(:requirements :negative-preconditions :typing :hierarchy)
+
+	(:action noop
+		:parameters ()
+	)
+)

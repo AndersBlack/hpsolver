@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use super::node::SubtaskTypes;
+
 #[derive(Debug, Clone)]
 pub struct Domain {
     pub name: String,
@@ -39,8 +41,10 @@ pub struct Method {
     pub parameters: Vec<Argument>, 
     pub task: (String, Vec<String>),
     pub precondition: Option<Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>>,
-    pub subtasks: Vec<(String, String, Vec<String>, bool)>,
-    pub constraints: Option<Vec<(bool, String, String)>>,
+    //pub subtasks_old: Vec<(String, String, Vec<String>)>,
+    pub subtasks: Vec<(SubtaskTypes, Vec<Argument>)>,
+    pub ordering: bool,
+    //pub constraints: Option<Vec<(bool, String, String)>>,
     pub id: usize
 }
 
@@ -61,21 +65,29 @@ impl std::fmt::Display for Action {
 
 impl std::fmt::Display for Method {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Method name: {}\nParameters: {:?}\nTask: {:?}\nPrecondition: {:?}\nSubtasks: {:?}\nConstraints: {:?}", self.name, self.parameters, self.task, self.precondition, self.subtasks, self.constraints)
+        write!(f, "Method name: {}\nParameters: {:?}\nTask: {:?}\nPrecondition: {:?}\nSubtasks: {:?}", self.name, self.parameters, self.task, self.precondition, self.subtasks)
     }
 }
 
 impl std::fmt::Display for Domain {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "Domain: {}\n", self.name)?;
+
+        write!(f, "Types: {:?}\n", self.types)?;
+
         for t in &self.tasks {
             println!("| Task: {:?}, Parameters: {:?}", t.name, t.parameters);
         }
 
-        // write!(f, "\nMethods:\n")?;
-        // for m in &self.methods {
-        //     println!("| {}\n", m)
-        // }
+        write!(f, "\nMethods:\n")?;
+        for m in &self.methods {
+            let mut count = 0;
+            println!("| Methods for task: {}\n", m.0);
+            for method in m.1 {
+                println!("| #{}: {}\n", count, method);
+                count += 1;
+            }   
+        }
 
         write!(f, "Actions:\n")?;
         for a in &self.actions {

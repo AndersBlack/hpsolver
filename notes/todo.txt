@@ -18,3 +18,7 @@ TODO:
   | --------------------------------------------------- | <- Fra init 
 
                 |-------------| <- Fra Goal
+
+
+
+goal_function remove virker ikke længere ? 

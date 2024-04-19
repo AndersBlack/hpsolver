@@ -6,7 +6,7 @@ use std::time::Instant;
 extern crate hp_solver;
 
 use hp_solver::parser::parse_hddl;
-use hp_solver::algorithms::depth_first;
+use hp_solver::algorithms::{depth_first, stoppable_df_partial::stoppable_depth_first_partial};
 
 fn main() {
   // Read the file path from command line
@@ -28,18 +28,21 @@ fn main() {
 
     pb.push(problem_file_path);
 
+    let res;
+
     match parse_result {
         Ok((problem,domain)) => {
           println!("\nFinished parsing problem and domain!\n");
-          depth_first(problem, &domain, &pb)
+          res = stoppable_depth_first_partial(&problem, &domain, &now,&pb);
         },
         Err(e) => {
           println!("Failure parsing: {}", e);
+          res = e;
         }
     }
 
     let elapsed_time = now.elapsed();
-    println!("\nRunning depth first took {} milli seconds.\n", elapsed_time.as_millis());
+    println!("\nRunning depth first took {} milli seconds. Result: {:?} \n", elapsed_time.as_millis(), res);
 
   } else {
     println!("Please provide a path for both the problem.hddl and the domain.hddl files. Or add nothing and try the test problem :) arg length: {}", args[1]);
