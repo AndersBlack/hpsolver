@@ -2,7 +2,6 @@ use crate::datastructures::problem::*;
 use crate::parser::{underscore_stringer, order_subtasks};
 
 use nom::IResult;
-//use nom::branch::alt;
 use nom::bytes::complete::{tag, take_until};
 use nom::branch::alt;
 use nom::combinator::{opt, not};
@@ -174,9 +173,16 @@ fn get_htn( input: &str ) -> IResult<&str, Htn> {
       None => {}
     }
 
+    let mut ordered = false;
+
+    if ordering.is_some() {
+      ordered = true;
+    }
+
     let htn = Htn {
       parameters: parms,
-      subtasks: sorted_subtasks
+      subtasks: sorted_subtasks,
+      ordered
     };
 
     (
@@ -261,12 +267,10 @@ fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<Stri
 
     let mut subtask_vec: Vec<(String, String, Vec<String>)> = Vec::<(String, String, Vec<String>)>::new();
 
-    // TODO: MOVE 
     for task in tuple {
 
       let mut obj_vec = Vec::<String>::new();
 
-      //Construct obj vector
       for obj in task.5 {
         match obj.0 {
           Some(_task0) => { obj_vec.push("?".to_string() + &obj.1) },

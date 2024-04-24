@@ -8,21 +8,19 @@ use std::io::Write;
 use std::collections::HashMap;
 use itertools::Itertools;
 
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
+pub type RelVars = Vec<(String, String, Vec<String>)>;
+pub type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
+pub type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
 
 pub mod passing_preconditions;
 pub mod constraints;
 pub mod precondition;
-pub mod back_tracking;
 pub mod effect;
 pub mod update;
 
 /// Hashes the state and returns a boolean representing whether or not it is a duplicate state
 pub fn hash_state(current_node: &mut Node) -> bool {
 
-	//Hash and check if hashset contains
 	let mut hasher: DefaultHasher = DefaultHasher::new();
 	(&current_node.problem.state, &current_node.subtask_queue, &current_node.called.2).hash(&mut hasher);
 	let hash = hasher.finish();
@@ -35,6 +33,7 @@ pub fn hash_state(current_node: &mut Node) -> bool {
 
 	false
 }
+
 
 pub fn partial_hash_state(current_node: &mut PartialNode, subtask_queue_index: usize, hash_limit: usize) -> bool {
 
@@ -86,6 +85,7 @@ pub fn partial_hash_state(current_node: &mut PartialNode, subtask_queue_index: u
 	false
 }
 
+/// Method for debugging
 pub fn await_key() {
 
 	let mut line = String::new();
@@ -93,6 +93,7 @@ pub fn await_key() {
 
 }
 
+/// In the case of unordered subtasks, create permutations of the subtask order
 pub fn generate_method_subtask_perm(current_subtask_list: &Vec<(SubtaskTypes, Vec<Argument>)>) -> Vec<Vec<(SubtaskTypes, Vec<Argument>)>> {
 
 	let mut subtask_permutation_list = Vec::<Vec<(SubtaskTypes, Vec<Argument>)>>::new();
@@ -383,6 +384,7 @@ pub fn reduce_domain( domain: &Domain, problem: &Problem ) -> Domain {
 	new_domain
 }
 
+
 fn effect_trim_domain( domain: &Domain, problem: &Problem ) -> Domain {
 
 	let mut new_domain = domain.clone();
@@ -503,6 +505,7 @@ fn effect_trim_domain( domain: &Domain, problem: &Problem ) -> Domain {
 	new_domain
 }
 
+/// Check if a type is of a certain parameter
 fn type_contain_param(types: &Vec<(String,String)>, check_type: &String) -> bool {
 
 	for type_obj in types {
@@ -528,12 +531,10 @@ pub fn print_result(problem_name: String, applied_functions: ((String, Vec<usize
 	path_stem_pb.set_extension("solution");
 	new_path.push(path_stem_pb);
 
-	//println!("Path: {:?}\n", new_path);
-
 	let mut _file = File::create(&new_path);
 
 	match &_file {
-		Err(e) => {
+		Err(_e) => {
 			path_stem_pb = PathBuf::from(path_stem);
 			let error_path_parent = path_buf.parent().unwrap();
 
@@ -546,9 +547,6 @@ pub fn print_result(problem_name: String, applied_functions: ((String, Vec<usize
 		_ => {}
 	}
 
-	//print!("file: {:?}\n", _file);
-	//println!("Path stem: {:?}, path parent: {:?}, path: {:?}, new path: {:?}", path_stem, path_parent, path, new_path);
-
 	let data_struct = OpenOptions::new()
 	.append(true)
 	.open(new_path);
@@ -558,13 +556,9 @@ pub fn print_result(problem_name: String, applied_functions: ((String, Vec<usize
 
 		data_file.set_len(0).ok();
 
-		//println!("\nFINISHED PROBLEM!\n");
-
-		// OUTPUT IN COMPETITION FORMAT
 		let intro_string = "Solution for problem: {".to_string() + &problem_name + "} by Ajess19 & Andla19\n==>\n";
 		data_file.write(intro_string.as_bytes()).expect("write failed");
 
-		//PRINT
 		for applied_function in &applied_functions.1 {
 			// Actions
 			match &applied_function {
@@ -603,8 +597,6 @@ pub fn print_result(problem_name: String, applied_functions: ((String, Vec<usize
 
 					let mut string_to_print = id.to_string() + " " + &method.task.0 + " ";
 
-					//println!("relvars: {:?} method: {:?}", relevant_vars, method.name);
-
 					for var in relevant_vars {
 						if var.2.len() > 1 {
 							println!("panic relvars: {:?} in {:?} ID: {id}", var, method.name);
@@ -639,13 +631,8 @@ pub fn print_result(problem_name: String, applied_functions: ((String, Vec<usize
 			let mut data_file = data_struct.expect("cannot open file");
 			data_file.set_len(0).ok();
 
-			//println!("\nFINISHED PROBLEM!\n");
-		
-			// OUTPUT IN COMPETITION FORMAT
 			let intro_string = "Solution for problem: {".to_string() + &problem_name + "} by Ajess19 & Andla19\n==>\n";
 			data_file.write(intro_string.as_bytes()).expect("write failed");
-			
-			//PRINT
 		
 			data_file.write("<==".as_bytes()).expect("write failed");
 		}
@@ -682,10 +669,10 @@ pub fn compare_lists(list1: &Vec<String>, list2: &Vec<String>) -> bool {
 		}
 	} else { return false; }
 
-	//println!("return true from comp list");
 	true
 }
 
+/// Find intersection of all lists in the vector of vectors
 pub fn intersection(nums: Vec<Vec<String>>) -> Vec<String> {
 	let mut intersect_result: Vec<String> = nums[0].clone();
 

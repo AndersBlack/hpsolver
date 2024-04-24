@@ -1,8 +1,6 @@
-use crate::toolbox::{self, make_node};
+use crate::toolbox::{self, make_node, RelVars};
 use crate::datastructures::{domain::*, node::*};
 use crate::toolbox::precondition::{*};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
 
 /// Perform a method (Check preconditions and constraints and attempt to perform every subtask)
 pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut current_node: Node, method: Method, mut relevant_variables: RelVars ) {
@@ -117,7 +115,7 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 				}
 			}
 
-			println!("Cleared method!\n");
+			//println!("Cleared method!\n");
 
 			// Is this not the first method?
 			if current_node.called.0.pop().unwrap() {
@@ -218,7 +216,7 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 
 	} else {
 
-		println!("Cleared method!");
+		//println!("Cleared method!");
 
 		if !current_node.called.0.pop().unwrap() {
 			node_queue.push(current_node);

@@ -41,10 +41,8 @@ pub struct Method {
     pub parameters: Vec<Argument>, 
     pub task: (String, Vec<String>),
     pub precondition: Option<Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>>,
-    //pub subtasks_old: Vec<(String, String, Vec<String>)>,
     pub subtasks: Vec<(SubtaskTypes, Vec<Argument>)>,
     pub ordering: bool,
-    //pub constraints: Option<Vec<(bool, String, String)>>,
     pub id: usize
 }
 

@@ -1,8 +1,5 @@
 use crate::datastructures::{domain::*, node::*};
-use crate::toolbox::{self, effect, make_node};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
+use crate::toolbox::{self, effect, make_node, RelVars, Precondition};
 
 /// Improving the runtime of the perform action method using CDCL
 pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node, action: Action, mut relevant_variables: RelVars ) {
@@ -75,8 +72,6 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node
 			// Apply effects and return to calling method
 			let (calling_method, calling_relevant_vars, called_passing_precon) = current_node.called.1.pop().unwrap();
 			current_node.called.0.pop();
-
-			println!("Cleared action!\n");
 
 			// Apply effects!
 			effect::apply_effects_cdcl(&mut current_node.problem, &mut current_node.applied_functions, &relevant_variables, &action);

@@ -13,6 +13,7 @@ use std::path::PathBuf;
 
 extern crate hp_solver;
 
+use hp_solver::algorithms::stoppable_df_partial::stoppable_depth_first_partial;
 use hp_solver::parser::parse_hddl;
 use hp_solver::algorithms::stoppable_df::stoppable_depth_first;
 
@@ -71,9 +72,7 @@ fn multiple_domain (category_folder: PathBuf) {
 
               let file_path = dir_entry.path();
 
-              if !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains(".md") {
-
-                //println!("fp: {:?}", file_path.ends_with("-domain.hddl"));
+              if !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains(".md") && !file_path.clone().into_os_string().into_string().unwrap().contains("solutions") {
 
                 let domain_path = look_for_domain_file(fs::read_dir(category_folder.clone()).unwrap(), file_path.clone());
                 let problem_path = file_path;
@@ -94,7 +93,7 @@ fn multiple_domain (category_folder: PathBuf) {
                     Ok((problem, domain)) => {
 
                       let handle = thread::spawn(move || {
-                        let result = stoppable_depth_first(&problem, &domain, &now, &problem_path);
+                        let result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path);
 
                         (result, now.elapsed().as_secs())
                       });
@@ -169,7 +168,7 @@ fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir) {
         Ok((problem, domain)) => {
 
           let handle = thread::spawn(move || {
-            let result = stoppable_depth_first(&problem, &domain, &now, &path_clone);
+            let result = stoppable_depth_first_partial(&problem, &domain, &now, &path_clone);
 
             (result, now.elapsed().as_secs())
           });

@@ -1,10 +1,6 @@
 
 use crate::datastructures::{domain::*, node::*, problem::{*}};
-use crate::toolbox::{make_node, check_duplicates, make_partial_node};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
+use crate::toolbox::{make_node, check_duplicates, make_partial_node, RelVars, Precondition, Called};
 
 /// Adds the supertype of every object in the problem to a list on the object datastructure and returns a new Problem
 pub fn update_objects( mut problem: Problem, domain: &Domain ) -> Problem {
@@ -46,8 +42,6 @@ pub fn update_objects( mut problem: Problem, domain: &Domain ) -> Problem {
 pub fn update_vars_for_called_method( mut current_node: Node, method: &Method, relevant_variables: &RelVars) -> Node {
 
 	let (calling_method, calling_relevant_vars, called_passing_precon) = current_node.called.1.pop().unwrap();
-
-	println!("Cleared {} adding {} as calling method", method.name, calling_method.name);
 
 	let calling_method_subtask = calling_method.subtasks[current_node.called.2.last().unwrap() - 1].clone();
 

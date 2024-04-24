@@ -1,7 +1,5 @@
-use crate::toolbox::{self, make_node};
+use crate::toolbox::{self, make_node, RelVars};
 use crate::datastructures::{domain::*, node::*};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
 
 /// Perform a task (Make a new node for every possible method that solves the given task)
 pub fn perform_task( node_queue: &mut Vec::<Node>, domain: &Domain, current_node: Node, task: Task, relevant_variables: RelVars ) {

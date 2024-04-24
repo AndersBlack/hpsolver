@@ -34,12 +34,7 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
       let (domain_name, types, constants, predicates, tasks, methods, actions, _) = res;
 
       let mut method_hashmap = HashMap::new();
-
-      //println!("Method before: {:?}\n", methods.clone());
-
       let fixed_method_list = update_method_subtasks(methods, &actions, &tasks);
-      
-      //println!("Method after: {:?}\n", fixed_method_list);
 
       for task in &tasks {
 
@@ -235,7 +230,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
       let mut predicates_vec = Vec::<Predicate>::new();
   
       for predicate in predicates {
-        //println!("predicates:{:?}", predicate);
   
         let mut arg_vec = Vec::<Argument>::new();
         let predicate_name = predicate.3.to_string();
@@ -376,17 +370,26 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
         //println!("{:?}\n", method);
 
         let ordered_subtasks = match (method.4, method.5.clone()) {
-          (Some(inner0), Some(inner1)) => order_subtasks(inner0, &Some(inner1)),
-          (Some(inner0), None) => { inner0 },
+          (Some(inner0), Some(inner1)) => {
+
+            if method.5.is_some() || inner0.1 == ":ordered-subtasks" || inner0.1 == ":ordered-tasks" {
+              ordering = true;
+            }
+
+            order_subtasks(inner0.0, &Some(inner1))
+          },
+          (Some(inner0), None) => {
+            
+            if method.5.is_some() || inner0.1 == ":ordered-subtasks" || inner0.1 == ":ordered-tasks" {
+              ordering = true;
+            }
+            
+             inner0.0 },
           _ => Vec::<(String, String, Vec<String>)>::new()
         };
 
         if method.6.is_some() {
           method.3 = combine_precon_and_constraint(method.6.unwrap(), method.3);
-        }
-
-        if method.5.is_some() {
-          ordering = true;
         }
 
         //println!("ordersubS: {:?}", ordered_subtasks);
@@ -689,7 +692,7 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
 
 } 
 
-  fn get_method_subtasks(input: &str) -> IResult<&str, Vec<(String, String, Vec<String>)>> {
+  fn get_method_subtasks(input: &str) -> IResult<&str, (Vec<(String, String, Vec<String>)>, String)> {
     //println!("Input for get_method_subtasks: {}", input);
   
     context("domain method subtask",
@@ -726,7 +729,7 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
       ))
     )(input)
     .map(|(next_input, res)| {
-      let (_tag0, _, _, _, _ws0, subtask_list, _, _ws1) = res;
+      let (tag0, _, _, _, _ws0, subtask_list, _, _ws1) = res;
   
       let mut subtask_vec = Vec::<(String, String, Vec<String>)>::new();
   
@@ -746,7 +749,7 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
       }
   
       (
-        next_input, subtask_vec
+        next_input, (subtask_vec, tag0.to_string())
       ) 
     })
   }
@@ -821,7 +824,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
       let mut constraint_vec = Vec::<(bool, String, String)>::new();
   
       for arg in arg_list {
-        //println!("{:?}",arg);
   
         let mut boolean_val = true;
   

@@ -1,7 +1,5 @@
-use crate::toolbox::{self, make_node};
+use crate::toolbox::{self, make_node, RelVars};
 use crate::datastructures::{domain::*, node::*};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
 
 /// Perform a htn task
 pub fn perform_htn_task( node_queue: &mut Vec::<Node>, domain: &Domain, mut current_node: Node, htn_task: (String, String, Vec<String>), relevant_variables: RelVars) {

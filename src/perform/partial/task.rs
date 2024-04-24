@@ -1,11 +1,5 @@
-use crate::toolbox::{self, make_partial_node, method_calls_method, generate_method_subtask_perm};
+use crate::toolbox::{self, make_partial_node, generate_method_subtask_perm, RelVars, Precondition, Called};
 use crate::datastructures::{domain::*, node::*};
-
-use super::method;
-
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
 
 
 /// Perform a task (Make a new node for every possible method that solves the given task)
@@ -51,8 +45,10 @@ pub fn perform_task( node_queue: &mut Vec::<PartialNode>, domain: &Domain, curre
 			let mut new_called = called.clone();
 			new_called.2.push(0);
 
-			if !method.ordering || method.subtasks.len() > 1 {
+			if !method.ordering && method.subtasks.len() > 1 {
 				let method_subtask_perm_list = generate_method_subtask_perm(&method.subtasks);
+
+				println!("PERM!");
 
 				for perm in method_subtask_perm_list {
 

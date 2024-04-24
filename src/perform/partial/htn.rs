@@ -1,11 +1,5 @@
-use crate::toolbox::{self, make_partial_node};
+use crate::toolbox::{self, make_partial_node, RelVars, Precondition, Called};
 use crate::datastructures::{domain::*, node::*};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
-
-// REPLACE PROBLEM IN PARTIAL NODE ON CORRECT INDEX
 
 /// Perform a htn task
 pub fn perform_htn_task( node_queue: &mut Vec::<PartialNode>, domain: &Domain, current_node: PartialNode, htn_task: (String, String, Vec<String>), relevant_variables: RelVars, called: &mut Called, subtask_queue_index: usize, passing_preconditions: Vec<Precondition>) -> bool {

@@ -1,4 +1,4 @@
-type RelVars = Vec<(String, String, Vec<String>)>;
+use crate::toolbox::RelVars;
 
 /// Returns a list of relevant variables that fulfills the constraints
 pub fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool, String, String)>) -> Vec<RelVars> {
@@ -18,7 +18,6 @@ pub fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool,
 				relevant_variables_list = constraint_equal(current_rel_vars, &constraint);
 			} else {
 				relevant_variables_list = constraint_unequal(current_rel_vars, &constraint);
-				//println!("CONS UE RELVARS: {:?}", relevant_variables_list);
 			}
 			
 			for rel in &relevant_variables_list{
@@ -42,7 +41,6 @@ pub fn check_constraints( relevant_variables: &RelVars, constraints: &Vec<(bool,
 /// Checks constraints where values are required to be equal
 fn constraint_equal( current_rel_vars: RelVars, constraint: &(bool, String, String)) -> Vec<RelVars> {
 	
-	// De skal være ens
 	let mut relevant_variables_list = Vec::<RelVars>::new();
 
 	let mut index_first = 0;
@@ -92,7 +90,6 @@ fn constraint_unequal( mut current_rel_vars: RelVars, constraint: &(bool, String
 		counting_int = counting_int + 1;
 	}
 
-	// Check is values can even be removed
 	if current_rel_vars[index_first].2.len() == 1 && current_rel_vars[index_second].2.len() == 1 {
 
 		if current_rel_vars[index_second].2[0] != current_rel_vars[index_first].2[0] {
@@ -115,7 +112,6 @@ fn constraint_unequal( mut current_rel_vars: RelVars, constraint: &(bool, String
 		return relevant_variables_list
 	}
 
-	//Is one of the lists of length 1?
 	if current_rel_vars[index_first].2.len() == 1 {
 
 		let index = current_rel_vars[index_second].2.iter().position(|x| *x == conflict_value_list[0]).unwrap();
@@ -126,8 +122,6 @@ fn constraint_unequal( mut current_rel_vars: RelVars, constraint: &(bool, String
 		return relevant_variables_list
 	} else if current_rel_vars[index_second].2.len() == 1 {
 
-		//println!("This one?");
-
 		let index = current_rel_vars[index_second].2.iter().position(|x| *x == conflict_value_list[0]).unwrap();
 		current_rel_vars[index_first].2.remove(index);
 
@@ -136,13 +130,9 @@ fn constraint_unequal( mut current_rel_vars: RelVars, constraint: &(bool, String
 		return relevant_variables_list
 	}
 
-	// Lav "safe value lister"
-
 	for val in &conflict_value_list {
 
 		let mut rel_clone_one = current_rel_vars.clone();
-
-		// list 1 is the small one
 		let mut list_one = Vec::<String>::new();
 
 		for value in &current_rel_vars[index_first].2 {
@@ -163,8 +153,6 @@ fn constraint_unequal( mut current_rel_vars: RelVars, constraint: &(bool, String
 
 		relevant_variables_list.push(rel_clone_one);
 	}
-
-	//println!("CONFLICT LIST: {:?}", conflict_value_list);
 
 	relevant_variables_list
 }

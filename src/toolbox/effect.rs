@@ -1,7 +1,5 @@
 use crate::datastructures::{domain::*, node::*, problem::*};
-use crate::toolbox::{self};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
+use crate::toolbox::{self, RelVars};
 
 /// Applies the effect of an action
 pub fn apply_effect( effect: &(bool,String,Vec<String>), problem: &mut Problem, param_list: &RelVars) {
@@ -9,8 +7,6 @@ pub fn apply_effect( effect: &(bool,String,Vec<String>), problem: &mut Problem, 
 	if effect.0 == false {
 
 		let effect_values = generate_effect_param_list(effect, &param_list); 
-
-		// Remove found from state
 		let optional_index = problem.state.iter().position(|x| (x.0 == effect.1 && toolbox::compare_lists(&x.1, &effect_values)));
 
 		if optional_index.is_some() {
@@ -20,9 +16,9 @@ pub fn apply_effect( effect: &(bool,String,Vec<String>), problem: &mut Problem, 
 	} else {
 
 		let effect_values = generate_effect_param_list(effect, &param_list);
-
 		let new_state_param = (effect.1.clone(), effect_values);
 		problem.state.push(new_state_param);
+
 	}
 } 
 
@@ -44,8 +40,6 @@ pub fn generate_effect_param_list( effect: &(bool,String,Vec<String>), param_lis
 		} else {
 			effect_values.push(effect_var.clone());
 		}
-
-
 	}
 
 	effect_values

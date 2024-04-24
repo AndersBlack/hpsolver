@@ -6,12 +6,12 @@ use std::io::Write;
 
 extern crate hp_solver;
 
+use hp_solver::algorithms::stoppable_df_partial::stoppable_depth_first_partial;
 use hp_solver::parser::parse_hddl;
-use hp_solver::algorithms::stoppable_df::stoppable_depth_first;
 
 fn main() {
 
-  let data_folder_path = "additional_problems/";
+  let data_folder_path = "problems/additional_problems/";
 
   let category_folders = fs::read_dir(data_folder_path).unwrap();
 
@@ -52,7 +52,7 @@ fn main() {
           Ok((problem, domain)) => {
 
             let handle = thread::spawn(move || {
-              let result = stoppable_depth_first(&problem, &domain, &now, &path_clone);
+              let result = stoppable_depth_first_partial(&problem, &domain, &now, &path_clone);
 
               (result, now.elapsed().as_millis())
             });

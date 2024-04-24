@@ -64,19 +64,19 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path
 				match current_subtask {
 
 					Some((SubtaskTypes::HtnTask(htn_task), relevant_variables))=> {
-						//println!("Htn_task: {:?}, Rel_Vars: {:?}\n", htn_task.0, relevant_variables);
+						//println!("Htn_task: {:?}", htn_task.0);
 						algorithms::perform_htn_task(node_queue, domain, current_node, htn_task, relevant_variables);
 					},
 					Some((SubtaskTypes::Task(task), relevant_variables)) => {
-						//println!("Task: {:?}\n", task.name);
+						//println!("Task: {:?}", task.name);
 						algorithms::perform_task(node_queue, domain, current_node, task, relevant_variables);
 					},
 					Some((SubtaskTypes::Method(method), relevant_variables)) => {
-						//println!("Method {:?}, RELVARS: {:?}\n", method.name, relevant_variables);					
+						//println!("Method {:?}", method.name);					
 						algorithms::perform_method(node_queue, domain, current_node, method, relevant_variables);
 					},
 					Some((SubtaskTypes::Action(action), relevant_variables)) => {
-						//println!("\n Action: {:?} Relevant_variables: {:?}\n", action.name, relevant_variables);
+						//println!("Action: {:?}", action.name);
 						algorithms::perform_action_cdcl(node_queue, current_node, action, relevant_variables);
 					},
 					None => { 
@@ -87,11 +87,6 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path
 							toolbox::print_result(current_node.problem.name, current_node.applied_functions, path);
               return "success";
 						}
-
-						// if current_node.goal_functions.0.len() > 0 {
-						// 	toolbox::back_tracking::backtrack_from_goal(node_queue, &current_node, &domain);
-						// }
-						
 					}
 				}
 			},

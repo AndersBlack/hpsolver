@@ -1,9 +1,5 @@
 use crate::datastructures::{domain::*, node::*};
-use crate::toolbox::{self, effect, make_partial_node};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
+use crate::toolbox::{self, effect, make_partial_node, RelVars, Precondition, Called};
 
 /// Improving the runtime of the perform action method using CDCL
 pub fn perform_action_cdcl( node_queue: &mut Vec::<PartialNode>, mut current_node: PartialNode, action: Action, mut relevant_variables: RelVars, called: &mut Called, passing_precon: Vec<Precondition>, subtask_queue_index: usize ) -> bool {
@@ -72,8 +68,6 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<PartialNode>, mut current_nod
 			let (calling_method, calling_relevant_vars, called_passing_precon) = called.1.pop().unwrap();
 			called.0.pop();
 
-			//println!("Cleared action!\n");
-
 			// Apply effects!
 			effect::apply_effects_cdcl(&mut current_node.problem, &mut current_node.applied_functions, &relevant_variables, &action);
 
@@ -121,6 +115,8 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<PartialNode>, mut current_nod
 		} else {
 
 			effect::apply_effects_cdcl(&mut current_node.problem, &mut current_node.applied_functions, &relevant_variables, &action);
+
+			current_node.subtask_queue.remove(subtask_queue_index);
 
 			let new_node = make_partial_node(current_node.problem, current_node.subtask_queue, current_node.applied_functions, current_node.hash_table, current_node.hash_counter, current_node.goal_functions);
 

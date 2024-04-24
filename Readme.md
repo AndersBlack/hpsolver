@@ -42,9 +42,11 @@ The following runs the IPC2020 competition in its entirety. Be aware that since 
 cargo run --bin run_competition
 ```
 
-### Image
+## Image
 
 An image containing the application can be found a [Image]()
+
+## Additional Software
 
 ## Contribution
 

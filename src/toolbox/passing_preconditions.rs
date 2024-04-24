@@ -1,15 +1,10 @@
 use crate::datastructures::{domain::*, node::*};
 
-use super::{precondition::check_precondition, Problem, RelVars};
-
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
+use super::{precondition::check_precondition, Problem, RelVars, Called, Precondition};
 
 /// Update passing preconditions
 pub fn update_passing_precondition(called: &Called, passing_preconditions: &Vec<Precondition>, parameters: &Vec<Argument>) -> Vec<Precondition> {
 	let mut new_passing_precon = Vec::<Precondition>::new();
-
-	//println!("PARAMS MF: {:?}", parameters);
 
 	if !passing_preconditions.is_empty() {
 		let caller_method = &called.1.last().unwrap().0;
@@ -50,8 +45,6 @@ pub fn update_passing_precondition(called: &Called, passing_preconditions: &Vec<
 		}	
 	}
 
-	//println!("Updating passing precon: {:?}", new_passing_precon);
-
 	new_passing_precon
 }
 
@@ -59,8 +52,6 @@ pub fn update_passing_precondition(called: &Called, passing_preconditions: &Vec<
 pub fn decide_passing_preconditions( passing_preconditions: &mut Vec<Precondition>, method: &Method, index: usize, relevant_variables: &RelVars, problem: &Problem) -> Vec<Precondition> {
 
 	let mut new_passing_preconditions = Vec::<Precondition>::new();
-
-	//println!("Old passing precon: {:?}", passing_preconditions);
 
 	// Add relevant preconditions for the coming subtask
 	if method.precondition.is_some() {
@@ -128,7 +119,6 @@ fn precondition_should_be_passed(precondition: &Precondition, subtask: &(Subtask
 	}
 
 	if param_count == precondition.2.len() {
-		//println!("precon was relevant! {precondition:?}");
 		precondition_passed = true; 
 	}
 

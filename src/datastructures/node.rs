@@ -19,7 +19,6 @@ pub struct Node {
   /// Tuple of (name, object_type & possible values)
   pub subtask_queue: Vec<(SubtaskTypes, Vec<(String, String, Vec<String>)>)>,
   pub called: (Vec<bool>, Vec<(Method, Vec<(String, String, Vec<String>)>, Vec<Precondition>)>, Vec<usize>),
-  /// Root tuple, List of applied function (Function, id, called id list, relevant variables)
   pub applied_functions: ((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>),
   pub hash_table: HashSet<u64>,
   pub passing_preconditions: Vec<Precondition>,
@@ -30,9 +29,7 @@ pub struct Node {
 #[derive(Debug, Clone)] 
 pub struct PartialNode {
   pub problem: Problem,
-  /// Tuple of (name, object_type & possible values)
   pub subtask_queue: Vec< (SubtaskTypes, RelVars, Called, Vec<Precondition>) >,
-  /// Root tuple, List of applied function (Function, id, called id list, relevant variables)
   pub applied_functions: ((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>),
   pub hash_table: HashSet<u64>,
   pub hash_counter: HashMap<u64, usize>,

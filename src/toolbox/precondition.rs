@@ -1,8 +1,6 @@
 use core::panic;
 use crate::datastructures::problem::{*};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
+use crate::toolbox::{RelVars, Precondition};
 
 /// Checks a given precondition. Takes the boolean prefix, the name, the list of lists of possible values and a ref to the state
 pub fn check_precondition( precondition: &Precondition, relevant_variables: &RelVars, problem: &Problem) -> bool {

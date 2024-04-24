@@ -1,10 +1,7 @@
-use crate::toolbox::{self, make_partial_node};
+use crate::toolbox::{self, make_partial_node, RelVars, Precondition, Called};
 use crate::datastructures::{domain::*, node::*};
 use crate::toolbox::precondition::{*};
 
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
 
 /// Perform a method (Check preconditions and constraints and attempt to perform every subtask)
 pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mut current_node: PartialNode, method: Method, mut relevant_variables: RelVars, mut called: Called, subtask_queue_index: usize, mut passing_preconditions: Vec<Precondition> ) -> bool  {
@@ -230,9 +227,11 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 
 	} else {
 
-		println!("Cleared method! 2");
+		//println!("Cleared method! 2");
 
 		if !called.0.pop().unwrap() {
+
+			current_node.subtask_queue.remove(subtask_queue_index);
 			node_queue.push(current_node);
 
 		} else {

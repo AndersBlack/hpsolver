@@ -14,22 +14,16 @@ extern crate hp_solver;
 
 use hp_solver::algorithms::stoppable_df_partial::stoppable_depth_first_partial;
 use hp_solver::parser::parse_hddl;
-use hp_solver::algorithms::stoppable_df::stoppable_depth_first;
 
 fn main() {
 
-  // Run total order track 
-  let data_folder_path_partial = "competition_problems/partial-order/";
-  let data_folder_path_total = "competition_problems/total-order/";
-
-  let category_folders_partial = fs::read_dir(data_folder_path_partial).unwrap();
-  let category_folders_total = fs::read_dir(data_folder_path_total).unwrap();
-
+  let category_folders_partial = fs::read_dir("problems/competition_problems/partial-order/").unwrap();
+  let category_folders_total = fs::read_dir("problems/competition_problems/total-order/").unwrap();
   let joined_folders = category_folders_partial.chain(category_folders_total);
 
   for category_folder in joined_folders {
 
-    println!("\n Category: {:?}\n", category_folder);
+    println!("\n Category: {:?}\n", category_folder.as_ref().unwrap().path());
 
     let path_category_folder = category_folder.unwrap().path();
   
@@ -40,10 +34,7 @@ fn main() {
     let mut domain_path = path_category_folder.clone();
 
     domain_path.push("domains/");
-
-    // Does the folder contain a domains and problems folder?
-      // Yes -> Apply the same domain to every problem
-      // No -> Look for a seperate domain for each problem
+    
     match (fs::read_dir(problem_folder_path), fs::read_dir(domain_path)) {
       (Ok(problem_file_paths), Ok(domain_file_path)) => {
 
@@ -76,9 +67,7 @@ fn multiple_domain (category_folder: PathBuf) {
 
               let file_path = dir_entry.path();
 
-              if !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains(".md") {
-
-                //println!("fp: {:?}", file_path.ends_with("-domain.hddl"));
+              if !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains(".md") && !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains("solutions") {
 
                 let domain_path = look_for_domain_file(fs::read_dir(category_folder.clone()).unwrap(), file_path.clone());
                 let problem_path = file_path;
@@ -89,21 +78,15 @@ fn multiple_domain (category_folder: PathBuf) {
                 let domain_contents = fs::read_to_string(domain_path).expect("failed to read domain file");
                 let problem_contents = fs::read_to_string(problem_path.clone()).expect("failed to read problem file");
 
-
                 let parse_result = parse_hddl( &problem_contents, &domain_contents);
 
-                print!("Running: {} ", problem_path.display());
                 std::io::stdout().flush().unwrap();
 
                 match parse_result {
                     Ok((problem, domain)) => {
 
                       let handle = thread::spawn(move || {
-                        let mut result = stoppable_depth_first(&problem, &domain, &now, &problem_path);
-
-                        if result != "success" {
-                          result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path)
-                        }
+                        let result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path);
 
                         (result, now.elapsed().as_secs())
                       });
@@ -117,9 +100,7 @@ fn multiple_domain (category_folder: PathBuf) {
                         }
                       }
 
-                      let (message, time) = handle.join().unwrap();
-                      print!("Result: {}, Time: {} seconds\n", message, time);
-
+                      let (_message, time) = handle.join().unwrap();
                       let score = compute_score(time);
 
                       collective_score = collective_score.add(score);
@@ -163,25 +144,17 @@ fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir) {
     problem_count = problem_count.add(1.0);
 
     let now = Instant::now();
-
     let path_clone = problem_file_path.unwrap().path().clone();
-
     let problem_contents = fs::read_to_string(path_clone.clone()).expect("failed to read problem file");
-
     let parse_result = parse_hddl( &problem_contents, &domain_contents);
 
-    print!("Parsing: {} ", path_clone.display());
     std::io::stdout().flush().unwrap();
 
     match parse_result {
         Ok((problem, domain)) => {
 
           let handle = thread::spawn(move || {
-            let mut result = stoppable_depth_first(&problem, &domain, &now, &path_clone);
-
-            if result != "success" {
-              result = stoppable_depth_first_partial(&problem, &domain, &now, &path_clone)
-            }
+            let result = stoppable_depth_first_partial(&problem, &domain, &now, &path_clone);
 
             (result, now.elapsed().as_secs())
           });
@@ -195,8 +168,7 @@ fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir) {
             }
           }
 
-          let (message, time) = handle.join().unwrap();
-          print!("Result: {}, Time: {} seconds\n", message, time);
+          let (_message, time) = handle.join().unwrap();
 
           let score = compute_score(time);
 
@@ -217,21 +189,14 @@ fn look_for_domain_file(files: ReadDir, problem_file: PathBuf) -> PathBuf {
 
   match problem_file.file_stem() {
     Some(file_no_ending) => {
-      //println!("file no ending: {:?}", file_no_ending);
 
       for file in files {
 
         let file_entry = file.unwrap();
-
-        //println!("entry: {:?}", file_entry.path());
-
         let file_name = file_entry.file_name();
-
-        
         let domain_file_name = file_no_ending.to_os_string().into_string().unwrap().to_owned() + &"-domain.hddl".to_string();
 
         if file_name.into_string().unwrap().contains(&domain_file_name) {
-          //println!("Found match for problem: {:?} with domain {:?}", problem_file, file_entry);
           return file_entry.path()
         }
 
@@ -243,6 +208,7 @@ fn look_for_domain_file(files: ReadDir, problem_file: PathBuf) -> PathBuf {
       panic!("No ending!") 
     }
   }
+
 }
 
 fn compute_score(time: u64) -> f64 {
