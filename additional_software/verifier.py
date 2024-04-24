@@ -4,7 +4,7 @@ from os import listdir
 
 print(" Starting verification ")
 
-base_path = "../additional_problems"
+base_path = "../problems/additional_problems"
 
 for folder in listdir(base_path):
 
