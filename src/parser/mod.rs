@@ -156,7 +156,7 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: &Optio
     
       // Building the graph 
       for order in ordering {
-        for mut node in &mut degree_list {
+        for node in &mut degree_list {
     
           if order.0 == "<".to_string() {
 

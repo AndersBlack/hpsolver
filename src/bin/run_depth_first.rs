@@ -7,7 +7,6 @@ extern crate hp_solver;
 
 use hp_solver::parser::parse_hddl;
 use hp_solver::algorithms::stoppable_df_partial::stoppable_depth_first_partial;
-use hp_solver::algorithms::stoppable_df::stoppable_depth_first;
 
 fn main() {
   // Read the file path from command line
