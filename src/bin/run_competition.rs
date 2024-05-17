@@ -9,6 +9,7 @@ use std::time::Duration;
 use std::time::Instant;
 use std::io::Write;
 use std::fs::ReadDir;
+use std::env;
 
 extern crate hp_solver;
 
@@ -17,34 +18,34 @@ use hp_solver::parser::parse_hddl;
 
 fn main() {
 
-  let category_folders_partial = fs::read_dir("problems/competition_problems/partial-order/").unwrap();
-  let category_folders_total = fs::read_dir("problems/competition_problems/total-order/").unwrap();
-  let joined_folders = category_folders_partial.chain(category_folders_total);
+  let args: Vec<_> = env::args().collect();
 
-  for category_folder in joined_folders {
+  if args.len() < 2 {
+    println!("The binary takes 1 argument: Path to folder containing all problem domains.\n An example could be: path/to/problem/folder/ ");
+    return
+  }
+
+  let path = String::from(args[1].clone());
+  let domain_problem_folders = fs::read_dir(path).unwrap();
+
+  for category_folder in domain_problem_folders {
 
     println!("\n Category: {:?}\n", category_folder.as_ref().unwrap().path());
 
     let path_category_folder = category_folder.unwrap().path();
-  
     let mut problem_folder_path = path_category_folder.clone();
+    let mut domain_path = path_category_folder.clone();
 
     problem_folder_path.push("problems/");
-
-    let mut domain_path = path_category_folder.clone();
 
     domain_path.push("domains/");
     
     match (fs::read_dir(problem_folder_path), fs::read_dir(domain_path)) {
       (Ok(problem_file_paths), Ok(domain_file_path)) => {
-
         single_domain(problem_file_paths, domain_file_path);
-
       }
       _ => {
-
         multiple_domain(path_category_folder);
-
       }
     }
   }
@@ -60,63 +61,60 @@ fn multiple_domain (category_folder: PathBuf) {
   match file_paths {
     Ok(files) => {
 
-      for file in files {
-        
-        match file {
-            Ok(dir_entry) => {
+      let mut paths: Vec<_> = files.map(|r| r.unwrap()).collect();
+      paths.sort_by_key(|dir| dir.path());
 
-              let file_path = dir_entry.path();
+      for file in paths {
 
-              if !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains(".md") && !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains("solutions") {
+        let file_path = file.path();
 
-                let domain_path = look_for_domain_file(fs::read_dir(category_folder.clone()).unwrap(), file_path.clone());
-                let problem_path = file_path;
+        if !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains(".md") && !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains("solutions") {
 
-                problem_count = problem_count.add(1.0);
-                let now = Instant::now();
+          let domain_path = look_for_domain_file(fs::read_dir(category_folder.clone()).unwrap(), file_path.clone());
+          let problem_path = file_path;
 
-                let domain_contents = fs::read_to_string(domain_path).expect("failed to read domain file");
-                let problem_contents = fs::read_to_string(problem_path.clone()).expect("failed to read problem file");
+          problem_count = problem_count.add(1.0);
+          let now = Instant::now();
 
-                let parse_result = parse_hddl( &problem_contents, &domain_contents);
+          let domain_contents = fs::read_to_string(domain_path).expect("failed to read domain file");
+          let problem_contents = fs::read_to_string(problem_path.clone()).expect("failed to read problem file");
 
-                std::io::stdout().flush().unwrap();
+          let parse_result = parse_hddl( &problem_contents, &domain_contents);
 
-                let time_allowed: u64 = 1800;
+          
 
-                match parse_result {
-                    Ok((problem, domain)) => {
+          let time_allowed: u64 = 1800;
+          print!("Running: {} ", problem_path.display());
+          std::io::stdout().flush().unwrap();
 
-                      let handle = thread::spawn(move || {
-                        let result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path, time_allowed);
+          match parse_result {
+              Ok((problem, domain)) => {
 
-                        (result, now.elapsed().as_secs())
-                      });
+                let handle = thread::spawn(move || {
+                  let result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path, time_allowed);
 
-                      while now.elapsed().as_secs() < time_allowed {
-                        
-                        thread::sleep(Duration::from_millis(50));
+                  (result, now.elapsed().as_secs())
+                });
 
-                        if handle.is_finished() {
-                          break;
-                        }
-                      }
+                while now.elapsed().as_secs() < time_allowed {
+                  
+                  thread::sleep(Duration::from_millis(50));
 
-                      let (_message, time) = handle.join().unwrap();
-                      let score = compute_score(time);
-
-                      collective_score = collective_score.add(score);
-                    },
-                    Err(e) => {
-                      println!("Failure: {}", e);
-                    }
+                  if handle.is_finished() {
+                    break;
+                  }
                 }
-              }
 
-            },
-            Err(error) => {
-              panic!("path failed: {}", error);
-            }
+                let (message, time) = handle.join().unwrap();
+                print!("Result: {}, Time: {} seconds\n", message, time);
+                let score = compute_score(time);
+
+                collective_score = collective_score.add(score);
+              },
+              Err(e) => {
+                println!("Failure: {}", e);
+              }
+          }
         }
       }
 
@@ -141,18 +139,23 @@ fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir) {
   let mut collective_score: f64 = 0.0;
   let mut problem_count: f64 = 0.0;
 
-  for problem_file_path in problem_file_paths {
+  let mut problem_paths: Vec<_> = problem_file_paths.map(|r| r.unwrap()).collect();
+
+  problem_paths.sort_by_key(|dir| dir.path());
+
+  for problem_file_path in problem_paths {
 
     problem_count = problem_count.add(1.0);
 
     let now = Instant::now();
-    let path_clone = problem_file_path.unwrap().path().clone();
+    let path_clone = problem_file_path.path().clone();
     let problem_contents = fs::read_to_string(path_clone.clone()).expect("failed to read problem file");
     let parse_result = parse_hddl( &problem_contents, &domain_contents);
 
-    std::io::stdout().flush().unwrap();
-
     let time_allowed: u64 = 1800;
+
+    print!("Running: {} ", path_clone.display());
+    std::io::stdout().flush().unwrap();
 
     match parse_result {
         Ok((problem, domain)) => {
@@ -172,7 +175,8 @@ fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir) {
             }
           }
 
-          let (_message, time) = handle.join().unwrap();
+          let (message, time) = handle.join().unwrap();
+          print!("Result: {}, Time: {} seconds\n", message, time);
 
           let score = compute_score(time);
 

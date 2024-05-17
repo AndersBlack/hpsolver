@@ -42,6 +42,7 @@ pub fn stoppable_depth_first_partial(problem: &Problem, domain: &Domain, stopped
 		}
 
 		if return_string != "success" {
+			println!("increase hash limit");
 			hash_limit = hash_limit + 1;
 			node_queue = node_q_clone.clone();
 		} else {

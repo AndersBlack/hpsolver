@@ -35,11 +35,14 @@ fn main() {
 
     let domain_contents = fs::read_to_string(domain_path.unwrap().path()).expect("failed to read domain file");
 
-    for problem_file_path in problem_file_paths {
+    let mut paths: Vec<_> = problem_file_paths.map(|r| r.unwrap()).collect();
+    paths.sort_by_key(|dir| dir.path());
+
+    for problem_file_path in paths {
 
       let now = Instant::now();
 
-      let path_clone = problem_file_path.unwrap().path().clone();
+      let path_clone = problem_file_path.path().clone();
 
       let problem_contents = fs::read_to_string(path_clone.clone()).expect("failed to read problem file");
 
@@ -48,7 +51,7 @@ fn main() {
       print!("Parsing: {} ", path_clone.display());
       std::io::stdout().flush().unwrap();
 
-      let time_allowed: u64 = 10;
+      let time_allowed: u64 = 1000;
 
       match parse_result {
           Ok((problem, domain)) => {
