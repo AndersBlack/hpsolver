@@ -1,7 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
 use std::time::Instant;
-use std::process::Command;
 
 use crate::parser::parse_hddl;
 use crate::algorithms::stoppable_df_partial::stoppable_depth_first_partial;
