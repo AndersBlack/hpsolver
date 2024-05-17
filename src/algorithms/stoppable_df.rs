@@ -5,7 +5,7 @@ use crate::toolbox::{self};
 // Relevant Variables datatype
 type RelVars = Vec<(String, String, Vec<String>)>;
 
-pub fn stoppable_depth_first(problem: &Problem, domain: &Domain, stopped: &Instant, path: &PathBuf) -> &'static str {
+pub fn stoppable_depth_first(problem: &Problem, domain: &Domain, stopped: &Instant, path: &PathBuf, time_allowed: u64) -> &'static str {
 
 	let mut node_queue = Vec::<Node>::new();
 	let mut htn_subtask_queue = Vec::<(SubtaskTypes, RelVars)>::new();
@@ -30,18 +30,18 @@ pub fn stoppable_depth_first(problem: &Problem, domain: &Domain, stopped: &Insta
 	
 	node_queue.push(new_node);
 
-	let return_string = run_df(&mut node_queue, &new_domain, stopped, path);
+	let return_string = run_df(&mut node_queue, &new_domain, stopped, path, time_allowed);
 
   return_string
 }
 
-fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path: &PathBuf) -> &'static str {
+fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path: &PathBuf, time_allowed: u64) -> &'static str {
 
 	let finished: bool = false;
 
 	while !finished {
 
-    if stopped.elapsed().as_secs() > 1800 { 
+    if stopped.elapsed().as_secs() > time_allowed { 
       return "stopped";
     }
 

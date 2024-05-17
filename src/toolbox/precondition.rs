@@ -5,6 +5,8 @@ use crate::toolbox::{RelVars, Precondition};
 /// Checks a given precondition. Takes the boolean prefix, the name, the list of lists of possible values and a ref to the state
 pub fn check_precondition( precondition: &Precondition, relevant_variables: &RelVars, problem: &Problem) -> bool {
 
+  //println!("Precon for check: {precondition:?}");
+
 	match precondition.0 {
 		0 | 1 => {
 			let mut precondition_value_list = Vec::<(String, Vec<String>)>::new();
@@ -229,14 +231,12 @@ pub fn perm_count( size_ref: &Vec::<Vec<usize>>) -> usize {
 }
 
 /// Remove values from relevant variables that is unable to clear any precondition in any permutation
-pub fn precon_trimmer( relevant_variables: RelVars , precondition_list: &Vec<Precondition>, problem: &Problem ) -> (RelVars, bool) {
+pub fn precon_trimmer( relevant_variables: RelVars , precondition_list: &Vec<Precondition>, problem: &Problem, state: &Vec<(String, Vec<String>)>) -> (RelVars, bool) {
 
   let mut new_relvars = relevant_variables.clone();
   let mut cleared_precons = true;
   let mut check_precon_again= true;
   let mut trimmed_something;
-
-  //println!("Hmmm: {:?}", precondition_list);
 
   while check_precon_again {
 
@@ -246,7 +246,7 @@ pub fn precon_trimmer( relevant_variables: RelVars , precondition_list: &Vec<Pre
       if relevant_variables.len() == 0 {
         let mut found_it_bool = false;
 
-        for state_var in &problem.state {
+        for state_var in state {
 
           if state_var.0 == precondition.1 && precondition.0 == 0 {
             found_it_bool = true;
@@ -264,11 +264,11 @@ pub fn precon_trimmer( relevant_variables: RelVars , precondition_list: &Vec<Pre
       }
       
       match precondition.0 {
-        0 => { (new_relvars, trimmed_something, cleared_precons) = precon_trim_zero( &new_relvars, &precondition, &problem.state) },
-        1 => { (new_relvars, trimmed_something) = precon_trim_one( &new_relvars, &precondition, &problem.state) },
+        0 => { (new_relvars, trimmed_something, cleared_precons) = precon_trim_zero( &new_relvars, &precondition, &state) },
+        1 => { (new_relvars, trimmed_something) = precon_trim_one( &new_relvars, &precondition, &state) },
         2 => { (new_relvars, trimmed_something) = precon_trim_two( &new_relvars, &precondition) },
         3 => { (new_relvars, trimmed_something) = precon_trim_three( &new_relvars, &precondition) },
-        _ => { (new_relvars, trimmed_something, cleared_precons) = precon_trim_forall( &new_relvars, &precondition, &problem) },
+        _ => { (new_relvars, trimmed_something, cleared_precons) = precon_trim_forall( &new_relvars, &precondition, &problem, state) },
       }
 
       if trimmed_something {
@@ -292,10 +292,6 @@ pub fn precon_trimmer( relevant_variables: RelVars , precondition_list: &Vec<Pre
 
 /// Check that predicate is present in state
 pub fn precon_trim_zero( relevant_variables: &RelVars , precondition: &Precondition, state: &Vec<(String, Vec<String>)> ) -> (RelVars, bool, bool) {
-
-  //println!("PRECON ZERO - relvars: {:?}\nprecon: {:?}\n", relevant_variables, precondition);
-
-  //println!("trim 0");
 
   //let mut new_relvars = relevant_variables.;
   let (relvar_indexes, constant, mut new_relvars) = setup_relvar_indexes(&precondition.2, relevant_variables);
@@ -322,7 +318,10 @@ pub fn precon_trim_zero( relevant_variables: &RelVars , precondition: &Precondit
 
     // Check precondition
     for state_predicate in state {
+
       if state_predicate.0 == precondition.1 {
+
+        
 
         let mut found_count = 0;
         //println!("rel_ind: {:?}, size_ref: {:?}, state_pred: {:?}, found_c: {:?}", relvar_indexes, size_ref, state_predicate, found_count);
@@ -566,7 +565,7 @@ pub fn precon_trim_three( relevant_variables: &RelVars , precondition: &Precondi
   return (new_relvars, parameter_contained)
 }
 
-pub fn precon_trim_forall( relevant_variables: &RelVars , precondition: &Precondition, problem: &Problem ) -> (RelVars, bool, bool) {
+pub fn precon_trim_forall( relevant_variables: &RelVars , precondition: &Precondition, problem: &Problem, state: &Vec<(String, Vec<String>)>) -> (RelVars, bool, bool) {
   
   let mut new_rel_var = relevant_variables.clone();
   let forall = precondition.3.clone().unwrap();
@@ -584,12 +583,6 @@ pub fn precon_trim_forall( relevant_variables: &RelVars , precondition: &Precond
       forall_param.1.push(object.0.clone());
     }
   }
-
-  //println!("Reached forall!\nThe precondition is: {:?}\n", precondition);
-  //println!("State: {:?}\n", problem.state);
-
-  // let mut line = String::new();
-	// let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
   for precon_inner in forall.1 {
 
@@ -644,7 +637,7 @@ pub fn precon_trim_forall( relevant_variables: &RelVars , precondition: &Precond
     while n < perm_count {
 
       // Check precondition
-      for state_predicate in &problem.state {
+      for state_predicate in state {
         if state_predicate.0 == precon_inner.1 {
 
           let mut found_count = 0;

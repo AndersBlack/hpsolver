@@ -39,7 +39,7 @@ pub fn perform_task( node_queue: &mut Vec::<Node>, domain: &Domain, current_node
 				arg_list.push(new_arg);
 			}
 
-			let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition(&current_node.called, &current_node.passing_preconditions, &arg_list);
+			let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition_total(&current_node.called, &current_node.passing_preconditions, &arg_list);
 
 			new_subtask_queue.push((SubtaskTypes::Method(method.clone()), new_rel_vars));
 

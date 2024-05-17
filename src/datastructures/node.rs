@@ -3,7 +3,7 @@ use std::collections::{HashSet, HashMap};
 
 type RelVars = Vec<(String, String, Vec<String>)>;
 type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
+type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>, Vec<(String, Vec<String>)>)>, Vec<usize>);
 
 #[derive(Debug, Clone, Hash)] 
 pub enum SubtaskTypes {
@@ -29,11 +29,12 @@ pub struct Node {
 #[derive(Debug, Clone)] 
 pub struct PartialNode {
   pub problem: Problem,
-  pub subtask_queue: Vec< (SubtaskTypes, RelVars, Called, Vec<Precondition>) >,
+  pub subtask_queue: Vec<(SubtaskTypes, RelVars, Called, Vec<Precondition>)>,
   pub applied_functions: ((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>),
   pub hash_table: HashSet<u64>,
   pub hash_counter: HashMap<u64, usize>,
-  pub goal_functions: Vec<String>
+  pub goal_functions: Vec<String>,
+  pub original_state: Vec<(String, Vec<String>)>
 }
 
 

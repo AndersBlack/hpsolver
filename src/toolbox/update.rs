@@ -99,7 +99,7 @@ pub fn update_vars_for_called_method( mut current_node: Node, method: &Method, r
 
 pub fn update_vars_for_called_method_partial( current_node: PartialNode, method: &Method, relevant_variables: &RelVars, mut called: Called, _passing_preconditions: Vec<Precondition>, tried_count: usize) -> PartialNode {
 
-	let (calling_method, calling_relevant_vars, called_passing_precon) = called.1.pop().unwrap();
+	let (calling_method, calling_relevant_vars, called_passing_precon, original_state) = called.1.pop().unwrap();
 
 	let calling_method_subtask = calling_method.subtasks[called.2.last().unwrap() - 1].clone();
 
@@ -150,7 +150,7 @@ pub fn update_vars_for_called_method_partial( current_node: PartialNode, method:
 	let mut new_sq = current_node.subtask_queue.clone();
 	new_sq[tried_count] = (SubtaskTypes::Method(calling_method.clone()), new_new_relevant_variables, called, called_passing_precon);
 
-	let new_node = make_partial_node(current_node.problem, new_sq, current_node.applied_functions, current_node.hash_table, current_node.hash_counter, current_node.goal_functions);
+	let new_node = make_partial_node(current_node.problem, new_sq, current_node.applied_functions, current_node.hash_table, current_node.hash_counter, current_node.goal_functions, &original_state);
 
 	new_node
 }

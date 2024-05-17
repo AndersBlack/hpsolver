@@ -5,7 +5,7 @@ use crate::toolbox::precondition::{*};
 
 /// Perform a method (Check preconditions and constraints and attempt to perform every subtask)
 pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mut current_node: PartialNode, method: Method, mut relevant_variables: RelVars, mut called: Called, subtask_queue_index: usize, mut passing_preconditions: Vec<Precondition> ) -> bool  {
-	//println!("Passing precons: {:?}", current_node.passing_preconditions);
+
 	// What is the index of next function in the subtask queue of this method?
 	let current_subtask_index = called.2.pop().unwrap();
 
@@ -13,8 +13,7 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 		// Check preconditions
 		match &method.precondition {
 			Some(precondition) => {
-
-				let (new_relevant_variables, preconditions_cleared) = precon_trimmer(relevant_variables, precondition, &current_node.problem);
+				let (new_relevant_variables, preconditions_cleared) = precon_trimmer(relevant_variables, precondition, &current_node.problem, &current_node.problem.state);
 
 				if preconditions_cleared {
 					relevant_variables = new_relevant_variables;
@@ -28,7 +27,6 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 	}
 
 	if method.subtasks.len() > 0 {
-		//println!("Passing precons: {:?}", new_passing_preconditions);
 
 		// We have finished with this methods subtask 
 		if current_subtask_index == method.subtasks.len() {
@@ -58,13 +56,6 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 
 				for parameters in &applied_method.3.clone() {
 					if parameters.2.len() > 1 {
-						// println!("BIGGER THAN ONE! \n");
-						// println!("OVERTASK PARAM: {:?}\n OVERMETHOD: {:?}\n", relevant_variables, method);
-						// println!("SUBTASK PARAM: {:?}\n SUBMETHOD: {:?}", parameters, applied_method);
-
-						// let mut line = String::new();
-						// let b1 = std::io::stdin().read_line(&mut line).unwrap();
-
 						//Parameter name
 						let mut sub_task_task_name = String::new();
 
@@ -103,11 +94,7 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 					}
 
 					if found_one {
-						//println!("UPDATED: {:?}", applied_method.3[param_counter]);
 						applied_method.3[param_counter].2 = new_values.clone();
-						// println!("UPDATED: {:?}", applied_method.3[param_counter]);
-						// println!("METHOD ID: {}", subtask);
-
 						found_one = false;
 					}
 
@@ -134,18 +121,30 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 
 		} else {
 
-			let (new_relevant_variables, preconditions_cleared) = toolbox::precondition::precon_trimmer(relevant_variables, &passing_preconditions, &current_node.problem);
-
-			if preconditions_cleared {
-				relevant_variables = new_relevant_variables;
+			if method.precondition.is_some() {
+				let method_precons = method.clone().precondition.unwrap();
+				passing_preconditions.extend(method_precons);
+				
+				let (new_relevant_variables, preconditions_cleared) = toolbox::precondition::precon_trimmer(relevant_variables, &passing_preconditions, &current_node.problem, &current_node.original_state);
+				
+				if preconditions_cleared {
+					relevant_variables = new_relevant_variables;
+				} else {
+					return false
+				}
 			} else {
-				return false
+				let (new_relevant_variables, preconditions_cleared) = toolbox::precondition::precon_trimmer(relevant_variables, &passing_preconditions, &current_node.problem, &current_node.original_state);
+				
+				if preconditions_cleared {
+					relevant_variables = new_relevant_variables;
+				} else {
+					return false
+				}
 			}
 
+
+
 			let new_passing_preconditions = toolbox::passing_preconditions::decide_passing_preconditions( &mut passing_preconditions, &method, current_subtask_index, &relevant_variables, &current_node.problem);
-
-			//println!("PASSING THESE: {:?}", new_passing_preconditions);
-
 			let mut new_subtask_queue = current_node.subtask_queue.clone();
 
 			match method.subtasks[current_subtask_index].clone() {
@@ -174,7 +173,7 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 					current_node.applied_functions.1[method.id].2.push(length);
 
 					called.0.push(true);
-					called.1.push((method, relevant_variables, passing_preconditions));
+					called.1.push((method, relevant_variables, passing_preconditions, current_node.original_state));
 					called.2.push(current_subtask_index + 1);
 
 					new_subtask_queue[subtask_queue_index] = (SubtaskTypes::Task(task), updated_variables, called, new_passing_preconditions);
@@ -209,7 +208,7 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 					current_node.applied_functions.1[method.id].2.push(length);
 
 					called.0.push(true);
-					called.1.push((method, relevant_variables, passing_preconditions));
+					called.1.push((method, relevant_variables, passing_preconditions, current_node.original_state));
 					called.2.push(current_subtask_index + 1);
 
 					new_subtask_queue[subtask_queue_index] = (SubtaskTypes::Action(action), updated_variables, called, new_passing_preconditions);
@@ -218,7 +217,7 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 				_ => {}
 			}
 
-			let new_node = make_partial_node(current_node.problem, new_subtask_queue, current_node.applied_functions, current_node.hash_table, current_node.hash_counter, current_node.goal_functions);
+			let new_node = make_partial_node(current_node.problem.clone(), new_subtask_queue, current_node.applied_functions, current_node.hash_table, current_node.hash_counter, current_node.goal_functions, &current_node.problem.state);
 
 			node_queue.push(new_node);
 

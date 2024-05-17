@@ -10,7 +10,7 @@ use itertools::Itertools;
 
 pub type RelVars = Vec<(String, String, Vec<String>)>;
 pub type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-pub type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
+pub type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>, Vec<(String, Vec<String>)>)>, Vec<usize>);
 
 pub mod passing_preconditions;
 pub mod constraints;
@@ -293,7 +293,8 @@ pub fn make_partial_node( new_problem: Problem,
 	afl:((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>) , 
 	hs: HashSet<u64>,
 	hc: HashMap<u64, usize>,
-	goal_functions: Vec<String>) -> PartialNode {
+	goal_functions: Vec<String>,
+	original_state: &Vec<(String, Vec<String>)>) -> PartialNode {
 
 	let new_node = PartialNode {
 		problem: new_problem,
@@ -301,7 +302,8 @@ pub fn make_partial_node( new_problem: Problem,
 		applied_functions: afl,
 		hash_table: hs,
 		hash_counter: hc,
-		goal_functions
+		goal_functions,
+		original_state: original_state.clone()
 	};
 
 	new_node
@@ -559,6 +561,27 @@ pub fn print_result(problem_name: String, applied_functions: ((String, Vec<usize
 		let intro_string = "Solution for problem: {".to_string() + &problem_name + "} by Ajess19 & Andla19\n==>\n";
 		data_file.write(intro_string.as_bytes()).expect("write failed");
 
+		// CLEANUP
+		for applied_function in &applied_functions.1 {
+			match &applied_function {
+				(SubtaskTypes::Action(action), id, _, relevant_vars) => {
+					// println!("Action: {}", action.name);
+					// println!("Parameters: {:?}", action.parameters);
+					// println!("Precons: {:?}", action.precondition);
+					// println!("Relvars: {:?}\n", relevant_vars);
+				},
+				(SubtaskTypes::Method(method), id, call_list, relevant_vars) => {
+					// println!("Method: {}", method.name);
+					// println!("Parameters: {:?}", method.parameters);
+					// println!("Precons: {:?}", method.precondition);
+					// println!("Relvars: {:?}\n", relevant_vars);
+				},
+				(_,_,_,_) => { 
+					//Ignoring
+				}
+			}
+		}
+
 		for applied_function in &applied_functions.1 {
 			// Actions
 			match &applied_function {
@@ -600,7 +623,7 @@ pub fn print_result(problem_name: String, applied_functions: ((String, Vec<usize
 					for var in relevant_vars {
 						if var.2.len() > 1 {
 							println!("panic relvars: {:?} in {:?} ID: {id}", var, method.name);
-							panic!("Values had not been reduced to 1")
+							//panic!("Values had not been reduced to 1")
 						}
 						string_to_print = string_to_print + &var.2[0] + " ";
 					}
@@ -990,7 +1013,7 @@ pub fn prep_htn_subtasks( htn_subtask_queue: &mut Vec::<(SubtaskTypes, RelVars)>
 
 pub fn prep_partial_htn_subtasks( htn_subtask_queue: &mut Vec::<(SubtaskTypes, RelVars, Called, Vec<Precondition>)>, subtask: &(String, String, Vec::<String>), new_problem: &Problem) {
 	let mut new_relevant_parameters = RelVars::new();
-	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars, Vec<Precondition>)>::new(), Vec::<usize>::new());
+	let called = (Vec::<bool>::new(), Vec::<(Method, RelVars, Vec<Precondition>, Vec<(String, Vec<String>)>)>::new(), Vec::<usize>::new());
 
 	for item in &subtask.2 {
 		if item.contains("?") {

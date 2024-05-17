@@ -57,14 +57,14 @@ pub fn perform_task( node_queue: &mut Vec::<PartialNode>, domain: &Domain, curre
 
 					new_subtask_queue[subtask_queue_index] = (SubtaskTypes::Method(method_clone), new_rel_vars.clone(), new_called.clone(), new_passing_precon.clone());
 
-					let new_node = make_partial_node(current_node.problem.clone(), new_subtask_queue.clone(), cnaf.clone(), current_node.hash_table.clone(), current_node.hash_counter.clone(), current_node.goal_functions.clone());
+					let new_node = make_partial_node(current_node.problem.clone(), new_subtask_queue.clone(), cnaf.clone(), current_node.hash_table.clone(), current_node.hash_counter.clone(), current_node.goal_functions.clone(), &current_node.problem.state);
 
 					node_queue.push(new_node)
 				}
 			} else {
 				new_subtask_queue[subtask_queue_index] = (SubtaskTypes::Method(method.clone()), new_rel_vars, new_called, new_passing_precon);
 
-				let new_node = make_partial_node(current_node.problem.clone(), new_subtask_queue, cnaf.clone(), current_node.hash_table.clone(), current_node.hash_counter.clone(), current_node.goal_functions.clone());
+				let new_node = make_partial_node(current_node.problem.clone(), new_subtask_queue, cnaf.clone(), current_node.hash_table.clone(), current_node.hash_counter.clone(), current_node.goal_functions.clone(), &current_node.problem.state);
 
 				node_queue.push(new_node)
 			}

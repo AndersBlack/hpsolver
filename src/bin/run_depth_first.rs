@@ -34,7 +34,7 @@ fn main() {
     match parse_result {
         Ok((problem,domain)) => {
           println!("\nFinished parsing problem and domain!\n");
-          res = stoppable_depth_first_partial(&problem, &domain, &now,&pb);
+          res = stoppable_depth_first_partial(&problem, &domain, &now,&pb, 3600);
         },
         Err(e) => {
           println!("Failure parsing: {}", e);

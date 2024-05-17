@@ -7,7 +7,7 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node
 	//print!("Passing precons! {:?}\n", current_node.passing_preconditions);
 
 	// Update passing preconditions	
-	let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition(&current_node.called, &current_node.passing_preconditions, &action.parameters); // Since the parameters is wrong, this must be wrong
+	let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition_total(&current_node.called, &current_node.passing_preconditions, &action.parameters); // Since the parameters is wrong, this must be wrong
 	let precondition_list;
 
 
@@ -23,7 +23,7 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node
 	let cleared_precon: bool;
 
 	// Trim values based on locked values
-	(relevant_variables, cleared_precon) = toolbox::precondition::precon_trimmer( relevant_variables, &precondition_list, &current_node.problem);
+	(relevant_variables, cleared_precon) = toolbox::precondition::precon_trimmer( relevant_variables, &precondition_list, &current_node.problem, &current_node.problem.state);
 
 	for relvar in &relevant_variables {
 		if relvar.2.len() == 0 || !cleared_precon {
@@ -130,7 +130,7 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node
 pub fn perform_action( node_queue: &mut Vec::<Node>, mut current_node: Node, action: Action, relevant_variables: RelVars) {
 
 	// Update passing preconditions	
-	let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition(&current_node.called, &current_node.passing_preconditions, &action.parameters);
+	let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition_total(&current_node.called, &current_node.passing_preconditions, &action.parameters);
 
 	// Add passing preconditions to actions own precondition list
 	let mut precondition_list = action.precondition.clone().unwrap();

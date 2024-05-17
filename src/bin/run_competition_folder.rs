@@ -22,8 +22,14 @@ fn main() {
 
   let args: Vec<_> = env::args().collect();
 
+  if args.len() < 3 {
+    println!("The binary takes 2 arguments: Implementation (total/partial) & Path to problem folder.\n An example could be: total path/to/problem/folder/ ");
+    return
+  }
+
   // Run total order track 
-  let path = String::from(args[1].clone());
+  let path = String::from(args[2].clone());
+  let implementation = String::from(args[1].clone());
   let mut category_folder = PathBuf::new();
   category_folder.push(path);
 
@@ -43,19 +49,19 @@ fn main() {
   match (fs::read_dir(problem_folder_path), fs::read_dir(domain_path)) {
     (Ok(problem_file_paths), Ok(domain_file_path)) => {
 
-      single_domain(problem_file_paths, domain_file_path);
+      single_domain(problem_file_paths, domain_file_path, implementation);
 
     }
     _ => {
 
-      multiple_domain(category_folder);
+      multiple_domain(category_folder, implementation);
 
     }
   }
 
 }
 
-fn multiple_domain (category_folder: PathBuf) {
+fn multiple_domain (category_folder: PathBuf, implementation: String) {
 
   let file_paths = fs::read_dir(category_folder.clone());
 
@@ -89,16 +95,30 @@ fn multiple_domain (category_folder: PathBuf) {
                 print!("Running: {} ", problem_path.display());
                 std::io::stdout().flush().unwrap();
 
+                let time_allowed: u64 = 1800;
+
                 match parse_result {
                     Ok((problem, domain)) => {
 
+                      let imp_clone = implementation.clone();
+
                       let handle = thread::spawn(move || {
-                        let result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path);
+
+                        let mut result = "No result";
+
+                        if imp_clone == "partial".to_string() {
+                          result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path, time_allowed);
+                        } else if imp_clone == "total".to_string() {
+                          result = stoppable_depth_first(&problem, &domain, &now, &problem_path, time_allowed);
+                        } else {
+                          println!("\nImplementation doesnt exist, try 'total' or 'partial'\n");
+                          return (result, now.elapsed().as_secs())
+                        }
 
                         (result, now.elapsed().as_secs())
                       });
 
-                      while now.elapsed().as_secs() < 10 {
+                      while now.elapsed().as_secs() < time_allowed {
                         
                         thread::sleep(Duration::from_millis(50));
 
@@ -140,7 +160,7 @@ fn multiple_domain (category_folder: PathBuf) {
 
 }
 
-fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir) {
+fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir, implementation: String) {
 
   let domain_path = domain_file_path.nth(0).unwrap();
 
@@ -164,16 +184,30 @@ fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir) {
     print!("Parsing: {} ", path_clone.display());
     std::io::stdout().flush().unwrap();
 
+    let time_allowed: u64 = 1800;
+
+    let imp_clone = implementation.clone();
+
     match parse_result {
         Ok((problem, domain)) => {
 
           let handle = thread::spawn(move || {
-            let result = stoppable_depth_first_partial(&problem, &domain, &now, &path_clone);
+
+            let mut result = "No result";
+
+            if imp_clone == "partial".to_string() {
+              result = stoppable_depth_first_partial(&problem, &domain, &now, &path_clone, time_allowed);
+            } else if imp_clone == "total".to_string() {
+              result = stoppable_depth_first(&problem, &domain, &now, &path_clone, time_allowed);
+            } else {
+              println!("\nImplementation doesnt exist, try 'total' or 'partial'\n");
+              return (result, now.elapsed().as_secs())
+            }
 
             (result, now.elapsed().as_secs())
           });
 
-          while now.elapsed().as_secs() < 10 {
+          while now.elapsed().as_secs() < time_allowed {
             
             thread::sleep(Duration::from_millis(50));
 

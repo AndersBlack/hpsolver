@@ -2,13 +2,13 @@ use std::collections::HashMap;
 use std::{collections::HashSet, time::Instant, path::PathBuf};
 use crate::algorithms::{*, self};
 use crate::perform::partial::{action::perform_action_cdcl, htn::perform_htn_task, task::perform_task, method::perform_method};
-use crate::toolbox::{self, make_partial_node};
+use crate::toolbox::{self, await_key, make_partial_node};
 
 // Relevant epic Variables datatype 
 type RelVars = Vec<(String, String, Vec<String>)>;
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>)>, Vec<usize>);
+type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>, Vec<(String, Vec<String>)>)>, Vec<usize>);
 
-pub fn stoppable_depth_first_partial(problem: &Problem, domain: &Domain, stopped: &Instant, path: &PathBuf) -> &'static str {
+pub fn stoppable_depth_first_partial(problem: &Problem, domain: &Domain, stopped: &Instant, path: &PathBuf, time_allowed: u64) -> &'static str {
 
 	let mut node_queue = Vec::<PartialNode>::new();
 	let mut htn_subtask_queue = Vec::<(SubtaskTypes, RelVars, Called, Vec<Precondition>)>::new();
@@ -26,23 +26,22 @@ pub fn stoppable_depth_first_partial(problem: &Problem, domain: &Domain, stopped
 		function_list = toolbox::goal_oriented_finder(domain, problem.goal.clone().unwrap());
 	}
 
-	let new_node = make_partial_node(new_problem, htn_subtask_queue, applied_functions, HashSet::new(), HashMap::<u64, usize>::new(), function_list);
+	let new_node = make_partial_node(new_problem.clone(), htn_subtask_queue, applied_functions, HashSet::new(), HashMap::<u64, usize>::new(), function_list, &new_problem.clone().state);
 
 	node_queue.push(new_node);
 
 	let mut return_string;
-	let mut hash_limit: usize = 1;
+	let mut hash_limit: usize = 0;
 	let node_q_clone = node_queue.clone();
 
 	loop {
-		return_string = run_df(&mut node_queue, &new_domain, stopped, path, hash_limit, problem.htn.ordered);
+		return_string = run_df(&mut node_queue, &new_domain, stopped, path, hash_limit, problem.htn.ordered, time_allowed);
 
 		if return_string == "stopped" {
 			break;
 		}
 
 		if return_string != "success" {
-			//println!("increased hash limit");
 			hash_limit = hash_limit + 1;
 			node_queue = node_q_clone.clone();
 		} else {
@@ -53,14 +52,14 @@ pub fn stoppable_depth_first_partial(problem: &Problem, domain: &Domain, stopped
   return_string
 }
 
-fn run_df(node_queue: &mut Vec::<PartialNode>, domain: &Domain, stopped: &Instant, path: &PathBuf, hash_limit: usize, ordered: bool) -> &'static str {
+fn run_df(node_queue: &mut Vec::<PartialNode>, domain: &Domain, stopped: &Instant, path: &PathBuf, hash_limit: usize, ordered: bool, time_allowed: u64) -> &'static str {
 
 	let finished: bool = false;
 	let mut tried_count = 0;
 
 	while !finished {
 
-    if stopped.elapsed().as_secs() > 10 { 
+    if stopped.elapsed().as_secs() > time_allowed { 
       return "stopped";
     }
 
@@ -113,7 +112,7 @@ fn run_df(node_queue: &mut Vec::<PartialNode>, domain: &Domain, stopped: &Instan
 						res
 					},
 					(SubtaskTypes::Method(method), relevant_variables,  called, passing_precon) => {
-						//println!("Method {:?}", method.name);
+						//println!("Method {:?}\n", method.name);
 						let res = perform_method(node_queue, domain, current_node.clone(), method, relevant_variables, called, tried_count, passing_precon);
 						
 						if !res {
@@ -123,7 +122,7 @@ fn run_df(node_queue: &mut Vec::<PartialNode>, domain: &Domain, stopped: &Instan
 						res
 					},
 					(SubtaskTypes::Action(action), relevant_variables,  mut called, passing_precon) => {
-						//println!("Action: {:?}", action.name);
+						//println!("Action: {:?}\n", action.name);
 						let res = perform_action_cdcl(node_queue, current_node.clone(), action, relevant_variables, &mut called, passing_precon, tried_count);
 
 						if res {

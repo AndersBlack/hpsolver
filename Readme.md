@@ -36,7 +36,7 @@ cargo run --bin run_all
 
 ### Running the entire [IPC2020](https://ipc2020.hierarchical-task.net/) 
 
-The following runs the IPC2020 competition in its entirety. Be aware that since every problem has 30 minutes of available runtime, this command can potentially run for a very long time.
+The following runs the IPC2020 competition in its entirety. Be aware that since every problem has 30 minutes of available runtime and the complete competition contains 1116 problems, this command can potentially run for a very long time.
 
 ```
 cargo run --bin run_competition
@@ -44,7 +44,18 @@ cargo run --bin run_competition
 
 ## Image
 
-An image containing the application can be found at [Docker Hub](https://hub.docker.com/repository/docker/blackdux/hp_solver_image/general). It should be noted that in order to imitate the competition as close as possible, the container should be limited to 8gb of RAM and 1 CPU. These parameters are set at runtime.
+An image containing the application can be found at [Docker Hub](https://hub.docker.com/r/blackdux/hp_solver_image). It should be noted that in order to imitate the competition as close as possible, the container should be limited to 8gb of RAM and 1 CPU. These parameters are set at runtime.
+
+To run the image after pulling it, simply run the command 
+```
+docker run -it blackdux/hp_solver_image
+```
+
+In order to image with the competition settings, specify the RAM and CPU either in docker desktop or when running the image:
+
+```
+docker run -it blackdux/hp_solver_image --memory="8g" --cpus="1"
+```
 
 ## Additional Software
 

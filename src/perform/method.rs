@@ -14,7 +14,7 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 		match &method.precondition {
 			Some(precondition) => {
 
-				let (new_relevant_variables, preconditions_cleared) = precon_trimmer(relevant_variables, precondition, &current_node.problem);
+				let (new_relevant_variables, preconditions_cleared) = precon_trimmer(relevant_variables, precondition, &current_node.problem, &current_node.problem.state);
 
 				if preconditions_cleared {
 					relevant_variables = new_relevant_variables;
@@ -129,7 +129,7 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 
 		} else {
 
-			let (new_relevant_variables, preconditions_cleared) = toolbox::precondition::precon_trimmer(relevant_variables, &current_node.passing_preconditions, &current_node.problem);
+			let (new_relevant_variables, preconditions_cleared) = toolbox::precondition::precon_trimmer(relevant_variables, &current_node.passing_preconditions, &current_node.problem, &current_node.problem.state);
 
 			if preconditions_cleared {
 				relevant_variables = new_relevant_variables;

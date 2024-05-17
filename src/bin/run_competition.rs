@@ -82,16 +82,18 @@ fn multiple_domain (category_folder: PathBuf) {
 
                 std::io::stdout().flush().unwrap();
 
+                let time_allowed: u64 = 1800;
+
                 match parse_result {
                     Ok((problem, domain)) => {
 
                       let handle = thread::spawn(move || {
-                        let result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path);
+                        let result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path, time_allowed);
 
                         (result, now.elapsed().as_secs())
                       });
 
-                      while now.elapsed().as_secs() < 1800 {
+                      while now.elapsed().as_secs() < time_allowed {
                         
                         thread::sleep(Duration::from_millis(50));
 
@@ -150,16 +152,18 @@ fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir) {
 
     std::io::stdout().flush().unwrap();
 
+    let time_allowed: u64 = 1800;
+
     match parse_result {
         Ok((problem, domain)) => {
 
           let handle = thread::spawn(move || {
-            let result = stoppable_depth_first_partial(&problem, &domain, &now, &path_clone);
+            let result = stoppable_depth_first_partial(&problem, &domain, &now, &path_clone, time_allowed);
 
             (result, now.elapsed().as_secs())
           });
 
-          while now.elapsed().as_secs() < 1800 {
+          while now.elapsed().as_secs() < time_allowed {
             
             thread::sleep(Duration::from_millis(50));
 
