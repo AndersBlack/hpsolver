@@ -1,23 +1,95 @@
+
+#[cfg(test)]
+mod test {
+
 use std::fs;
 use std::path::PathBuf;
 use std::time::Instant;
+use std::process::Command;
 
 use crate::parser::parse_hddl;
 use crate::algorithms::stoppable_df_partial::stoppable_depth_first_partial;
 
-#[test]
+#[test] 
 fn test_satelite() {
-  let result = run_problem_df_test("problems/competition_problems/partial-order/Satellite/problems/1obs-1sat-1mod.hddl", "problems/competition_problems/partial-order/Satellite/domains/domain.hddl");
 
-  let verification = Command::new("additional_software/pandaPIparser/pandaPIparser").args(["-verify", 
-                                                                                                          "problems/competition_problems/partial-order/Satellite/domains/domain.hddl",
-                                                                                                          "problems/competition_problems/partial-order/Satellite/problems/1obs-1sat-1mod.hddl", 
-                                                                                                          "problems/competition_problems/partial-order/Satellite/solutions/1obs-1sat-1mod.solution"]).output().unwrap();
+  let problem_path = "problems/competition_problems/partial-order/Satellite/problems/1obs-1sat-1mod.hddl";
+  let domain_path = "problems/competition_problems/partial-order/Satellite/domains/domain.hddl";
+  let solution_path = "problems/competition_problems/partial-order/Satellite/solutions/1obs-1sat-1mod.solution";
 
-  println!("v: {:?}", verification);
+  let result = run_problem_df_test(&problem_path, domain_path);
+  let verification = Command::new("additional_software/pandaPIparser/pandaPIparser").args(["--verify", 
+                                                                                                          domain_path,
+                                                                                                          problem_path, 
+                                                                                                          solution_path]).output().unwrap();
 
+  let plan = String::from_utf8(verification.stdout);
+  let mut plan_true = false;
+
+  match plan {
+   Ok(plan_string) => {
+    if plan_string.contains("Plan verification result: \u{1b}[1;32mtrue") { plan_true = true; }
+   },
+   Err(_) => {}   
+  }
+  
   assert_eq!(result, "success".to_string());
+  assert_eq!(plan_true, true);
 }   
+
+#[test] 
+fn test_hiking() {
+
+  let problem_path = "problems/competition_problems/total-order/group2/Hiking/problems/p01.hddl";
+  let domain_path = "problems/competition_problems/total-order/group2/Hiking/domains/domain.hddl";
+  let solution_path = "problems/competition_problems/total-order/group2/Hiking/solutions/p01.solution";
+
+  let result = run_problem_df_test(&problem_path, domain_path);
+  let verification = Command::new("additional_software/pandaPIparser/pandaPIparser").args(["--verify", 
+                                                                                                          domain_path,
+                                                                                                          problem_path, 
+                                                                                                          solution_path]).output().unwrap();
+
+  let plan = String::from_utf8(verification.stdout);
+  let mut plan_true = false;
+
+  match plan {
+   Ok(plan_string) => {
+    if plan_string.contains("Plan verification result: \u{1b}[1;32mtrue") { plan_true = true; }
+   },
+   Err(_) => {}   
+  }
+  
+  assert_eq!(result, "success".to_string());
+  assert_eq!(plan_true, true);
+} 
+
+#[test] 
+fn test_snake() {
+
+  let problem_path = "problems/competition_problems/total-order/group3/Snake/problems/pb01.snake.hddl";
+  let domain_path = "problems/competition_problems/total-order/group3/Snake/domains/domain.hddl";
+  let solution_path = "problems/competition_problems/total-order/group3/Snake/solutions/pb01.solution";
+
+  let result = run_problem_df_test(&problem_path, domain_path);
+  let verification = Command::new("additional_software/pandaPIparser/pandaPIparser").args(["--verify", 
+                                                                                                          domain_path,
+                                                                                                          problem_path, 
+                                                                                                          solution_path]).output().unwrap();
+
+  let plan = String::from_utf8(verification.stdout);
+  let mut plan_true = false;
+
+  match plan {
+   Ok(plan_string) => {
+    if plan_string.contains("Plan verification result: \u{1b}[1;32mtrue") { plan_true = true; }
+   },
+   Err(_) => {}   
+  }
+  
+  assert_eq!(result, "success".to_string());
+  assert_eq!(plan_true, true);
+} 
 
 fn run_problem_df_test(problem_path: &str, domain_path: &str) -> String {
 
@@ -36,14 +108,14 @@ fn run_problem_df_test(problem_path: &str, domain_path: &str) -> String {
 
   match parse_result {
       Ok((problem,domain)) => {
-        println!("\nFinished parsing problem and domain!\n");
-        res = stoppable_depth_first_partial(&problem, &domain, &now,&pb, 3600);
+        res = stoppable_depth_first_partial(&problem, &domain, &now,&pb, 1800);
       },
       Err(e) => {
-        println!("Failure parsing: {}", e);
         res = e;
       }
   }
 
   res.to_string()
+}
+
 }

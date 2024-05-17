@@ -561,27 +561,6 @@ pub fn print_result(problem_name: String, applied_functions: ((String, Vec<usize
 		let intro_string = "Solution for problem: {".to_string() + &problem_name + "} by Ajess19 & Andla19\n==>\n";
 		data_file.write(intro_string.as_bytes()).expect("write failed");
 
-		// CLEANUP
-		for applied_function in &applied_functions.1 {
-			match &applied_function {
-				(SubtaskTypes::Action(action), id, _, relevant_vars) => {
-					// println!("Action: {}", action.name);
-					// println!("Parameters: {:?}", action.parameters);
-					// println!("Precons: {:?}", action.precondition);
-					// println!("Relvars: {:?}\n", relevant_vars);
-				},
-				(SubtaskTypes::Method(method), id, call_list, relevant_vars) => {
-					// println!("Method: {}", method.name);
-					// println!("Parameters: {:?}", method.parameters);
-					// println!("Precons: {:?}", method.precondition);
-					// println!("Relvars: {:?}\n", relevant_vars);
-				},
-				(_,_,_,_) => { 
-					//Ignoring
-				}
-			}
-		}
-
 		for applied_function in &applied_functions.1 {
 			// Actions
 			match &applied_function {

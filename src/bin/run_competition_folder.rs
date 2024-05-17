@@ -48,14 +48,10 @@ fn main() {
     // No -> Look for a seperate domain for each problem
   match (fs::read_dir(problem_folder_path), fs::read_dir(domain_path)) {
     (Ok(problem_file_paths), Ok(domain_file_path)) => {
-
       single_domain(problem_file_paths, domain_file_path, implementation);
-
     }
     _ => {
-
       multiple_domain(category_folder, implementation);
-
     }
   }
 
@@ -71,81 +67,74 @@ fn multiple_domain (category_folder: PathBuf, implementation: String) {
   match file_paths {
     Ok(files) => {
 
-      for file in files {
+      let mut paths: Vec<_> = files.map(|r| r.unwrap()).collect();
+      paths.sort_by_key(|dir| dir.path());
+
+      for file in paths {
         
-        match file {
-            Ok(dir_entry) => {
+        let file_path = file.path();
 
-              let file_path = dir_entry.path();
+        if !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains(".md") && !file_path.clone().into_os_string().into_string().unwrap().contains("solutions") {
 
-              if !file_path.clone().into_os_string().into_string().unwrap().contains("-domain.hddl") && !file_path.clone().into_os_string().into_string().unwrap().contains(".md") && !file_path.clone().into_os_string().into_string().unwrap().contains("solutions") {
+          let domain_path = look_for_domain_file(fs::read_dir(category_folder.clone()).unwrap(), file_path.clone());
+          let problem_path = file_path;
 
-                let domain_path = look_for_domain_file(fs::read_dir(category_folder.clone()).unwrap(), file_path.clone());
-                let problem_path = file_path;
+          problem_count = problem_count.add(1.0);
+          let now = Instant::now();
 
-                problem_count = problem_count.add(1.0);
-                let now = Instant::now();
-
-                let domain_contents = fs::read_to_string(domain_path).expect("failed to read domain file");
-                let problem_contents = fs::read_to_string(problem_path.clone()).expect("failed to read problem file");
+          let domain_contents = fs::read_to_string(domain_path).expect("failed to read domain file");
+          let problem_contents = fs::read_to_string(problem_path.clone()).expect("failed to read problem file");
 
 
-                let parse_result = parse_hddl( &problem_contents, &domain_contents);
+          let parse_result = parse_hddl( &problem_contents, &domain_contents);
 
-                print!("Running: {} ", problem_path.display());
-                std::io::stdout().flush().unwrap();
+          print!("Running: {} ", problem_path.display());
+          std::io::stdout().flush().unwrap();
 
-                let time_allowed: u64 = 1800;
+          let time_allowed: u64 = 1800;
 
-                match parse_result {
-                    Ok((problem, domain)) => {
+          match parse_result {
+              Ok((problem, domain)) => {
 
-                      let imp_clone = implementation.clone();
+                let imp_clone = implementation.clone();
 
-                      let handle = thread::spawn(move || {
+                let handle = thread::spawn(move || {
 
-                        let mut result = "No result";
+                  let mut result = "No result";
 
-                        if imp_clone == "partial".to_string() {
-                          result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path, time_allowed);
-                        } else if imp_clone == "total".to_string() {
-                          result = stoppable_depth_first(&problem, &domain, &now, &problem_path, time_allowed);
-                        } else {
-                          println!("\nImplementation doesnt exist, try 'total' or 'partial'\n");
-                          return (result, now.elapsed().as_secs())
-                        }
+                  if imp_clone == "partial".to_string() {
+                    result = stoppable_depth_first_partial(&problem, &domain, &now, &problem_path, time_allowed);
+                  } else if imp_clone == "total".to_string() {
+                    result = stoppable_depth_first(&problem, &domain, &now, &problem_path, time_allowed);
+                  } else {
+                    println!("\nImplementation doesnt exist, try 'total' or 'partial'\n");
+                    return (result, now.elapsed().as_secs())
+                  }
 
-                        (result, now.elapsed().as_secs())
-                      });
+                  (result, now.elapsed().as_secs())
+                });
 
-                      while now.elapsed().as_secs() < time_allowed {
-                        
-                        thread::sleep(Duration::from_millis(50));
+                while now.elapsed().as_secs() < time_allowed {
+                  
+                  thread::sleep(Duration::from_millis(50));
 
-                        if handle.is_finished() {
-                          break;
-                        }
-                      }
-
-                      let (message, time) = handle.join().unwrap();
-                      print!("Result: {}, Time: {} seconds\n", message, time);
-
-                      let score = compute_score(time);
-
-                      collective_score = collective_score.add(score);
-                    },
-                    Err(e) => {
-                      println!("Failure: {}", e);
-                    }
+                  if handle.is_finished() {
+                    break;
+                  }
                 }
+
+                let (message, time) = handle.join().unwrap();
+                print!("Result: {}, Time: {} seconds\n", message, time);
+
+                let score = compute_score(time);
+
+                collective_score = collective_score.add(score);
+              },
+              Err(e) => {
+                println!("Failure: {}", e);
               }
-
-            },
-            Err(error) => {
-              panic!("path failed: {}", error);
-            }
+          }
         }
-
       }
 
     },
@@ -163,19 +152,22 @@ fn multiple_domain (category_folder: PathBuf, implementation: String) {
 fn single_domain (problem_file_paths: ReadDir, mut domain_file_path: ReadDir, implementation: String) {
 
   let domain_path = domain_file_path.nth(0).unwrap();
-
   let domain_contents = fs::read_to_string(domain_path.unwrap().path()).expect("failed to read domain file");
 
   let mut collective_score: f64 = 0.0;
   let mut problem_count: f64 = 0.0;
 
-  for problem_file_path in problem_file_paths {
+  let mut problem_paths: Vec<_> = problem_file_paths.map(|r| r.unwrap()).collect();
+
+  problem_paths.sort_by_key(|dir| dir.path());
+
+  for problem_file_path in problem_paths {
 
     problem_count = problem_count.add(1.0);
 
     let now = Instant::now();
 
-    let path_clone = problem_file_path.unwrap().path().clone();
+    let path_clone = problem_file_path.path().clone();
 
     let problem_contents = fs::read_to_string(path_clone.clone()).expect("failed to read problem file");
 
@@ -238,24 +230,15 @@ fn look_for_domain_file(files: ReadDir, problem_file: PathBuf) -> PathBuf {
 
   match problem_file.file_stem() {
     Some(file_no_ending) => {
-      //println!("file no ending: {:?}", file_no_ending);
-
       for file in files {
 
         let file_entry = file.unwrap();
-
-        //println!("entry: {:?}", file_entry.path());
-
         let file_name = file_entry.file_name();
-
-        
         let domain_file_name = file_no_ending.to_os_string().into_string().unwrap().to_owned() + &"-domain.hddl".to_string();
 
         if file_name.into_string().unwrap().contains(&domain_file_name) {
-          //println!("Found match for problem: {:?} with domain {:?}", problem_file, file_entry);
           return file_entry.path()
         }
-
       }
 
       panic!("Didnt find domain file for: {:?}", file_no_ending);
