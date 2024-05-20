@@ -2,7 +2,6 @@ use crate::toolbox::{self, make_partial_node, RelVars, Precondition, Called};
 use crate::datastructures::{domain::*, node::*};
 use crate::toolbox::precondition::{*};
 
-
 /// Perform a method (Check preconditions and constraints and attempt to perform every subtask)
 pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mut current_node: PartialNode, method: Method, mut relevant_variables: RelVars, mut called: Called, subtask_queue_index: usize, mut passing_preconditions: Vec<Precondition> ) -> bool  {
 
@@ -44,7 +43,6 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 
 			current_node.applied_functions.1[method.id].3 = trimmed_task_rel_vars;
 
-			// CHECK THAT EVERY VARIABLE HAS BEEN REDUCED TO ONE!
 			let subtask_list = current_node.applied_functions.1[method.id].2.clone();
 
 			for subtask in subtask_list {
@@ -74,10 +72,8 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 										if over_task.name == sub_task_task_name {
 											
 											let over_task_arg_name = over_task.parameters[param_counter].name.clone();
-											//println!("Over_task arg: {}", over_task_arg_name);
 
 											for rel_var in &relevant_variables {
-												//println!("RELVARS: {:?}\n", rel_var); 
 												if rel_var.0 == over_task_arg_name {
 													new_values = rel_var.2.clone();
 													found_one = true;
@@ -85,9 +81,7 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 											}
 										}
 									},
-									_ => {
-										// Do nothing
-									}
+									_ => {}
 							}
 							
 						}
@@ -102,18 +96,12 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 				}
 			}
 
-			//println!("Cleared method! 1\n");
-
 			// Is this not the first method?
 			if called.0.pop().unwrap() {
-				//println!("First");
 				let new_node = toolbox::update::update_vars_for_called_method_partial(current_node, &method, &relevant_variables, called, passing_preconditions, subtask_queue_index);
-
 				node_queue.push(new_node);
 			} else {
-				//println!("Not");
 				current_node.subtask_queue.remove(subtask_queue_index);
-
 				node_queue.push(current_node.clone());
 			}
 
@@ -169,7 +157,6 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 					}
 
 					let length = current_node.applied_functions.1.len();
-					//println!("printing length {}", length);
 					current_node.applied_functions.1[method.id].2.push(length);
 
 					called.0.push(true);
@@ -204,7 +191,6 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 					}
 
 					let length = current_node.applied_functions.1.len();
-					//println!("printing length {}", length);
 					current_node.applied_functions.1[method.id].2.push(length);
 
 					called.0.push(true);
@@ -225,9 +211,6 @@ pub fn perform_method( node_queue: &mut Vec::<PartialNode>, _domain: &Domain, mu
 		}
 
 	} else {
-
-		//println!("Cleared method! 2");
-
 		if !called.0.pop().unwrap() {
 
 			current_node.subtask_queue.remove(subtask_queue_index);

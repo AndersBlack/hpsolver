@@ -50,7 +50,5 @@ pub fn perform_task( node_queue: &mut Vec::<Node>, domain: &Domain, current_node
 
 			node_queue.push(new_node)
 		}
-	
-	}
-		
+	}	
 }

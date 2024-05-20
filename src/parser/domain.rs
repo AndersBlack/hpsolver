@@ -15,7 +15,6 @@ use nom::error::context;
 use std::collections::HashMap;
 
 // ------------------------- DOMAIN PARSER ----------------------------------------
-
 pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
 
   context("domain", 
@@ -74,7 +73,6 @@ pub fn domain_parser( input: &str ) -> IResult<&str, Domain> {
 }
   
 fn get_domain_name( input: &str ) -> IResult<&str, String> { 
-  //println!("Input for domain name:{}", input);
 
   context("domain name", 
     tuple((
@@ -99,8 +97,7 @@ fn get_domain_name( input: &str ) -> IResult<&str, String> {
 }
   
 fn get_domain_types( input: &str ) -> IResult<&str, Vec<(String,String)>> { 
-    //println!("Input for domain types:{}", input);
-  
+
     context("domain name", 
       tuple((
         tag("(:types"),
@@ -149,7 +146,6 @@ fn get_domain_types( input: &str ) -> IResult<&str, Vec<(String,String)>> {
   }
   
 fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> {
-  //println!("CONST INPUT: {}", input);
 
   context("domain constants", 
     tuple((
@@ -191,8 +187,7 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
  }
 
   fn get_domain_predicates( input: &str ) -> IResult<&str, Vec<Predicate>> { 
-    //println!("Input for domain predicates: {}", input);
-  
+
     context("predicates", 
       tuple((
         tag("(:predicates"),
@@ -261,7 +256,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
   }
   
   fn get_domain_tasks( input: &str ) -> IResult<&str, Vec<Task>> { 
-    //println!("Input for tasks: {}", input);
   
     context("tasks", 
       many1(
@@ -342,8 +336,7 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
   }
   
   fn get_domain_methods( input: &str ) -> IResult<&str, Vec<(Method, Vec<(String, String, Vec<String>)>)>> { 
-    //println!("Input for methods: {}", input);
-  
+
     context("domain methods",
       many1(
         tuple((
@@ -367,7 +360,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
       let mut ordering = false;
   
       for mut method in method_list {
-        //println!("{:?}\n", method);
 
         let ordered_subtasks = match (method.4, method.5.clone()) {
           (Some(inner0), Some(inner1)) => {
@@ -392,8 +384,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
           method.3 = combine_precon_and_constraint(method.6.unwrap(), method.3);
         }
 
-        //println!("ordersubS: {:?}", ordered_subtasks);
-  
         let new_method = Method {
           name: method.0,
           parameters: method.1, 
@@ -416,7 +406,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
   }
   
   fn get_method_name(input: &str) -> IResult<&str, String> {
-    //println!("Input for get_method_name:{}", input);
   
     context("domain method name",
       tuple((
@@ -438,7 +427,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
   }
   
   fn get_method_parameters(input: &str) -> IResult<&str, Vec<Argument>> {
-    //println!("Input for get_method_parameters:{}", input);
   
     context("domain method parameters",
       tuple((
@@ -485,7 +473,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
   }
   
   fn get_method_task(input: &str) -> IResult<&str, (String, Vec<String>)> {
-    //println!("Input for get_method_task: {}", input);
   
     context("method task",
       tuple((
@@ -521,7 +508,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
   }
   
   fn get_method_preconditions(input: &str) -> IResult<&str,  Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>> {
-    //println!("Input for get_method_preconditions : {}", input);
   
     context("domain method precondition",
       tuple((
@@ -564,7 +550,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
       let mut precon_vec = Vec::<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>::new();
       
       for precon in precondition_list {
-        //println!("{:?}", precon);
   
         let mut conditional_int = 0;
         let mut arg_vec = Vec::<String>::new();
@@ -631,7 +616,6 @@ fn get_domain_constants ( input: &str ) -> IResult<&str, Vec<(String, String)>> 
   }
   
 fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String, Vec<String>)>)> {
-  //println!("Forall input: {}", input);
 
   context("forall", 
     tuple((
@@ -693,7 +677,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
 } 
 
   fn get_method_subtasks(input: &str) -> IResult<&str, (Vec<(String, String, Vec<String>)>, String)> {
-    //println!("Input for get_method_subtasks: {}", input);
   
     context("domain method subtask",
       tuple((
@@ -741,7 +724,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
           arg_vec.push(arg.1.to_string());
         }
   
-        //println!("{:?}",subtask);
         match subtask.5 {
           Some(subtask3) => { subtask_vec.push((subtask3.1, subtask.3.to_string(), arg_vec)); },
           None => { subtask_vec.push((subtask.3.to_string(), subtask.3.to_string(), arg_vec)); }
@@ -755,7 +737,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
   
   fn get_method_ordering(input: &str) -> IResult<&str, Vec<(String, String, String)>> {
-    //println!("Input for get_method_ordering : {}", input);
   
     context("domain method ordering",
       tuple((
@@ -793,7 +774,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
   
   fn get_method_constraint(input: &str) -> IResult<&str, Vec<(bool, String, String)>> {
-    //println!("Input for get_method_constraint : {}", input);
   
     context("domain method constraint",
       tuple((
@@ -831,9 +811,7 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
           Some(_boolean) => {
             boolean_val = false;
           },
-          None => { 
-            //Nothing
-          }
+          None => {}
         }
   
         constraint_vec.push((boolean_val, arg.3[0].0.to_string(), arg.3[1].0.to_string()));
@@ -846,7 +824,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
   
   fn get_domain_actions( input: &str ) -> IResult<&str, Vec<Action>> { 
-    //println!("Input for full action: {}", input);
 
     context("domain action",
       many1(
@@ -868,7 +845,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
       let mut id_counter = 0;
   
       for action in action_list {
-        //println!("action: {:?}", action);
   
         let new_action = Action {
           name: action.1.to_string(),
@@ -890,7 +866,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
   
   fn get_action_name( input: &str ) -> IResult<&str, String> {
-    //println!("Input for action name: {}", input);
   
     context("action name", 
       tuple((
@@ -911,7 +886,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
   
   fn get_action_parameters( input: &str ) -> IResult<&str, Vec<Argument>> {
-    //println!("Input for action parameters: {}", input);
   
     context("action parameters", 
       tuple((
@@ -957,7 +931,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
   
   fn get_action_precondition_and ( input: &str ) -> IResult<&str, Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>> {
-    //println!("Input for action precondition: {}", input);
   
     context("action precondition", 
       tuple((
@@ -991,7 +964,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
 
   fn get_action_precondition ( input: &str ) -> IResult<&str, Vec<(i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>)>> {
-    //println!("Input for action precondition: {}", input);
   
     context("action precondition", 
       tuple((
@@ -1191,7 +1163,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
 
   fn get_action_effects_and ( input: &str ) -> IResult<&str, Vec<(bool,String,Vec<String>)>> {
-    //println!("Input for action effects: {}", input);
   
     context("action effect", 
       tuple((
@@ -1219,7 +1190,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
 
   fn get_action_effects_no_and ( input: &str ) -> IResult<&str, Vec<(bool,String,Vec<String>)>> {
-    //println!("Input for action effects: {}", input);
   
     context("action effect", 
       tuple((
@@ -1242,7 +1212,6 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
 
   fn not_effect ( input: &str ) -> IResult<&str, (bool,String,Vec<String>)> {
-    //println!("Input for action effect not: {}", input);
 
     context("action effect list", 
       tuple((
@@ -1285,8 +1254,7 @@ fn get_forall(input: &str) -> IResult<&str, ((String, String), Vec<(bool, String
   }
 
   fn effect ( input: &str ) -> IResult<&str, (bool,String,Vec<String>)> {
-    //println!("Input for action effect: {}", input);
-
+    
     context("action effect list", 
       tuple((
             tag("("),

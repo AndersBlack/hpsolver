@@ -27,7 +27,6 @@ fn main() {
     return
   }
 
-  // Run total order track 
   let path = String::from(args[2].clone());
   let implementation = String::from(args[1].clone());
   let mut category_folder = PathBuf::new();
@@ -43,9 +42,6 @@ fn main() {
 
   domain_path.push("domains/");
 
-  // Does the folder contain a domains and problems folder?
-    // Yes -> Apply the same domain to every problem
-    // No -> Look for a seperate domain for each problem
   match (fs::read_dir(problem_folder_path), fs::read_dir(domain_path)) {
     (Ok(problem_file_paths), Ok(domain_file_path)) => {
       single_domain(problem_file_paths, domain_file_path, implementation);

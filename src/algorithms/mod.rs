@@ -1,17 +1,11 @@
 use core::panic;
 use std::{collections::HashSet, path::PathBuf};
 use crate::datastructures::{domain::{*}, node::*, problem::*};
-use crate::toolbox::{self, update::*, hash_state, method_calls_method, make_node, reduce_domain};
+use crate::toolbox::{self, update::*, hash_state, method_calls_method, make_node, reduce_domain, RelVars, Precondition};
 use crate::perform::{action::perform_action_cdcl, method::*, htn::perform_htn_task, task::*};
-pub mod iterative_df;
 pub mod stoppable_df;
 pub mod stoppable_df_partial;
 
-/// Relevant Variables datatype: (Name, Type, List of values)
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-
-/// Initiate depth first search
 pub fn depth_first( problem: Problem, domain: &Domain, path: &PathBuf) {
 
 	let mut node_queue = Vec::<Node>::new();
@@ -69,70 +63,22 @@ fn run_df( node_queue: &mut Vec::<Node>, domain: &Domain, path: &PathBuf) {
 				match current_subtask {
 
 					Some((SubtaskTypes::HtnTask(htn_task), relevant_variables))=> {
-						//println!("Htn_task: {:?}, Rel_Vars: {:?}\n", htn_task.0, relevant_variables);
-						//println!("\nHTN_task: {:?} Values: {:?}\n", htn_task.0, htn_task.2);
-
-						// println!("\n");
-						// for pred in &current_node.problem.state {
-						// 	println!("{:?}", pred);
-						// }
-						// println!("\n");
-
-						//await_key();
-
 						perform_htn_task(node_queue, domain, current_node, htn_task, relevant_variables);
 					},
 					Some((SubtaskTypes::Task(task), relevant_variables)) => {
-						println!("Task: {:?}\nrelvars: {:?}", task.name, relevant_variables);
-
-						let mut line = String::new();
-						let _b1 = std::io::stdin().read_line(&mut line).unwrap();
-
 						perform_task(node_queue, domain, current_node, task, relevant_variables);
 					},
 					Some((SubtaskTypes::Method(method), relevant_variables)) => {
-						//println!("Method: {:?}\nRelvars: {:?}\n", method.name, relevant_variables);
-						println!("Method: {:?}\n", method.name);
-
-						// println!("\n");
-						// for pred in &current_node.problem.state {
-						// 	println!("{:?}", pred);
-						// }
-						// println!("\n");
-
-						//await_key();
-
 						perform_method(node_queue, domain, current_node, method, relevant_variables);
 					},
 					Some((SubtaskTypes::Action(action), relevant_variables)) => {
-						//println!("Action: {:?} Relevant_variables: {:?}\n", action.name, relevant_variables);
-						//println!("Action: {}\n", action);
-
-						// println!("\n");
-						// for pred in &current_node.problem.state {
-						// 	println!("{:?}", pred);
-						// }
-						// println!("\n");
-
-						//await_key();
-
 						perform_action_cdcl(node_queue, current_node, action, relevant_variables);
-
 					},
 					None => { 
-
-						//if current_node.goal_functions.0.is_empty() { 
 						if toolbox::check_goal_condition( &current_node.problem.state, &current_node.problem.goal )  {
 							finished = true;
 							toolbox::print_result(current_node.problem.name, current_node.applied_functions, path);
-
-						} else {
-							println!("Hit finish without correct goal");
-
-							println!("State: {:?}", current_node.problem.state);
-							
 						}
-
 					}
 				}
 			},
@@ -142,5 +88,3 @@ fn run_df( node_queue: &mut Vec::<Node>, domain: &Domain, path: &PathBuf) {
 		}
 	}	
 }
-
-

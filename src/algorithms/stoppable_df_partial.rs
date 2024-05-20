@@ -2,11 +2,7 @@ use std::collections::HashMap;
 use std::{collections::HashSet, time::Instant, path::PathBuf};
 use crate::algorithms::{*, self};
 use crate::perform::partial::{action::perform_action_cdcl, htn::perform_htn_task, task::perform_task, method::perform_method};
-use crate::toolbox::{self, make_partial_node};
-
-// Relevant epic Variables datatype 
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>, Vec<(String, Vec<String>)>)>, Vec<usize>);
+use crate::toolbox::{self, make_partial_node, RelVars, Called};
 
 pub fn stoppable_depth_first_partial(problem: &Problem, domain: &Domain, stopped: &Instant, path: &PathBuf, time_allowed: u64) -> &'static str {
 
@@ -42,7 +38,6 @@ pub fn stoppable_depth_first_partial(problem: &Problem, domain: &Domain, stopped
 		}
 
 		if return_string != "success" {
-			println!("increase hash limit");
 			hash_limit = hash_limit + 1;
 			node_queue = node_q_clone.clone();
 		} else {
@@ -55,10 +50,9 @@ pub fn stoppable_depth_first_partial(problem: &Problem, domain: &Domain, stopped
 
 fn run_df(node_queue: &mut Vec::<PartialNode>, domain: &Domain, stopped: &Instant, path: &PathBuf, hash_limit: usize, ordered: bool, time_allowed: u64) -> &'static str {
 
-	let finished: bool = false;
 	let mut tried_count = 0;
 
-	while !finished {
+	loop {
 
     if stopped.elapsed().as_secs() > time_allowed { 
       return "stopped";
@@ -71,12 +65,6 @@ fn run_df(node_queue: &mut Vec::<PartialNode>, domain: &Domain, stopped: &Instan
 			Some(mut current_node) => {
 
 				let state_exists = toolbox::partial_hash_state(&mut current_node, tried_count, hash_limit);
-
-				/*
-					The idea for partial order is to maintain the frontier in the subtask_queue.
-					That means that any subtask in the subtask_queue can advance the node.
-				*/
-
 				let sq_size = current_node.clone().subtask_queue.len();
 
 				if sq_size == 0 {
@@ -101,19 +89,16 @@ fn run_df(node_queue: &mut Vec::<PartialNode>, domain: &Domain, stopped: &Instan
 				let completed_subtask: bool = match current_node.subtask_queue[tried_count].clone() {
 
 					(SubtaskTypes::HtnTask(htn_task), relevant_variables, mut called, passing_precon) => {
-						//println!("Htn_task: {:?}", htn_task.0);
 						let res = perform_htn_task(node_queue, domain, current_node.clone(), htn_task, relevant_variables, &mut called, tried_count, passing_precon);
 
 						res
 					},
 					(SubtaskTypes::Task(task), relevant_variables,  called, passing_precon) => {
-						//println!("Task: {:?}", task.name);
 						let res = perform_task(node_queue, domain, current_node.clone(), task, relevant_variables, called, passing_precon, tried_count);
 
 						res
 					},
 					(SubtaskTypes::Method(method), relevant_variables,  called, passing_precon) => {
-						//println!("Method {:?}\n", method.name);
 						let res = perform_method(node_queue, domain, current_node.clone(), method, relevant_variables, called, tried_count, passing_precon);
 						
 						if !res {
@@ -123,7 +108,6 @@ fn run_df(node_queue: &mut Vec::<PartialNode>, domain: &Domain, stopped: &Instan
 						res
 					},
 					(SubtaskTypes::Action(action), relevant_variables,  mut called, passing_precon) => {
-						//println!("Action: {:?}\n", action.name);
 						let res = perform_action_cdcl(node_queue, current_node.clone(), action, relevant_variables, &mut called, passing_precon, tried_count);
 
 						if res {
@@ -148,6 +132,4 @@ fn run_df(node_queue: &mut Vec::<PartialNode>, domain: &Domain, stopped: &Instan
 			}
 		}
 	}
-
-  return "error";
 }

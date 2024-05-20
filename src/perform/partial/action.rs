@@ -76,15 +76,12 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<PartialNode>, mut current_nod
 
 	if action_can_set_effects {
 
-		//println!("Cleared Action!");
-
 		if called.1.len() != 0 {
 
 			// Apply effects and return to calling method
 			let (calling_method, calling_relevant_vars, called_passing_precon, called_method_org_state) = called.1.pop().unwrap();
 			called.0.pop();
 
-			// Apply effects!
 			effect::apply_effects_cdcl(&mut current_node.problem, &mut current_node.applied_functions, &relevant_variables, &action);
 
 			for x in 0..relevant_variables.len() {
@@ -96,9 +93,7 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<PartialNode>, mut current_nod
 					(SubtaskTypes::Task(task), _) => {
 						relevant_variables[x].0 = task.parameters[x].name.clone();
 					},
-					_ => {
-						// Do nothing
-					}
+					_ => { }
 				}
 			}
 

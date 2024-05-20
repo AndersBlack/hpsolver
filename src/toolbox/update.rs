@@ -51,7 +51,6 @@ pub fn update_vars_for_called_method( mut current_node: Node, method: &Method, r
 
 	for task_arg in &method.task.1 {
 		for var in relevant_variables {
-			//println!("Checking loop: i - {}, method_task_arg - {:?}, var - {}", i, method.task.1, var.0);
 			if &var.0 == task_arg {
 
 				match &calling_method_subtask {
@@ -109,7 +108,6 @@ pub fn update_vars_for_called_method_partial( current_node: PartialNode, method:
 
 	for task_arg in &method.task.1 {
 		for var in relevant_variables {
-			//println!("Checking loop: i - {}, method_task_arg - {:?}, var - {}", i, method.task.1, var.0);
 			if &var.0 == task_arg {
 
 				match &calling_method_subtask {

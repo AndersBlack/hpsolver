@@ -5,20 +5,10 @@ use problem::problem_parser;
 use domain::domain_parser;
 
 use crate::datastructures::{domain::*, problem::*};
+use crate::toolbox::Precondition;
 
-use nom::IResult;
-use nom::bytes::complete::tag;
-use nom::branch::alt;
-use nom::character::complete::alphanumeric1;
-use nom::multi::many1;
-use nom::bytes::complete::{is_not, take_until};
-use nom::combinator::eof;
-use nom::multi::many_till;
-use nom::error::context;
+use nom::{IResult, bytes::complete::{tag, is_not, take_until}, multi::{many1, many_till}, character::complete::alphanumeric1, branch::alt, combinator::eof, error::context};
 
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-
-/// Parses 2 strings in form of a problem.hddl and a domain.hddl and returns a tuple of the datastructures for each
 pub fn parse_hddl( input_problem: &str, input_domain: &str ) -> Result<(Problem, Domain), &'static str> {
 
   let no_comment_problem = if let Ok((_resprob, prob)) = clean_for_comments(input_problem) {
@@ -146,7 +136,6 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: &Optio
       if ordering.len() == 0 { return subtasks }
 
       let mut sorted_subs = Vec::<(String, String, Vec<String>)>::new();
-
       let mut degree_list = Vec::<(i32, String, Vec<String>)>::new();
     
       for sub in &subtasks {
@@ -161,11 +150,8 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: &Optio
           if order.0 == "<".to_string() {
 
             if node.1 == order.1 {
-
               node.2.push(order.2.clone());
-
             } else if node.1 == order.2 {
-
               node.0 = node.0 + 1;
             }
 
@@ -176,9 +162,7 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: &Optio
             } else if node.1 == order.2 {
               node.2.push(order.2.clone());
             }
-
           }
-    
         }
       }
 
@@ -214,11 +198,8 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: &Optio
                 }
               }
             }
-
           }
-
         }
-
       }
 
       sorted_subs
@@ -227,6 +208,4 @@ fn order_subtasks(subtasks: Vec<(String, String, Vec<String>)>, ordering: &Optio
       subtasks
     }    
   }
-
-  
 }

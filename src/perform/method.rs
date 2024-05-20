@@ -4,7 +4,6 @@ use crate::toolbox::precondition::{*};
 
 /// Perform a method (Check preconditions and constraints and attempt to perform every subtask)
 pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut current_node: Node, method: Method, mut relevant_variables: RelVars ) {
-	//println!("Passing precons: {:?}", current_node.passing_preconditions);
 	// What is the index of next function in the subtask queue of this method?
 	let current_subtask_index = current_node.called.2.pop().unwrap();
 
@@ -28,7 +27,6 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 	}
 
 	if method.subtasks.len() > 0 {
-		//println!("Passing precons: {:?}", new_passing_preconditions);
 
 		// We have finished with this methods subtask 
 		if current_subtask_index == method.subtasks.len() {
@@ -46,7 +44,6 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 
 			current_node.applied_functions.1[method.id].3 = trimmed_task_rel_vars;
 
-			// CHECK THAT EVERY VARIABLE HAS BEEN REDUCED TO ONE!
 			let subtask_list = current_node.applied_functions.1[method.id].2.clone();
 
 			for subtask in subtask_list {
@@ -58,12 +55,6 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 
 				for parameters in &applied_method.3.clone() {
 					if parameters.2.len() > 1 {
-						// println!("BIGGER THAN ONE! \n");
-						// println!("OVERTASK PARAM: {:?}\n OVERMETHOD: {:?}\n", relevant_variables, method);
-						// println!("SUBTASK PARAM: {:?}\n SUBMETHOD: {:?}", parameters, applied_method);
-
-						// let mut line = String::new();
-						// let b1 = std::io::stdin().read_line(&mut line).unwrap();
 
 						//Parameter name
 						let mut sub_task_task_name = String::new();
@@ -83,7 +74,6 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 										if over_task.name == sub_task_task_name {
 											
 											let over_task_arg_name = over_task.parameters[param_counter].name.clone();
-											//println!("Over_task arg: {}", over_task_arg_name);
 
 											for rel_var in &relevant_variables {
 												//println!("RELVARS: {:?}\n", rel_var); 
@@ -103,10 +93,7 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 					}
 
 					if found_one {
-						//println!("UPDATED: {:?}", applied_method.3[param_counter]);
 						applied_method.3[param_counter].2 = new_values.clone();
-						// println!("UPDATED: {:?}", applied_method.3[param_counter]);
-						// println!("METHOD ID: {}", subtask);
 
 						found_one = false;
 					}
@@ -114,8 +101,6 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 					param_counter = param_counter + 1;
 				}
 			}
-
-			//println!("Cleared method!\n");
 
 			// Is this not the first method?
 			if current_node.called.0.pop().unwrap() {
@@ -139,7 +124,6 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 
 			let new_passing_preconditions = toolbox::passing_preconditions::decide_passing_preconditions( &mut current_node.passing_preconditions, &method, current_subtask_index, &relevant_variables, &current_node.problem);
 
-			//println!("PASSING THESE: {:?}", new_passing_preconditions);
 
 			let mut new_subtask_queue = current_node.subtask_queue.clone();
 
@@ -165,7 +149,6 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 					}
 
 					let length = current_node.applied_functions.1.len();
-					//println!("printing length {}", length);
 					current_node.applied_functions.1[method.id].2.push(length);
 
 					new_subtask_queue.push((SubtaskTypes::Task(task), updated_variables));
@@ -196,7 +179,6 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 					}
 
 					let length = current_node.applied_functions.1.len();
-					//println!("printing length {}", length);
 					current_node.applied_functions.1[method.id].2.push(length);
 
 					new_subtask_queue.push((SubtaskTypes::Action(action), updated_variables));
@@ -215,8 +197,6 @@ pub fn perform_method( node_queue: &mut Vec::<Node>, _domain: &Domain, mut curre
 		}
 
 	} else {
-
-		//println!("Cleared method!");
 
 		if !current_node.called.0.pop().unwrap() {
 			node_queue.push(current_node);

@@ -1,9 +1,6 @@
 use std::{collections::HashSet, time::Instant, path::PathBuf};
 use crate::algorithms::{*, self};
-use crate::toolbox::{self};
-
-// Relevant Variables datatype
-type RelVars = Vec<(String, String, Vec<String>)>;
+use crate::toolbox::{self, RelVars};
 
 pub fn stoppable_depth_first(problem: &Problem, domain: &Domain, stopped: &Instant, path: &PathBuf, time_allowed: u64) -> &'static str {
 
@@ -37,9 +34,7 @@ pub fn stoppable_depth_first(problem: &Problem, domain: &Domain, stopped: &Insta
 
 fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path: &PathBuf, time_allowed: u64) -> &'static str {
 
-	let finished: bool = false;
-
-	while !finished {
+	loop {
 
     if stopped.elapsed().as_secs() > time_allowed { 
       return "stopped";
@@ -64,19 +59,15 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path
 				match current_subtask {
 
 					Some((SubtaskTypes::HtnTask(htn_task), relevant_variables))=> {
-						//println!("Htn_task: {:?}", htn_task.0);
 						algorithms::perform_htn_task(node_queue, domain, current_node, htn_task, relevant_variables);
 					},
 					Some((SubtaskTypes::Task(task), relevant_variables)) => {
-						//println!("Task: {:?}", task.name);
 						algorithms::perform_task(node_queue, domain, current_node, task, relevant_variables);
 					},
 					Some((SubtaskTypes::Method(method), relevant_variables)) => {
-						//println!("Method {:?}", method.name);					
 						algorithms::perform_method(node_queue, domain, current_node, method, relevant_variables);
 					},
 					Some((SubtaskTypes::Action(action), relevant_variables)) => {
-						//println!("Action: {:?}", action.name);
 						algorithms::perform_action_cdcl(node_queue, current_node, action, relevant_variables);
 					},
 					None => { 
@@ -95,6 +86,4 @@ fn run_df(node_queue: &mut Vec::<Node>, domain: &Domain, stopped: &Instant, path
 			}
 		}
 	}
-
-  return "error";
 }

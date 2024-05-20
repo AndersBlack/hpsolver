@@ -1,6 +1,5 @@
-use std::collections::HashSet;
+use std::collections::{HashSet, hash_map::DefaultHasher};
 use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
 use std::path::PathBuf;
 use crate::datastructures::{node::*, problem::{*}, domain::{*}};
 use std::fs::{OpenOptions, File};
@@ -87,10 +86,8 @@ pub fn partial_hash_state(current_node: &mut PartialNode, subtask_queue_index: u
 
 /// Method for debugging
 pub fn await_key() {
-
 	let mut line = String::new();
 	let _b1 = std::io::stdin().read_line(&mut line).unwrap();
-
 }
 
 /// In the case of unordered subtasks, create permutations of the subtask order
@@ -165,7 +162,6 @@ pub fn update_method_subtasks(methods: Vec<(Method, Vec<(String, String, Vec<Str
 				}
 			}
 		}
-
 
 		method.0.subtasks = subtask_list;
 		update_method.push(method.0);
@@ -725,22 +721,6 @@ pub fn prioritize_methods(domain: &Domain, problem: &Problem, goal_functions: &V
 	}
 }
 
-// pub fn check_for_sibling_subtask(subtask_queue: &Vec<(SubtaskTypes, RelVars, Called, Vec<Precondition>)>, id: usize, new_rel_vars: RelVars) -> bool {
-
-// 	for subtask in subtask_queue {
-// 		for called_sub in &subtask.2.1 {
-// 			if called_sub.0.id == id {
-
-// 				// 
-
-// 				return true
-// 			}	
-// 		}
-// 	} 
-
-// 	return false
-// }
-
 /// Checks if the goal state reached is valid
 pub fn check_goal_condition( state: &Vec<(String, Vec<String>)>, goal: &Option<Vec<(String, Vec<String>)>>) -> bool {
 
@@ -885,9 +865,6 @@ pub fn permutation_would_result_in_nothing(permutation: &Vec<usize>, relevant_va
 						for rel_var in relevant_variables{
 
 							if param == &rel_var.0 {
-
-								//println!("Pred value: {:?}, Relvar value: {:?}", pred.1[pred_index], rel_var.2[permutation[rel_index]]);
-
 								if !(pred.1[pred_index] == rel_var.2[permutation[rel_index]]) {
 									break 'param;
 								}

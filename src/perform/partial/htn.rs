@@ -59,10 +59,8 @@ pub fn perform_htn_task( node_queue: &mut Vec::<PartialNode>, domain: &Domain, c
 				called.0.push(false);
 				called.2.push(0);
 
-	
 				// Update relevant variables
 				new_node_init.subtask_queue[subtask_queue_index] = (SubtaskTypes::Action(action.clone()), updated_relevant_variables, called.clone(), passing_preconditions.clone());
-
 
 				//Applied function addition
 				new_node_init.applied_functions.0.1.push(new_node_init.applied_functions.1.len().try_into().unwrap());

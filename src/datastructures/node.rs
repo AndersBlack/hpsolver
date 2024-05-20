@@ -1,9 +1,6 @@
 use crate::datastructures::{domain::*, problem::*};
 use std::collections::{HashSet, HashMap};
-
-type RelVars = Vec<(String, String, Vec<String>)>;
-type Precondition = (i32,String,Vec<String>, Option<((String, String), Vec<(bool, String, Vec<String>)>)>);
-type Called = (Vec<bool>, Vec<(Method, RelVars, Vec<Precondition>, Vec<(String, Vec<String>)>)>, Vec<usize>);
+use crate::toolbox::{RelVars, Precondition, Called};
 
 #[derive(Debug, Clone, Hash)] 
 pub enum SubtaskTypes {
@@ -16,7 +13,6 @@ pub enum SubtaskTypes {
 #[derive(Debug, Clone)] 
 pub struct Node {
   pub problem: Problem,
-  /// Tuple of (name, object_type & possible values)
   pub subtask_queue: Vec<(SubtaskTypes, Vec<(String, String, Vec<String>)>)>,
   pub called: (Vec<bool>, Vec<(Method, Vec<(String, String, Vec<String>)>, Vec<Precondition>)>, Vec<usize>),
   pub applied_functions: ((String, Vec<usize>), Vec<(SubtaskTypes, usize, Vec<usize>, RelVars)>),

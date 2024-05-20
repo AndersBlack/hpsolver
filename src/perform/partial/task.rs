@@ -48,8 +48,6 @@ pub fn perform_task( node_queue: &mut Vec::<PartialNode>, domain: &Domain, curre
 			if !method.ordering && method.subtasks.len() > 1 {
 				let method_subtask_perm_list = generate_method_subtask_perm(&method.subtasks);
 
-				println!("PERM!");
-
 				for perm in method_subtask_perm_list {
 
 					let mut method_clone = method.clone();

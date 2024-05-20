@@ -4,13 +4,9 @@ use crate::toolbox::{self, effect, make_node, RelVars, Precondition};
 /// Improving the runtime of the perform action method using CDCL
 pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node, action: Action, mut relevant_variables: RelVars ) {
 
-	//print!("Passing precons! {:?}\n", current_node.passing_preconditions);
-
 	// Update passing preconditions	
 	let new_passing_precon = toolbox::passing_preconditions::update_passing_precondition_total(&current_node.called, &current_node.passing_preconditions, &action.parameters); // Since the parameters is wrong, this must be wrong
 	let precondition_list;
-
-
 
 	// Add passing preconditions to actions own precondition list
 	if action.precondition.is_some() {
@@ -27,7 +23,6 @@ pub fn perform_action_cdcl( node_queue: &mut Vec::<Node>, mut current_node: Node
 
 	for relvar in &relevant_variables {
 		if relvar.2.len() == 0 || !cleared_precon {
-			//toolbox::back_tracking::backtrack_for_parameter_value(node_queue, &relevant_variables);
 			return
 		} 
 	}
@@ -192,13 +187,7 @@ pub fn perform_action( node_queue: &mut Vec::<Node>, mut current_node: Node, act
 					new_new_relevant_variables.push(rel_var.clone());
 				}
 			}
-
-			// SET METHOD BOOL TO TRUE
-			//let mut calling_meth = calling_method.clone();
-			//let mut subts = calling_meth.subtasks;
-			//subts[current_node.called.2.last().unwrap() - 1].3 = true;
-			//calling_meth.subtasks = subts;
-		
+			
 			new_current_node.subtask_queue.push((SubtaskTypes::Method(calling_method.clone()), new_new_relevant_variables.clone()));
 
 			let new_node = make_node(new_current_node.problem, new_current_node.subtask_queue, new_current_node.called, new_current_node.applied_functions, current_node.hash_table.clone(), called_passing_precon.clone(), current_node.goal_functions.clone());

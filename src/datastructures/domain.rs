@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 use super::node::SubtaskTypes;
 
 #[derive(Debug, Clone)]
@@ -27,14 +26,12 @@ pub struct Task {
     pub id: i32
 }
 
-// make into tuple?
 #[derive(Debug, Clone, Hash)] 
 pub struct Argument {
     pub name: String,
     pub object_type: String
 }
 
-// NEW PRECONDITIONS: 0 = True, 1 = False, 2 = True Equal, 3 = False Equal, 4 = forall
 #[derive(Debug, Clone, Hash)] 
 pub struct Method {
     pub name: String,

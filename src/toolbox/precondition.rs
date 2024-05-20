@@ -5,8 +5,6 @@ use crate::toolbox::{RelVars, Precondition};
 /// Checks a given precondition. Takes the boolean prefix, the name, the list of lists of possible values and a ref to the state
 pub fn check_precondition( precondition: &Precondition, relevant_variables: &RelVars, problem: &Problem) -> bool {
 
-  //println!("Precon for check: {precondition:?}");
-
 	match precondition.0 {
 		0 | 1 => {
 			let mut precondition_value_list = Vec::<(String, Vec<String>)>::new();
@@ -50,7 +48,6 @@ pub fn check_precondition( precondition: &Precondition, relevant_variables: &Rel
 					}
 
 					if found_counter == value.1.len() {
-						//println!("Found {:?}", value);
 						found_one = true;
 						break;
 					}
@@ -58,10 +55,8 @@ pub fn check_precondition( precondition: &Precondition, relevant_variables: &Rel
 			}
 		
 			if (found_one == false && precondition.0 == 0) || (found_one == true && precondition.0 == 1) {
-				//println!("Failed precon: {:?}", precondition);
 				return false;
 			}
-			//println!("Succeded precon: {:?}", precondition);
 			return true
 		},
 		2 | 3 => { 
@@ -284,8 +279,6 @@ pub fn precon_trimmer( relevant_variables: RelVars , precondition_list: &Vec<Pre
       cleared_precons = false;
     }
   }
-
-  //println!("Cleared: {}", cleared_precons);
 
   (new_relvars, cleared_precons)
 } 
@@ -519,8 +512,6 @@ pub fn precon_trim_two( relevant_variables: &RelVars , precondition: &Preconditi
     (new_relvars, trimmed_something) = trim_lists_for_equal_precon((indexes[0].0, indexes[1].0) ,new_relvars);
   }
 
-  //println!("trim two new new_relvars: {:?}", new_relvars);
-
   return (new_relvars, trimmed_something)
 }
 
@@ -725,11 +716,6 @@ pub fn precon_trim_forall( relevant_variables: &RelVars , precondition: &Precond
     }
   }
 
-  //println!("CLEARED PRECONDITION: {cleared_precondition}");
-
-  //let mut line = String::new();
-	//let b1 = std::io::stdin().read_line(&mut line).unwrap();
-
   (new_rel_var, trimmed_something, cleared_precondition)
 }
 
@@ -766,7 +752,6 @@ fn setup_relvar_indexes(preconditions: &Vec<String>, relevant_variables: &RelVar
 
     // Precon contains a constant
     if !precon_arg.contains("?"){
-      //println!("{}", precon_arg);
       relvar_indexes.push((new_relvars.len(), true));
       new_relvars.push((precon_arg.to_string(), precon_arg.to_string(), vec![precon_arg.to_string()]));
       constants = true;
@@ -818,8 +803,6 @@ fn remove_constant (relvars: &mut RelVars) {
 /// Trims relvars based on equality
 fn trim_lists_for_equal_precon ( indexes: (usize, usize), mut relevant_variables: RelVars ) -> (RelVars, bool) {
 
-  //println!("RELVARS: {:?}", relevant_variables);
-
   let mut values: Vec<String> = vec![];
   let mut trimmed_something = false;
   
@@ -842,8 +825,6 @@ fn trim_lists_for_equal_precon ( indexes: (usize, usize), mut relevant_variables
 pub fn pre_permutation_cleanup ( precondition_list: &Vec<Precondition>, relevant_variables: &RelVars, state: &Vec<(String, Vec<String>)> ) -> RelVars {
 
   let mut mutable_relvar = relevant_variables.clone();
-
-  //println!("STATE: {:?}", state);
 
   for precondition in precondition_list {
 
@@ -893,12 +874,6 @@ pub fn pre_permutation_cleanup ( precondition_list: &Vec<Precondition>, relevant
             relevant_variables_index = relevant_variables_index + 1;
           }
         }
-
-        // println!("Big ol' check: {:?}\nBefore: {:?}\nAfter: {:?}", precondition, relevant_variables, mutable_relvar);
-
-        // let mut line = String::new();
-				// let b1 = std::io::stdin().read_line(&mut line).unwrap();
-
       },
       (2|3, _, _, _) => {
         //  Equals precondition (2 =, 3 not =)
@@ -942,11 +917,6 @@ pub fn pre_permutation_cleanup ( precondition_list: &Vec<Precondition>, relevant
 
           mutable_relvar[rel_var_index].2.remove(value_index);
         }
-
-        // println!("before equal {:?}\nafter equal {:?}\n", relevant_variables, mutable_relvar );
-
-        // 						let mut line = String::new();
-				// 		let b1 = std::io::stdin().read_line(&mut line).unwrap();
       },
       _ => {}
     } 

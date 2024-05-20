@@ -98,24 +98,6 @@ pub fn decide_passing_preconditions( passing_preconditions: &mut Vec<Preconditio
 
 	let mut new_passing_preconditions = Vec::<Precondition>::new();
 
-	// Add relevant preconditions for the coming subtask
-	// if method.precondition.is_some() {
-	// 	let precons = method.precondition.clone().unwrap();
-	// 	for precon in precons {
-	// 		if precon.0 < 2 {
-
-	// 			if precondition_should_be_passed(&precon, &method.subtasks[index], &relevant_variables) {
-	// 				if index > 0 && check_precondition(&precon, relevant_variables, problem) {
-	// 					new_passing_preconditions.push(precon);
-	// 				} else if index == 0 {
-	// 					new_passing_preconditions.push(precon);
-	// 				}
-	// 			}
-
-	// 		}
-	// 	}
-	// }
-
 	// Which passing preconditions should continue?
 	for passing_precon in passing_preconditions {
 		if precondition_should_be_passed(&passing_precon, &method.subtasks[index], &relevant_variables) {
@@ -127,7 +109,6 @@ pub fn decide_passing_preconditions( passing_preconditions: &mut Vec<Preconditio
 		}
 	}
 
-	//println!("New passing precon: {:?}", new_passing_preconditions);
 	new_passing_preconditions
 }
 

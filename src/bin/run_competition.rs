@@ -81,8 +81,6 @@ fn multiple_domain (category_folder: PathBuf) {
 
           let parse_result = parse_hddl( &problem_contents, &domain_contents);
 
-          
-
           let time_allowed: u64 = 1800;
           print!("Running: {} ", problem_path.display());
           std::io::stdout().flush().unwrap();

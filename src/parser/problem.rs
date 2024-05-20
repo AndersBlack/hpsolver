@@ -54,7 +54,6 @@ pub fn problem_parser( input: &str ) -> IResult<&str, Problem> {
   }
 
 fn get_name( input: &str ) -> IResult<&str, String> {
-  //println!("name input:\n{}", input);
 
   context("name", 
     tuple((
@@ -77,7 +76,6 @@ fn get_name( input: &str ) -> IResult<&str, String> {
 }
 
 fn get_domain( input: &str ) -> IResult<&str, String> {
-  //println!("Domain input: {}", input);
 
   context("domain", 
     tuple((
@@ -99,7 +97,6 @@ fn get_domain( input: &str ) -> IResult<&str, String> {
 }
 
 fn get_objects( input: &str ) -> IResult<&str, Vec<(String, String, Vec<String>)>> {
-  //println!("object input:\n{}", input);
 
   context("objects",
     tuple((
@@ -135,8 +132,6 @@ fn get_objects( input: &str ) -> IResult<&str, Vec<(String, String, Vec<String>)
         obj_vec.push(obj);
       }
     };
-    
-    //println!("{:?}", obj_vec);      
 
     (
       next_input, obj_vec
@@ -145,7 +140,6 @@ fn get_objects( input: &str ) -> IResult<&str, Vec<(String, String, Vec<String>)
 }
 
 fn get_htn( input: &str ) -> IResult<&str, Htn> {
-  //println!("htn input:\n{}", input);
 
   context("name", 
     tuple((
@@ -193,7 +187,6 @@ fn get_htn( input: &str ) -> IResult<&str, Htn> {
 }
 
 fn get_htn_parameters( input: &str) -> IResult<&str, Vec<(String,String)>> {
-  //println!("htn_parameters input:\n{}", input);
 
   context("parameters", 
     tuple((
@@ -213,7 +206,6 @@ fn get_htn_parameters( input: &str) -> IResult<&str, Vec<(String,String)>> {
 
     let mut parameters_vec = Vec::<(String, String)>::new();
 
-    // FILL VECTOR FROM 'parameters' variable
     match parameters {
       Some(parameters) => {
         for param in parameters {
@@ -231,7 +223,6 @@ fn get_htn_parameters( input: &str) -> IResult<&str, Vec<(String,String)>> {
 }
 
 fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<String>)>> {
-  //println!("htn_subtasks input:\n{}", input);
 
   context("subtasks",
     tuple((
@@ -284,14 +275,11 @@ fn get_htn_subtasks( input: &str) -> IResult<&str, Vec<(String, String, Vec<Stri
       }
     }
 
-    //println!("{:?}", subtask_vec);
-
     (next_input, subtask_vec)
   })
 }
 
 fn get_htn_ordering( input: &str) -> IResult<&str, Vec<(String, String, String)>> {
-  //println!("htn_ordering input:\n{}", input);
 
   context("ordering", 
     tuple((
@@ -341,7 +329,6 @@ fn get_htn_ordering( input: &str) -> IResult<&str, Vec<(String, String, String)>
 }
 
 fn get_init( input: &str ) -> IResult<&str, Vec<(String, Vec<String>)>> {
-  //println!("htn_init input:\n{}", input);
 
   context("init", 
     tuple((
@@ -387,8 +374,6 @@ fn get_init( input: &str ) -> IResult<&str, Vec<(String, Vec<String>)>> {
       state_vector.push((name, arg_vec));
     }
 
-    //println!("State_vector: {:?}", state_vector);
-
     (
       next_input, state_vector
     )
@@ -396,7 +381,6 @@ fn get_init( input: &str ) -> IResult<&str, Vec<(String, Vec<String>)>> {
 }
 
 fn get_goal( input: &str ) -> IResult<&str, Vec<(String, Vec<String>)>> {
-  //println!("goal input:\n{}", input);
 
   context("name", 
     tuple((

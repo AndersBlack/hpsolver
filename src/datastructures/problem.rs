@@ -5,7 +5,6 @@ pub struct Htn {
   pub ordered: bool
 }
 
-// The overarching struct for the entire problem
 #[derive(Debug, Default, Clone, Hash)]
 pub struct Problem {
   pub name: String,
